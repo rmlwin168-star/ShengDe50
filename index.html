@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖德宮50周年慶 數位導覽與宣傳平台</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FAF7F2;
+            color: #1F2937;
+        }
+        .font-serif-tc {
+            font-family: 'Noto Serif TC', serif;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 340px;
+            max-height: 420px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 380px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F3EFE6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D97706;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B45309;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-amber-200 selection:text-red-900 overflow-x-hidden w-full">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-amber-700 text-amber-50 text-xs md:text-sm py-2 px-4 text-center font-medium shadow-inner flex justify-center items-center gap-2">
+        <span>✨ 承先啟後 五十揚帆 ── 聖德宮 50 周年慶典 即將隆重登場！</span>
+        <span class="hidden sm:inline-block bg-amber-900 text-amber-200 px-2 py-0.5 rounded text-xs">報名期間：2026/09/10 ~ 09/30</span>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-amber-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-20 py-3 sm:py-0 gap-3 w-full">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-red-800 rounded-full flex items-center justify-center text-amber-300 font-serif-tc font-bold text-2xl shadow-md border-2 border-amber-400">
+                        聖
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-serif-tc font-bold text-red-900 tracking-wide">聖德宮 50周年慶</h1>
+                        <p class="text-xs text-amber-800 font-medium">感恩薈萃・誠摯邀約・數位導覽平台</p>
+                    </div>
+                </div>
+                
+                <nav class="hidden lg:flex space-x-6 text-sm font-medium text-gray-700">
+                    <a href="#overview" class="hover:text-red-800 font-bold border-b-2 border-transparent hover:border-red-800 transition-colors py-2">慶典總覽</a>
+                    <a href="#performances" class="hover:text-red-800 font-bold border-b-2 border-transparent hover:border-red-800 transition-colors py-2">精粹展演與歷史</a>
+                    <a href="#media-kit" class="hover:text-red-800 font-bold border-b-2 border-transparent hover:border-red-800 transition-colors py-2">文宣與媒體工具箱</a>
+                    <a href="#registration" class="hover:text-red-800 font-bold border-b-2 border-transparent hover:border-red-800 transition-colors py-2">公壇報名與統計</a>
+                </nav>
+
+                <div>
+                    <button onclick="openRegistrationModal()" class="bg-gradient-to-r from-red-700 to-amber-600 hover:from-red-800 hover:to-amber-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md transition-all text-xs md:text-sm flex items-center gap-2 transform active:scale-95 cursor-pointer w-full sm:w-auto justify-center">
+                        <span>📝</span> 快速線上報名
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- SECTION 1: HERO & CELEBRATION OVERVIEW -->
+        <section id="overview" class="space-y-8 scroll-mt-24">
+            
+            <div class="relative bg-gradient-to-br from-red-900 via-red-800 to-amber-900 rounded-3xl mx-2 sm:mx-0 p-6 sm:p-10 md:p-12 text-white overflow-hidden shadow-2xl border border-amber-500/30">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#F59E0B_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                
+                <div class="relative z-10 max-w-4xl mx-auto text-center space-y-6">
+                    
+                    <div class="inline-flex flex-wrap justify-center items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-2xl sm:rounded-full bg-amber-500/20 border border-amber-300/40 text-amber-200 text-[11px] sm:text-sm font-medium mx-auto leading-snug">
+                        <span>🏛️</span>
+                        <span class="inline-block">召集點傳師 高全</span>
+                        <span class="inline-block">暨 50周年慶籌備委員會 敬邀</span>
+                    </div>
+                    
+                    <h2 class="text-2xl sm:text-4xl md:text-5xl font-serif-tc font-bold text-amber-200 leading-tight flex flex-col gap-1 sm:gap-2 mx-auto w-fit">
+                        <span class="block w-full text-justify" style="text-align-last: justify;">承先啟後 五十揚帆</span>
+                        <span class="text-white block w-full text-justify" style="text-align-last: justify;">聖德宮 50 周年慶典</span>
+                    </h2>
+
+                    <p class="text-sm sm:text-lg text-amber-100/95 leading-loose sm:leading-relaxed max-w-3xl mx-auto text-justify font-medium px-4 sm:px-0">
+                        沐浴天恩師德，聖德宮自建立以來，已走過半個世紀的輝煌歲月。半世紀來無數前賢心血澆灌，成就今日溫暖大家庭。特設豐盛蔬食盛宴與震撼演藝，邀您共襄盛舉，見證道傳萬國的奇蹟！
+                    </p>
+
+                    <div class="py-3 px-4 bg-black/30 rounded-2xl border border-amber-400/40 max-w-2xl mx-auto shadow-inner">
+                        <p class="text-amber-200 font-serif-tc font-bold text-sm sm:text-base tracking-wide text-left">
+                            ✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2">
+                        <button onclick="openRegistrationModal()" class="bg-amber-500 hover:bg-amber-400 text-red-950 font-extrabold px-5 py-3 rounded-xl shadow-lg transition-all text-xs sm:text-sm flex items-center gap-1 sm:gap-2 transform active:scale-95 cursor-pointer">
+                            <span>📝</span> 立即開啟線上報名表單
+                        </button>
+                        <a href="javascript:void(0)" onclick="openTopicDetail('overview-full')" class="bg-black/40 hover:bg-black/60 text-amber-200 border border-amber-400/50 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex justify-center items-center gap-1.5 underline">
+                            <span>🔗</span> 『慶典總覽與活動流程』
+                        </a>
+                        <a href="javascript:void(0)" onclick="openTopicDetail('checklist')" class="bg-[#991B1B]/80 hover:bg-[#991B1B] text-amber-100 border border-amber-500/60 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex justify-center items-center gap-1.5 shadow-md">
+                            <span>✅</span> 重點事項與擔當檢核表
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 max-w-3xl mx-auto">
+                        <div class="bg-black/30 backdrop-blur-md px-4 py-3 rounded-xl border border-amber-400/30 text-center">
+                            <p class="text-xs text-amber-300 font-medium">📅 活動時間</p>
+                            <p class="text-sm font-bold text-white">2026年12月13日 (日)</p>
+                        </div>
+                        <div class="bg-black/30 backdrop-blur-md px-4 py-3 rounded-xl border border-amber-400/30 text-center">
+                            <p class="text-xs text-amber-300 font-medium">📍 活動地點</p>
+                            <p class="text-sm font-bold text-white">聖德宮大廣場 / 展演廳 (700席)</p>
+                        </div>
+                        <div class="bg-black/30 backdrop-blur-md px-4 py-3 rounded-xl border border-amber-400/30 text-center">
+                            <p class="text-xs text-amber-300 font-medium">⏳ 報名期限</p>
+                            <p class="text-sm font-bold text-amber-200">2026/09/10 ～ 09/30</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/40 backdrop-blur-md p-6 rounded-2xl border border-amber-400/40 text-center space-y-4 shadow-xl max-w-xl mx-auto mt-6">
+                        <h3 class="text-amber-300 font-serif-tc font-bold text-lg flex items-center justify-center gap-2">
+                            <span>⏱️</span> 距離慶典盛會倒數
+                        </h3>
+                        
+                        <div id="countdown-timer" class="grid grid-cols-4 gap-2 sm:gap-3 text-center">
+                            <div class="bg-red-950/80 p-2.5 rounded-lg border border-amber-500/30">
+                                <span id="cd-days" class="block text-2xl sm:text-3xl font-extrabold text-amber-300">---</span>
+                                <span class="text-[10px] sm:text-xs text-amber-100/70">天</span>
+                            </div>
+                            <div class="bg-red-950/80 p-2.5 rounded-lg border border-amber-500/30">
+                                <span id="cd-hours" class="block text-2xl sm:text-3xl font-extrabold text-amber-300">--</span>
+                                <span class="text-[10px] sm:text-xs text-amber-100/70">時</span>
+                            </div>
+                            <div class="bg-red-950/80 p-2.5 rounded-lg border border-amber-500/30">
+                                <span id="cd-minutes" class="block text-2xl sm:text-3xl font-extrabold text-amber-300">--</span>
+                                <span class="text-[10px] sm:text-xs text-amber-100/70">分</span>
+                            </div>
+                            <div class="bg-red-950/80 p-2.5 rounded-lg border border-amber-500/30">
+                                <span id="cd-seconds" class="block text-2xl sm:text-3xl font-extrabold text-amber-300">--</span>
+                                <span class="text-[10px] sm:text-xs text-amber-100/70">秒</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-amber-200/80 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl">🦁</div>
+                        <h4 class="font-bold text-gray-900 text-lg">熱鬧迎賓</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">祥瑞舞獅熱烈迎賓，迎接家人們，同沐聖德５０感恩歷史時光巡禮。</p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-100 mt-4">
+                        <a href="javascript:void(0)" onclick="openTopicDetail('welcome')" class="text-xs text-red-800 font-bold underline hover:text-amber-700">
+                            🔗 檢視『熱鬧迎賓』詳細規劃頁
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-amber-200/80 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-2xl">🎭</div>
+                        <h4 class="font-bold text-gray-900 text-lg">精粹展演</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">三齣震撼舞台劇、96佛子合唱、口琴樂團、文武讀經與舞蹈。</p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-100 mt-4">
+                        <a href="javascript:void(0)" onclick="openTopicDetail('shows')" class="text-xs text-red-800 font-bold underline hover:text-amber-700">
+                            🔗 檢視『精粹展演』詳細節目單
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-amber-200/80 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl">🍱</div>
+                        <h4 class="font-bold text-gray-900 text-lg">感恩蔬食饗宴</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">精心準備頂級豐盛的健康蔬食辦桌佳餚，暖胃更暖心。</p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-100 mt-4">
+                        <a href="javascript:void(0)" onclick="openTopicDetail('banquet')" class="text-xs text-red-800 font-bold underline hover:text-amber-700">
+                            🔗 檢視『感恩蔬食饗宴』菜單詳情
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-amber-200/80 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">🎁</div>
+                        <h4 class="font-bold text-gray-900 text-lg">尊榮限定禮品</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">蒞臨現場之道親皆可獲得「50周年限定精美貴重伴手禮」乙份。</p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-100 mt-4">
+                        <a href="javascript:void(0)" onclick="openTopicDetail('gift')" class="text-xs text-red-800 font-bold underline hover:text-amber-700">
+                            🔗 檢視『尊榮限定禮品』規格說明
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: PERFORMANCES & HISTORICAL MIRACLES -->
+        <section id="performances" class="space-y-8 scroll-mt-24">
+            
+            <div class="bg-amber-50 border-l-4 border-amber-600 p-6 rounded-r-2xl space-y-2">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <h3 class="text-xl sm:text-2xl font-serif-tc font-bold text-red-900 flex items-center gap-1 sm:gap-2 whitespace-nowrap tracking-tight">
+                        <span>✨</span> 精粹展演與顯化導覽
+                    </h3>
+                    <a href="javascript:void(0)" onclick="openTopicDetail('performances-overview')" class="text-xs font-bold text-red-800 underline">
+                        🔗 檢視『展演與歷史總覽』詳細頁
+                    </a>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    本區呈現50周年慶典當天的精選節目矩陣與聖德宮悠久的歷史沿革。包含開道先驅篳路藍縷的足跡、老前人指示應驗的「龍的顯化」、設立「功德祿位」，以及前人老慈悲指示成立的「長青班」緣起。
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">節目與主題分類篩選：</span>
+                    <div class="flex flex-wrap gap-2" id="filter-buttons">
+                        <button onclick="filterPerformances('all')" class="filter-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-red-800 text-white shadow-sm">全部節目 (7)</button>
+                        <button onclick="filterPerformances('drama')" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-100 text-gray-700 hover:bg-amber-100">🎬 舞台劇 (3)</button>
+                        <button onclick="filterPerformances('music')" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-100 text-gray-700 hover:bg-amber-100">🎤 天籟樂音 (2)</button>
+                        <button onclick="filterPerformances('heritage')" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-100 text-gray-700 hover:bg-amber-100">📖 道育傳承 (1)</button>
+                        <button onclick="filterPerformances('youth')" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-100 text-gray-700 hover:bg-amber-100">💃 活力與國際 (1)</button>
+                    </div>
+                </div>
+
+                <div id="performance-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic rendering by JS -->
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white p-6 md:p-8 rounded-2xl border border-amber-200 shadow-sm">
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xl font-serif-tc font-bold text-red-900 flex items-center gap-2">
+                            <span>📊</span> 慶典節目結構與比例分析
+                        </h4>
+                        <a href="javascript:void(0)" onclick="openTopicDetail('chart-analysis')" class="text-xs font-bold text-red-800 underline">
+                            🔗 詳細分析頁
+                        </a>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        籌備委員會精心規劃多元演出形式，融合經典顯化劇目、天籟合唱、口琴重奏、文武讀經與青年國際舞蹈。
+                    </p>
+                    
+                    <div class="space-y-2 text-xs text-gray-700">
+                        <div class="flex justify-between p-2 rounded bg-amber-50">
+                            <span class="font-medium">🎭 舞台劇演繹比重</span>
+                            <span class="font-bold text-red-800">42.8% (3齣大戲)</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded bg-amber-50">
+                            <span class="font-medium">🎵 音樂與樂團演出</span>
+                            <span class="font-bold text-red-800">28.6% (合唱/口琴)</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded bg-amber-50">
+                            <span class="font-medium">📖 武術讀經與詩朗</span>
+                            <span class="font-bold text-red-800">14.3% (道化傳承)</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded bg-amber-50">
+                            <span class="font-medium">💃 青少年與國際演出</span>
+                            <span class="font-bold text-red-800">14.3% (萬國九州)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 flex justify-center">
+                    <div class="chart-container">
+                        <canvas id="programStructureChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-red-900 to-red-950 text-white rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-red-700/60 pb-4">
+                    <div>
+                        <h4 class="text-2xl font-serif-tc font-bold text-amber-300">📜 聖德宮歷史沿革與經典顯化紀錄</h4>
+                        <p class="text-xs text-amber-100/80 mt-1">老前人與前人老慈悲指示・應驗天恩師德無疆盛德</p>
+                    </div>
+                    <a href="javascript:void(0)" onclick="openTopicDetail('history-full')" class="text-xs font-bold text-amber-200 underline">
+                        🔗 檢視『完整歷史紀實頁』
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white/10 backdrop-blur-md p-5 rounded-xl border border-amber-400/20 hover:bg-white/15 transition-all flex flex-col justify-between space-y-3">
+                        <div class="space-y-2">
+                            <div class="text-amber-300 text-sm font-bold flex items-center gap-1.5">
+                                🐉 龍的顯化 (老前人指示)
+                            </div>
+                            <p class="text-xs text-amber-100/90 leading-relaxed">
+                                記敘早期開道艱辛之際，老前人睿智指示並親自指引，現場應驗「龍的顯化」神蹟。
+                            </p>
+                        </div>
+                        <div class="pt-2 border-t border-amber-400/20">
+                            <a href="javascript:void(0)" onclick="openMiracleDetail('dragon')" class="text-xs font-bold text-amber-300 underline hover:text-white">
+                                🔗 閱讀『龍的顯化』完整紀錄
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/10 backdrop-blur-md p-5 rounded-xl border border-amber-400/20 hover:bg-white/15 transition-all flex flex-col justify-between space-y-3">
+                        <div class="space-y-2">
+                            <div class="text-amber-300 text-sm font-bold flex items-center gap-1.5">
+                                🏛️ 功德祿位 (老前人指示)
+                            </div>
+                            <p class="text-xs text-amber-100/90 leading-relaxed">
+                                老前人慈悲指示設立聖德宮特有之「功德祿位」，感念諸位開道先驅與開沙大德之偉績。
+                            </p>
+                        </div>
+                        <div class="pt-2 border-t border-amber-400/20">
+                            <a href="javascript:void(0)" onclick="openMiracleDetail('merit')" class="text-xs font-bold text-amber-300 underline hover:text-white">
+                                🔗 閱讀『功德祿位』設立緣起
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/10 backdrop-blur-md p-5 rounded-xl border border-amber-400/20 hover:bg-white/15 transition-all flex flex-col justify-between space-y-3">
+                        <div class="space-y-2">
+                            <div class="text-amber-300 text-sm font-bold flex items-center gap-1.5">
+                                🌱 緣起長青班 (前人老指示)
+                            </div>
+                            <p class="text-xs text-amber-100/90 leading-relaxed">
+                                前人老慈悲指示關懷長者道親，特別造就聖德宮悠久之「長青班」，提攜前賢長輩道氣長存。
+                            </p>
+                        </div>
+                        <div class="pt-2 border-t border-amber-400/20">
+                            <a href="javascript:void(0)" onclick="openMiracleDetail('elders')" class="text-xs font-bold text-amber-300 underline hover:text-white">
+                                🔗 閱讀『長青班』歷史資料
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: MEDIA TOOLKIT -->
+        <section id="media-kit" class="space-y-8 scroll-mt-24">
+            
+            <div class="bg-amber-50 border-l-4 border-amber-600 p-6 rounded-r-2xl space-y-2">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <h3 class="text-2xl font-serif-tc font-bold text-red-900 flex items-center gap-2">
+                        <span>📣</span> 文宣與媒體工具箱 (發布專用)
+                    </h3>
+                    <a href="javascript:void(0)" onclick="openTopicDetail('media-guide')" class="text-xs font-bold text-red-800 underline">
+                        🔗 檢視『文宣發布與推播指南』
+                    </a>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    本區將四大宣傳工具模組化，並內嵌網站網址。對內接龍文案設有權限防護，對外文宣則開放大家自由宣傳轉發。
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
+                <div class="flex border-b border-gray-200 overflow-x-auto bg-gray-50">
+                    <button onclick="switchMediaTab('line-tab')" id="btn-line-tab" class="media-tab-btn px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 border-red-800 text-red-800 bg-white transition-colors">
+                        📱 Line 接龍文案
+                    </button>
+                    <button onclick="switchMediaTab('dm-tab')" id="btn-dm-tab" class="media-tab-btn px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 border-transparent text-gray-600 hover:text-red-800 transition-colors">
+                        🖼️ DM 設計
+                    </button>
+                    <button onclick="switchMediaTab('invite-tab')" id="btn-invite-tab" class="media-tab-btn px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 border-transparent text-gray-600 hover:text-red-800 transition-colors">
+                        ✉️ 正式邀請函
+                    </button>
+                    <button onclick="switchMediaTab('video-tab')" id="btn-video-tab" class="media-tab-btn px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 border-transparent text-gray-600 hover:text-red-800 transition-colors">
+                        🎬 短片分鏡模擬
+                    </button>
+                </div>
+
+                <div class="p-6 md:p-8">
+                    
+                    <!-- LINE TAB (有密碼鎖定) -->
+                    <div id="line-tab" class="media-content-block block space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-amber-50 p-3 rounded-lg border border-amber-200 mb-4">
+                            <span class="text-xs font-bold text-amber-900">💡 提示：按鈕具備安全鎖定，需驗證密碼後方可發布至 LINE 群組</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="checkAuth(copyLineText)" class="bg-amber-800 hover:bg-amber-900 text-amber-100 text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition-all cursor-pointer">
+                                    🔒 複製文案
+                                </button>
+                                <button onclick="checkAuth(shareLineToLine)" class="bg-[#06C755] hover:bg-[#05b04a] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                                    🔒 分享至 LINE
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="lineTextSource" readonly class="w-full h-[400px] p-4 font-mono text-xs md:text-sm bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-800 leading-relaxed text-gray-800">🎉 聖德宮50周年慶・感恩薈萃 誠摯邀約 🎉
+各位親愛的點傳師、壇主、講師及前賢道親們，大家好！🙏
+沐浴天恩師德，聖德宮即將迎來輝煌的50周年！為慶祝這個意義非凡的日子，點傳師慈悲指示，為我們準備了無比豐盛的饗宴與震撼人心的精粹展演，誠摯邀請大家攜家帶眷一同參與！
+
+📅 活動日期： 2026年12月13日 (星期日)
+📍 活動地點： 聖德宮 (及大型表演場地)
+
+✨ 【活動亮點】 ✨
+🦁 熱鬧迎賓： 祥瑞舞獅熱烈迎賓，同沐聖德５０感恩歷史時光巡禮。
+🍱 感恩午宴： 為大家準備豐盛美味的健康蔬食饗宴。
+🎭 精粹展演： 96佛子合唱團、口琴演奏、舞台話劇、小天使讀經、舞蹈展演！
+🎁 尊榮禮品： 「50周年精美貴重伴手禮」一份！
+
+⚠️ 報名期間：2026年9月10日 ～ 2026年9月30日 止
+
+🌐 聖德宮50周年專屬網站與線上報名系統：
+https://creative-kitsune-7de6e1.netlify.app
+
+---------------------------------------
+接龍報名區 (若不使用網站報名可在此接龍)：
+1. 
+2. 
+3. </textarea>
+                    </div>
+
+                    <!-- DM TAB (無密碼鎖定) -->
+                    <div id="dm-tab" class="media-content-block hidden space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
+                            <span class="text-xs font-bold text-red-900">💡 提示：點擊按鈕，自動帶入活動大綱與報名網址至 LINE</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyDmText()" class="bg-red-800 hover:bg-red-900 text-amber-100 text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition-all cursor-pointer">
+                                    📋 複製 DM 內文
+                                </button>
+                                <button onclick="shareDmToLine()" class="bg-[#06C755] hover:bg-[#05b04a] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                                    💬 分享至 LINE
+                                </button>
+                            </div>
+                        </div>
+                        <div id="dm-content-box" class="bg-gradient-to-br from-amber-100 via-white to-red-50 p-6 md:p-8 rounded-2xl border-2 border-amber-300 shadow-md space-y-6 text-center max-w-2xl mx-auto">
+                            <div class="space-y-2">
+                                <span class="bg-red-800 text-amber-200 text-xs font-bold px-3 py-1 rounded-full">宣傳 DM 電子海報設計</span>
+                                <h3 class="text-2xl md:text-3xl font-serif-tc font-bold text-red-900">承先啟後 五十揚帆 ── 聖德宮 50 周年慶典</h3>
+                                <p class="text-xs md:text-sm text-amber-800 font-medium">感恩半世紀的護佑，見證道傳萬國的奇蹟。邀請您回佛家，共譜聖德新篇章！</p>
+                                <p class="text-xs text-red-800 font-bold bg-amber-200/60 py-1 px-3 rounded-full inline-block">
+                                    ✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨
+                                </p>
+                            </div>
+                            <div class="border-y border-amber-200 py-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                <div>📅 <strong>日期：</strong>2026年12月13日</div>
+                                <div>📍 <strong>地點：</strong>聖德宮大廣場 / 展演廳 (700席)</div>
+                                <div>⏳ <strong>期限：</strong>即日起至 09/30</div>
+                            </div>
+                            <div class="text-left space-y-3 text-xs md:text-sm border-b border-red-200 pb-4">
+                                <h4 class="font-bold text-red-900 border-b border-red-200 pb-1">🌟 精彩內容 絕不容錯過</h4>
+                                <ul class="space-y-2 text-gray-700">
+                                    <li><strong>🌟 時光巡禮：</strong>祥獅獻瑞迎賓，迎接家人們，同沐聖德５０感恩歷史時光巡禮。</li>
+                                    <li><strong>🌟 感恩福宴：</strong>精緻豐盛的頂級蔬食饗宴。</li>
+                                    <li><strong>🌟 視聽饗宴：</strong>舞台劇三部曲、天籟交響、文武雙全、仙佛垂訓。</li>
+                                    <li><strong>🌟 福氣滿載：</strong>與會道親皆享「50周年限定精美貴重伴手禮」。</li>
+                                </ul>
+                            </div>
+                            <div class="text-sm font-bold text-blue-800 break-all">
+                                🌐 聖德宮50周年專屬網站與線上報名系統：<br/>
+                                <a href="https://creative-kitsune-7de6e1.netlify.app/" class="underline hover:text-blue-600">https://creative-kitsune-7de6e1.netlify.app/</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INVITE TAB (無密碼鎖定) -->
+                    <div id="invite-tab" class="media-content-block hidden space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-amber-50 p-3 rounded-lg border border-amber-200 mb-4">
+                            <span class="text-xs font-bold text-amber-900">💡 提示：點擊按鈕，自動帶入邀請函全文與報名網址至 LINE</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyInviteText()" class="bg-amber-800 hover:bg-amber-900 text-amber-100 text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition-all cursor-pointer">
+                                    ✉️ 複製邀請函
+                                </button>
+                                <button onclick="shareInviteToLine()" class="bg-[#06C755] hover:bg-[#05b04a] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                                    💬 分享至 LINE
+                                </button>
+                            </div>
+                        </div>
+                        <div id="invite-content-box" class="bg-[#FFFDF9] p-8 md:p-12 rounded-2xl border border-amber-300 shadow-md font-serif-tc space-y-6 max-w-3xl mx-auto text-gray-800 leading-relaxed">
+                            <div class="text-center space-y-2 border-b border-amber-200 pb-6">
+                                <h3 class="text-2xl md:text-3xl font-bold text-red-900">聖德宮50周年慶 正式邀請函</h3>
+                                <p class="text-xs text-amber-800 font-sans">半世紀的感謝與傳承・誠摯邀請全體家人回家</p>
+                            </div>
+                            <p class="font-bold text-lg text-red-950">敬愛的各位前賢 大德：</p>
+                            <p class="indent-8 text-sm md:text-base">沾 天恩師德，聖德宮自建立以來，已走過半個世紀的輝煌歲月。五十個寒暑，我們見證了無數的奇蹟與感動；五十年的傳承，我們凝聚了萬千道親的誠心與愿力。</p>
+                            <div class="p-3 bg-amber-100/70 border-l-4 border-amber-600 rounded-r-xl my-4 text-center">
+                                <p class="text-sm font-bold text-red-900 font-sans">
+                                    ✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨
+                                </p>
+                            </div>
+                            <p class="indent-8 text-sm md:text-base">回首來時路，開道先驅們篳路藍縷。老前人的睿智指示應驗了龍的顯化、造就聖德宮特有的功德祿位，前人老的慈悲啟動了聖德宮悠久的長青班。這一切的恩典，都值得我們在今天齊聚一堂，深深感恩。</p>
+                            <p class="indent-8 text-sm md:text-base">為慶祝此一歷史時刻，我們將於 <strong>2026年12月13日</strong> 隆重舉辦「聖德宮50周年慶典」。大會也特別為您預備了豐盛美味的午宴，以及精美貴重的50周年限定伴手禮。這是一場屬於聖德宮全體家人的盛宴，我們期盼各壇負責人能廣為宣導，鼓勵新進道親撥冗與會。</p>
+                            <p class="indent-8 text-sm md:text-base font-semibold text-red-900 border-b border-gray-200 pb-4">為利於宴席與禮品發包，敬請於 2026/09/10 ~ 09/30 期間完成報名手續。您的蒞臨，是聖德宮最大的光彩！</p>
+                            
+                            <div class="text-right pt-6 space-y-1 font-bold text-red-900">
+                                <p>聖德宮召集點傳師 高全</p>
+                                <p>暨 50周年慶籌備委員會 敬邀</p>
+                            </div>
+							
+                            <div class="text-sm md:text-base font-bold text-blue-800 pt-2 break-all font-sans">
+                                🌐 聖德宮50周年專屬網站與線上報名系統：<br/>
+                                <a href="https://creative-kitsune-7de6e1.netlify.app/" class="underline hover:text-blue-600">https://creative-kitsune-7de6e1.netlify.app/</a>
+                            </div>
+
+							
+                        </div>
+                    </div>
+
+                    <!-- VIDEO TAB (無密碼鎖定) -->
+                    <div id="video-tab" class="media-content-block hidden space-y-4">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-gray-800 p-3 rounded-lg border border-gray-700 mb-4">
+                            <span class="text-xs font-bold text-gray-300">💡 提示：點擊分享，將自動帶出您當前停留的「鏡頭畫面」與網址</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copyVideoText()" class="bg-gray-600 hover:bg-gray-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition-all cursor-pointer">
+                                    📋 複製腳本
+                                </button>
+                                <button onclick="shareVideoToLine()" class="bg-[#06C755] hover:bg-[#05b04a] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                                    💬 分享至 LINE
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 text-white p-6 rounded-2xl border border-gray-700 shadow-xl space-y-6">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-800 pb-4">
+                                <div>
+                                    <h4 class="text-xl font-bold text-amber-400">🎬 宣傳短片腳本互動模擬器 (60-90秒)</h4>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button onclick="prevVideoFrame()" class="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded text-xs font-bold cursor-pointer">⬅️ 上一鏡</button>
+                                    <span id="video-step-indicator" class="text-xs font-mono bg-amber-900/60 text-amber-300 px-2 py-1 rounded">鏡頭 1 / 7</span>
+                                    <button onclick="nextVideoFrame()" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded text-xs font-bold text-gray-950 cursor-pointer">下一鏡 ➡️</button>
+                                </div>
+                            </div>
+
+                            <div class="bg-black rounded-xl p-6 border border-gray-800 min-h-[220px] flex flex-col justify-between space-y-4">
+                                <div class="flex justify-between items-center text-xs font-mono text-amber-400">
+                                    <span id="video-time-code">⏱️ 00:00 - 00:05</span>
+                                    <span id="video-audio-cue" class="bg-red-900/80 text-red-200 px-2 py-0.5 rounded">配樂：莊嚴磅礴</span>
+                                </div>
+                                <div class="text-center py-6 space-y-3">
+                                    <div id="video-visual-desc" class="text-lg md:text-xl font-bold text-white leading-snug">
+                                        鏡頭快速帶過聖德宮莊嚴的外觀，接著出現祥獅獻瑞的熱鬧畫面。【字幕：聖德宮 50歲了！】
+                                    </div>
+                                    <div id="video-narration" class="text-sm text-amber-200 italic font-serif-tc">
+                                        (旁白) 走過半個世紀，感恩天恩師德，聖德宮50周年慶，即將隆重登場！
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-800 rounded-full h-1.5">
+                                    <div id="video-progress-bar" class="bg-amber-500 h-1.5 rounded-full transition-all duration-300" style="width: 14%;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-center text-xs">
+                                <button onclick="setVideoFrame(0)" class="sb-btn p-2 rounded bg-amber-900/40 border border-amber-500/50 text-amber-200 font-bold cursor-pointer">1. 開場迎賓</button>
+                                <button onclick="setVideoFrame(1)" class="sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer">2. 舞台劇重現</button>
+                                <button onclick="setVideoFrame(2)" class="sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer">3. 天籟與口琴</button>
+                                <button onclick="setVideoFrame(3)" class="sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer">4. 文武傳承</button>
+                                <button onclick="setVideoFrame(4)" class="sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer">5. 頂級福宴</button>
+                                <button onclick="setVideoFrame(5)" class="sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer">6. 誠摯邀約</button>
+                                <button onclick="setVideoFrame(6)" class="sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer">7. 號召接龍</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: REGISTRATION ANALYTICS & CAPACITY CALCULATOR -->
+        <section id="registration" class="space-y-8 scroll-mt-24">
+            
+            <div class="bg-amber-50 border-l-4 border-amber-600 p-6 rounded-r-2xl space-y-2">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <h3 class="text-2xl font-serif-tc font-bold text-red-900 flex items-center gap-2">
+                        <span>📊</span> 各區公壇報名統計與車輛試算
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openRegistrationModal()" class="bg-red-800 hover:bg-red-900 text-amber-200 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                            <span>📝</span> 填寫線上報名單
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-amber-200 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                        <h4 class="font-bold text-gray-900 text-lg flex items-center gap-2">
+                            <span>🏛️</span> 各區公壇報名人數實時統計
+                        </h4>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="templeBarChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 bg-gradient-to-br from-red-900 to-amber-950 text-white p-6 rounded-2xl shadow-xl space-y-6">
+                    <div class="flex justify-between items-center border-b border-red-700/60 pb-3">
+                        <h4 class="text-xl font-serif-tc font-bold text-amber-300">🧮 席位、車輛與物料自動試算</h4>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="calc-headcount" class="block text-xs font-bold text-amber-200 mb-1">
+                                請輸入預估報名總人數 (人)：
+                            </label>
+                            <input type="number" id="calc-headcount" value="600" min="100" max="5000" step="10" oninput="calculateBudgetRequirements()" class="w-full px-4 py-2.5 bg-black/40 border border-amber-500/50 rounded-xl text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div class="bg-white/10 p-3.5 rounded-xl border border-amber-400/20">
+                                <span class="block text-[11px] text-amber-200">🎭 主展演廳席位佔用率</span>
+                                <span id="res-hall-cap" class="text-2xl font-extrabold text-amber-300">85.7%</span>
+                                <span class="text-xs text-amber-100/70">(固定容量: 700席)</span>
+                            </div>
+                            <div class="bg-white/10 p-3.5 rounded-xl border border-amber-400/20">
+                                <span class="block text-[11px] text-amber-200">🥗 素食午宴桌數</span>
+                                <span id="res-tables" class="text-2xl font-extrabold text-amber-300">60</span>
+                                <span class="text-xs text-amber-100/70">桌 (10人/桌)</span>
+                            </div>
+                            <div class="bg-white/10 p-3.5 rounded-xl border border-amber-400/20">
+                                <span class="block text-[11px] text-amber-200">🎁 限定伴手禮預備量</span>
+                                <span id="res-gifts" class="text-2xl font-extrabold text-amber-300">630</span>
+                                <span class="text-xs text-amber-100/70">份 (+5%預備)</span>
+                            </div>
+                            <div class="bg-white/10 p-3.5 rounded-xl border border-amber-400/20 col-span-2">
+                                <span class="block text-[11px] text-amber-200">🚌 交通車輛預定 (自動依實際登記數計算)</span>
+                                <span id="res-buses-info" class="text-sm font-bold text-amber-300 block mt-1">
+                                    遊覽車 6 台 (40座/台，國外)<br/>計程車 5 台 (國內，需接送 0 人)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Temple Detail Inspector with Table -->
+            <div class="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-4">
+                    <div>
+                        <h4 class="text-xl font-bold text-red-900 flex items-center gap-2">
+                            <span>📋</span> 各區公壇報名明細查詢面板
+                        </h4>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label for="temple-inspector-select" class="text-xs font-bold text-gray-700 whitespace-nowrap">選擇公壇：</label>
+                        <select id="temple-inspector-select" onchange="renderTempleDetail()" class="px-4 py-2 bg-amber-50 border border-amber-300 rounded-lg text-xs md:text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-800">
+                            <option value="聖德宮">聖德宮</option>
+                            <option value="光明講堂">光明講堂</option>
+                            <option value="興仁佛堂">興仁佛堂</option>
+                            <option value="興怡佛堂">興怡佛堂</option>
+                            <option value="興崙佛堂">興崙佛堂</option>
+                            <option value="弘仁佛堂">弘仁佛堂</option>
+                            <option value="弘德佛堂">弘德佛堂</option>
+                            <option value="興明佛堂">興明佛堂</option>
+                            <option value="興元佛堂">興元佛堂</option>
+                            <option value="興西佛堂">興西佛堂</option>
+                            <option value="興中佛堂">興中佛堂</option>
+                            <option value="興東佛堂">興東佛堂</option>
+                            <option value="興慈佛堂">興慈佛堂</option>
+                            <option value="馬來西亞">馬來西亞</option>
+                            <option value="印尼">印尼</option>
+                            <option value="菲律賓">菲律賓</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="temple-detail-output" class="space-y-4"></div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- UNIVERSAL TOPIC & ITEM DETAIL MODAL DRAWER -->
+    <div id="topic-detail-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-gradient-to-b from-amber-50 to-white w-full max-w-2xl rounded-3xl shadow-2xl border-2 border-amber-300 overflow-hidden transform transition-all duration-300 max-h-[90vh] flex flex-col">
+            <div class="bg-gradient-to-r from-red-900 via-red-800 to-amber-900 text-white p-5 sm:p-6 flex justify-between items-center relative border-b border-amber-400/30">
+                <div class="space-y-1">
+                    <span id="modal-topic-badge" class="bg-amber-500/30 border border-amber-300/40 text-amber-200 text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full">詳細資訊</span>
+                    <h3 id="modal-topic-title" class="text-xl sm:text-2xl font-serif-tc font-bold text-amber-200 flex items-center gap-2">
+                        <span>📌</span> 詳細內容頁
+                    </h3>
+                </div>
+                <button onclick="closeTopicDetailModal()" class="w-9 h-9 bg-black/30 hover:bg-black/50 text-amber-200 hover:text-white rounded-full flex items-center justify-center font-bold text-lg transition-all cursor-pointer">
+                    ✕
+                </button>
+            </div>
+            <div id="modal-topic-body" class="p-6 md:p-8 overflow-y-auto space-y-6 text-gray-800 text-sm leading-relaxed">
+            </div>
+            <div class="bg-gray-100 p-4 border-t border-amber-200 flex justify-end items-center">
+                <button onclick="closeTopicDetailModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold text-xs transition-all cursor-pointer">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GUIDED REGISTRATION MODAL DRAWER -->
+    <div id="registration-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-gradient-to-b from-amber-50 to-white w-full max-w-3xl rounded-3xl shadow-2xl border-2 border-amber-300 overflow-hidden transform transition-all duration-300 max-h-[95vh] flex flex-col">
+            <div class="bg-gradient-to-r from-red-900 via-red-800 to-amber-900 text-white p-4 sm:p-5 flex justify-between items-center relative border-b border-amber-400/30">
+                <div class="space-y-1">
+                    <span class="bg-amber-500/30 border border-amber-300/40 text-amber-200 text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full">官方線上接龍系統</span>
+                    <h3 class="text-xl sm:text-2xl font-serif-tc font-bold text-amber-200 flex items-center gap-2">
+                        <span>📝</span> 快速線上報名單
+                    </h3>
+                </div>
+                <button onclick="closeRegistrationModal()" class="w-8 h-8 bg-black/30 hover:bg-black/50 text-amber-200 hover:text-white rounded-full flex items-center justify-center font-bold text-lg transition-all cursor-pointer">
+                    ✕
+                </button>
+            </div>
+            
+            <form id="online-reg-form" onsubmit="handleRegistrationSubmit(event)" class="p-5 sm:p-6 pb-16 sm:pb-8 overflow-y-auto space-y-5 text-gray-800">
+                <div class="bg-amber-100/80 border border-amber-300 p-3 rounded-xl text-xs text-amber-900 font-bold flex items-center gap-2">
+                    <span>💡</span> 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀！
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">📅 報名日期</label>
+                        <input type="text" id="reg-date" readonly class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-xl font-mono text-sm text-gray-500 font-bold focus:outline-none cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label for="reg-temple" class="block text-xs font-bold text-gray-700 mb-1">
+                            🏛️ 所屬公壇 <span class="text-red-600">*</span>
+                        </label>
+                        <select id="reg-temple" required onchange="updateDriverOptionsAll()" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
+                            <option value="" disabled selected>-- 選擇公壇 --</option>
+                            <option value="聖德宮">聖德宮</option>
+                            <option value="光明講堂">光明講堂</option>
+                            <option value="興仁佛堂">興仁佛堂</option>
+                            <option value="興怡佛堂">興怡佛堂</option>
+                            <option value="興崙佛堂">興崙佛堂</option>
+                            <option value="弘仁佛堂">弘仁佛堂</option>
+                            <option value="弘德佛堂">弘德佛堂</option>
+                            <option value="興明佛堂">興明佛堂</option>
+                            <option value="興元佛堂">興元佛堂</option>
+                            <option value="興西佛堂">興西佛堂</option>
+                            <option value="興中佛堂">興中佛堂</option>
+                            <option value="興東佛堂">興東佛堂</option>
+                            <option value="興慈佛堂">興慈佛堂</option>
+                            <option value="馬來西亞">馬來西亞</option>
+                            <option value="印尼">印尼</option>
+                            <option value="菲律賓">菲律賓</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 border-b border-amber-200 pb-5">
+                    <div>
+                        <label for="reg-name" class="block text-xs font-bold text-gray-700 mb-1">
+                            👤 參加者姓名 <span class="text-red-600">*</span>
+                        </label>
+                        <input type="text" id="reg-name" required placeholder="參加道親之姓名" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="reg-assister" class="block text-xs font-bold text-gray-700">
+                                🤝 報名壇主/講師 <span class="text-red-600">*</span>
+                            </label>
+                            <button type="button" onclick="copyNameAsAssister()" class="text-[10px] font-bold text-amber-800 bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded shadow-sm transition-colors cursor-pointer">
+                                同參加者
+                            </button>
+                        </div>
+                        <input type="text" id="reg-assister" required placeholder="壇主姓名" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
+                    </div>
+                </div>
+                
+                <!-- 職務與晚餐區塊 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="reg-job" class="block text-xs font-bold text-gray-700 mb-1">
+                            🛠️ 身份 <span class="text-red-600">*</span>
+                        </label>
+                        <select id="reg-job" required class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
+                            <option value="" disabled selected>-- 選擇身份 --</option>
+                            <option value="召集點傳師">召集點傳師</option>
+                            <option value="點傳師">點傳師</option>
+                            <option value="貴賓">貴賓</option>
+                            <option value="表演人員">表演人員</option>
+                            <option value="司儀">司儀</option>
+                            <option value="彩妝">彩妝</option>
+                            <option value="交通組">交通組</option>
+                            <option value="接駁組">接駁組</option>
+                            <option value="總務組">總務組</option>
+                            <option value="機動組">機動組</option>
+                            <option value="引導組">引導組</option>
+                            <option value="接待組">接待組</option>
+                            <option value="公關組">公關組</option>
+                            <option value="文書組">文書組</option>
+                            <option value="財務組">財務組</option>
+                            <option value="影音組">影音組</option>
+                            <option value="大事記組">大事記組</option>
+                            <option value="炊事組">炊事組</option>
+                            <option value="壇務組">壇務組</option>
+                            <option value="場佈組">場佈組</option>
+                            <option value="道親">道親</option>
+                            <option value="新進道親">新進道親</option>
+                            <option value="無">無</option>
+                        </select>
+                        <p class="text-[10px] text-gray-500 mt-1">💡 文書、壇務、炊事、場佈等組別任務完成後，請協助機動組。</p>
+                    </div>
+                    
+                    <div>
+                        <label for="reg-dinner" class="block text-xs font-bold text-gray-700 mb-1">
+                            🍽️ 參與歐式晚餐 <span class="text-red-600">*</span>
+                        </label>
+                        <select id="reg-dinner" required class="w-full px-3 py-2 bg-purple-50 border border-amber-300 rounded-xl text-sm font-bold text-purple-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
+                            <option value="" disabled selected>-- 選擇是否參加晚餐 --</option>
+                            <option value="是，需留下來用餐">是，需留下來用餐</option>
+                            <option value="否，活動結束後離開">否，活動結束後離開</option>
+                        </select>
+                        <p class="text-[10px] text-gray-500 mt-1">💡 表演與工作人員中午常無法好好用餐，請點傳師慈悲准許慰勞。</p>
+                    </div>
+                </div>
+
+                <!-- 交通安排雙區塊 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 到聖德宮 -->
+                    <div class="bg-red-50 p-4 rounded-xl border border-red-200 space-y-3">
+                        <label for="reg-trans-temple" class="block text-sm font-bold text-red-900 border-b border-red-200 pb-1">
+                            🚗 早上：到聖德宮交通 <span class="text-red-600">*</span>
+                        </label>
+                        <select id="reg-trans-temple" required onchange="updateTempleDriverOptions()" class="w-full px-3 py-2 bg-white border border-red-300 rounded-lg text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800">
+                            <option value="" disabled selected>-- 選擇交通方式 --</option>
+                            <option value="自駕">自駕 (需輸入可載人數)</option>
+                            <option value="已有人接送">已有人接送 (選擇同壇司機)</option>
+                            <option value="大巴１號">大巴１號</option>
+                            <option value="大巴２號">大巴２號</option>
+                            <option value="大巴３號">大巴３號</option>
+                            <option value="大巴４號">大巴４號</option>
+                            <option value="大巴５號">大巴５號</option>
+                            <option value="大巴６號">大巴６號</option>
+                            <option value="待安排">待安排</option>
+                        </select>
+                        
+                        <div id="div-temple-seats" class="hidden bg-white p-2 rounded border border-red-100">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 可接送人數(不含司機) <span class="text-red-600">*</span></label>
+                            <input type="number" id="reg-seats-temple" value="0" min="0" class="w-full px-2 py-1 border rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-800">
+                            <p class="text-[10px] text-gray-500 mt-1">請輸入車上還能載幾位同壇道親。</p>
+                        </div>
+                        <div id="div-temple-driver" class="hidden bg-white p-2 rounded border border-red-100">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 搭乘誰的車 (同壇自動配對) <span class="text-red-600">*</span></label>
+                            <select id="reg-driver-temple" class="w-full px-2 py-1 border rounded text-sm font-bold bg-white focus:outline-none focus:ring-2 focus:ring-red-800">
+                                <option value="" disabled selected>-- 請先選擇公壇 --</option>
+                            </select>
+                            <p class="text-[10px] text-gray-500 mt-1">系統會自動計算司機剩餘空位。</p>
+                        </div>
+                    </div>
+
+                    <!-- 到莿桐國小 -->
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 space-y-3">
+                        <label for="reg-trans-school" class="block text-sm font-bold text-blue-900 border-b border-blue-200 pb-1">
+                            🚌 下午：到莿桐國小交通 <span class="text-red-600">*</span>
+                        </label>
+                        <select id="reg-trans-school" required onchange="updateSchoolDriverOptions()" class="w-full px-3 py-2 bg-white border border-blue-300 rounded-lg text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-800">
+                            <option value="" disabled selected>-- 選擇交通方式 --</option>
+                            <option value="自駕">自駕 (需輸入可載人數)</option>
+                            <option value="已有人接送">已有人接送 (選擇同壇司機)</option>
+                            <option value="需要接駁車接送">需要接駁車接送</option>
+                            <option value="大巴１號">大巴１號</option>
+                            <option value="大巴２號">大巴２號</option>
+                            <option value="大巴３號">大巴３號</option>
+                            <option value="大巴４號">大巴４號</option>
+                            <option value="大巴５號">大巴５號</option>
+                            <option value="大巴６號">大巴６號</option>
+                        </select>
+                        
+                        <div id="div-school-seats" class="hidden bg-white p-2 rounded border border-blue-100">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 可接送人數(不含司機) <span class="text-red-600">*</span></label>
+                            <input type="number" id="reg-seats-school" value="0" min="0" class="w-full px-2 py-1 border rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-800">
+                            <p class="text-[10px] text-gray-500 mt-1">請輸入車上還能載幾位同壇道親。</p>
+                        </div>
+                        <div id="div-school-driver" class="hidden bg-white p-2 rounded border border-blue-100">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 搭乘誰的車 (同壇自動配對) <span class="text-red-600">*</span></label>
+                            <select id="reg-driver-school" class="w-full px-2 py-1 border rounded text-sm font-bold bg-white focus:outline-none focus:ring-2 focus:ring-blue-800">
+                                <option value="" disabled selected>-- 請先選擇公壇 --</option>
+                            </select>
+                            <p class="text-[10px] text-gray-500 mt-1">系統會自動計算司機剩餘空位。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-200">
+                    <label class="block text-xs font-bold text-gray-700 mb-1">🪑 大會安排唯讀區 (提交後由後台統一分配)</label>
+                    <textarea readonly class="w-full px-3 py-2 bg-gray-100 text-xs text-gray-500 font-bold cursor-not-allowed border rounded-xl focus:outline-none" rows="2">1. 停車位安排  2. 早上聖德巡禮座位  3. 聖德宴席座位
+4. 聖德展演廳座位  5. 會後環境整理-負責區域</textarea>
+                </div>
+
+                <div class="pt-4 flex items-center justify-end gap-3 relative z-10">
+                    <button type="button" onclick="closeRegistrationModal()" class="px-5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all cursor-pointer">取消</button>
+                    <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-red-800 to-amber-700 text-white font-extrabold text-sm rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span>✅</span> 確認提交報名
+                    </button>
+                </div>
+                <!-- 防 Netlify 浮水印遮擋墊高區塊 -->
+                <div class="h-10 sm:h-6 w-full block"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-red-950 text-amber-200/80 py-12 border-t border-amber-600/40 mt-16">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-4">
+            <h2 class="text-xl font-serif-tc font-bold text-amber-300">聖德宮50周年慶籌備委員會</h2>
+            <p class="text-xs text-amber-100/70 leading-relaxed text-center">
+                您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀！
+            </p>
+            <div class="text-[11px] text-amber-300/40 pt-4 border-t border-red-900">
+                © 2026 聖德宮 50周年慶典 版權所有
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-800 text-white px-5 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 z-50 flex items-center gap-2 text-sm font-bold border border-emerald-500">
+        <span id="toast-message">操作成功</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // ---------------------------------------------------------
+        // 1. DATA STRUCTURES & VARIABLES
+        // ---------------------------------------------------------
+        
+        // 🚨 您的專屬 API 網址
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzyiN8C6SP2TVxTGOHz5e60mj0eBhZM4-Sa1k-zbmbKV4Dc0-dkQgQ9TNxnG5hzrvEp/exec';
+
+        const performancesData = [
+            { id: 1, title: "鳳蓮公主 (顯化故事劇)", category: "drama", categoryLabel: "🎬 舞台劇三部曲", badgeBg: "bg-red-100 text-red-800", icon: "🎭", summary: "演繹聞名世界的經典顯化故事『鳳蓮公主』。" },
+            { id: 2, title: "秦廣王 (顯化故事劇)", category: "drama", categoryLabel: "🎬 舞台劇三部曲", badgeBg: "bg-red-100 text-red-800", icon: "⚖️", summary: "經典顯化劇目『秦廣王』，警醒世人因果輪迴。" },
+            { id: 3, title: "聖德宮歷史沿革劇", category: "drama", categoryLabel: "🎬 舞台劇三部曲", badgeBg: "bg-red-100 text-red-800", icon: "📜", summary: "重現老前人、前人老指示的珍貴記憶，開道先驅篳路藍縷建德行典範。" },
+            { id: 4, title: "96佛子四部合唱團", category: "music", categoryLabel: "🎤 天籟樂音", badgeBg: "bg-amber-100 text-amber-800", icon: "🎼", summary: "96佛子齊聚一堂，四部和聲和諧天韻。" },
+            { id: 5, title: "大型團隊口琴合奏", category: "music", categoryLabel: "🎤 天籟樂音", badgeBg: "bg-amber-100 text-amber-800", icon: "🪗", summary: "大型口琴樂團展現絕佳默契，優美流暢。" },
+            { id: 6, title: "文武雙全：武術貫通讀經", category: "heritage", categoryLabel: "📖 道育傳承", badgeBg: "bg-emerald-100 text-emerald-800", icon: "🥋", summary: "老前人武術貫通小天使經典朗讀。" },
+            { id: 7, title: "青少年活力舞蹈 & 國際展演", category: "youth", categoryLabel: "💃 活力與國際", badgeBg: "bg-purple-100 text-purple-800", icon: "🌏", summary: "道二代青少年活力舞蹈與國外道親展演。" }
+        ];
+
+        const videoFrames = [
+            { time: "⏱️ 00:00 - 00:05", audio: "配樂：莊嚴磅礴", visual: "鏡頭快速帶過聖德宮莊嚴的外觀，接著出現祥獅獻瑞的熱鬧畫面。【字幕：聖德宮 50歲了！】", narration: "(旁白) 走過半個世紀，感恩天恩師德，聖德宮50周年慶，即將隆重登場！", progress: 14 },
+            { time: "⏱️ 00:05 - 00:15", audio: "配樂：戲劇震撼", visual: "穿插舞台劇排練與古裝劇照。【字幕：聞名世界顯化：鳳蓮公主、秦廣王】、【歷史重現：龍的顯化】", narration: "(旁白) 今年12月13日，帶您重回歷史現場！三齣震撼舞台劇，演繹經典顯化故事與聖德宮傳奇沿革。", progress: 28 },
+            { time: "⏱️ 00:15 - 00:25", audio: "配樂：天韻和諧", visual: "切換 96佛子合唱團演唱畫面、大型口琴合奏特寫。【字幕：天韻和諧 凝聚團結】", narration: "(旁白) 聆聽96佛子合唱團的天籟之音，與大型口琴團隊的絕美默契。", progress: 42 },
+            { time: "⏱️ 00:25 - 00:35", audio: "配樂：輕快活力", visual: "小天使打武術與朗誦經典、青少年道二代熱情活力舞蹈。【字幕：文武雙全 活力傳承】", narration: "(旁白) 看小天使展現老前人武術與讀經的文武雙全，感受道二代青少年的熱情與活力！", progress: 57 },
+            { time: "⏱️ 00:35 - 00:45", audio: "配樂：溫馨感恩", visual: "特寫特級頂級蔬食辦桌佳餚特寫、50周年精美貴重伴手禮盒包裝。", narration: "(旁白) 現場更為您準備了頂級豐盛的午宴，以及50周年限定精美貴重伴手禮，讓您福氣滿載而歸！", progress: 71 },
+            { time: "⏱️ 00:45 - 00:55", audio: "配樂：歡快熱情", visual: "聖德宮眾前賢、點傳師、壇主講師燦爛笑容蒙太奇剪輯。", narration: "(旁白) 誠摯邀請所有道親，特別是新進的家人們，一起來感受聖德大家庭的溫暖與榮耀！", progress: 85 },
+            { time: "⏱️ 00:55 - 01:00", audio: "配樂：高潮定格", visual: "【黑底金字大字幕】活動日期：12月13日｜報名期間：9/10 ~ 9/30｜請向所屬公壇接龍報名！", narration: "(旁白) 9月10日起開放接龍報名，請盡速向各壇負責人報名，我們12月13日，不見不散！", progress: 100 }
+        ];
+
+        let globalRecords = [];
+        let templeMockData = { 
+            "聖德宮":{total:0}, 
+            "光明講堂":{total:0}, 
+            "興仁佛堂":{total:0}, 
+            "興怡佛堂":{total:0},
+            "興崙佛堂":{total:0}, 
+            "弘仁佛堂":{total:0}, 
+            "弘德佛堂":{total:0}, 
+            "興明佛堂":{total:0},
+            "興元佛堂":{total:0}, 
+            "興西佛堂":{total:0}, 
+            "興中佛堂":{total:0}, 
+            "興東佛堂":{total:0},
+            "興慈佛堂":{total:0}, 
+            "馬來西亞":{total:0}, 
+            "印尼":{total:0}, 
+            "菲律賓":{total:0}
+        };
+        
+        let currentVideoFrame = 0;
+        let programChart = null;
+        let templeChart = null;
+        let isAuthorized = false; // 控制內部發布權限
+
+        // ---------------------------------------------------------
+        // 2. INITIALIZATION
+        // ---------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', async () => {
+            initCountdown();
+            renderPerformanceCards('all');
+            initCharts();
+            showToast("📡 同步雲端資料中...");
+            await loadLiveRegistrationData();
+        });
+
+        function initCountdown() {
+            const targetDate = new Date('2026-12-13T09:00:00').getTime();
+            function update() {
+                const diff = targetDate - new Date().getTime();
+                if (diff <= 0) return;
+                document.getElementById('cd-days').textContent = Math.floor(diff / (1000 * 60 * 60 * 24));
+                document.getElementById('cd-hours').textContent = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                document.getElementById('cd-minutes').textContent = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById('cd-seconds').textContent = Math.floor((diff % (1000 * 60)) / 1000);
+            }
+            update();
+            setInterval(update, 1000);
+        }
+
+        // ---------------------------------------------------------
+        // 3. DATABASE FETCH & SUBMIT LOGIC
+        // ---------------------------------------------------------
+        async function loadLiveRegistrationData() {
+            try {
+                const response = await fetch(scriptUrl);
+                const records = await response.json();
+                globalRecords = records; 
+
+                Object.keys(templeMockData).forEach(k => { 
+                    templeMockData[k].total = 0; 
+                    templeMockData[k].logs = []; 
+                });
+
+                records.forEach(row => {
+                    const t = row.temple;
+                    if (templeMockData[t]) {
+                        templeMockData[t].total += 1;
+                        if(!templeMockData[t].logs) templeMockData[t].logs = [];
+                        templeMockData[t].logs.unshift(row);
+                    }
+                });
+
+                if (templeChart) {
+                    templeChart.data.datasets[0].data = Object.values(templeMockData).map(d => d.total);
+                    templeChart.update();
+                }
+                renderTempleDetail();
+                calculateBudgetRequirements();
+                showToast("✅ 雲端資料同步完成！");
+            } catch (e) {
+                console.error("Fetch Data Error: ", e);
+                renderTempleDetail();
+                calculateBudgetRequirements();
+            }
+        }
+
+        async function handleRegistrationSubmit(event) {
+            event.preventDefault();
+            const dateStr = document.getElementById('reg-date').value;
+            const templeName = document.getElementById('reg-temple').value;
+            const attendeeName = document.getElementById('reg-name').value.trim();
+            const assisterName = document.getElementById('reg-assister').value.trim();
+            const jobTitle = document.getElementById('reg-job').value;
+            
+            const transTemple = document.getElementById('reg-trans-temple').value;
+            const seatsTemple = parseInt(document.getElementById('reg-seats-temple').value) || 0;
+            const driverTemple = document.getElementById('reg-driver-temple').value || "";
+            
+            const transSchool = document.getElementById('reg-trans-school').value;
+            const seatsSchool = parseInt(document.getElementById('reg-seats-school').value) || 0;
+            const driverSchool = document.getElementById('reg-driver-school').value || "";
+            
+            const dinnerSelect = document.getElementById('reg-dinner').value;
+
+            if (!templeName || !attendeeName || !assisterName || !jobTitle || !transTemple || !transSchool || !dinnerSelect) return;
+
+            const payload = { 
+                date: dateStr, 
+                temple: templeName, 
+                name: attendeeName, 
+                assister: assisterName, 
+                job: jobTitle,
+                transport_sd: transTemple, 
+                driver_capacity_sd: seatsTemple, 
+                driver_name_sd: driverTemple,
+                transport_ct: transSchool, 
+                driver_capacity_ct: seatsSchool, 
+                driver_name_ct: driverSchool,
+                stay_dinner: dinnerSelect
+            };
+
+            showToast("⏳ 寫入雲端中，因排隊防護機制可能需等候數秒...");
+
+            try {
+                await fetch(scriptUrl, { 
+                    method: 'POST', 
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload), 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                
+                // 本地預先載入畫面
+                payload.parking = "待安排"; 
+                payload.tourSeat = "待安排"; 
+                payload.banquetSeat = "待安排"; 
+                payload.showSeat = "待安排"; 
+                payload.cleanupZone = "待安排";
+
+                globalRecords.push(payload);
+                if (templeMockData[templeName]) {
+                    templeMockData[templeName].total += 1;
+                    if(!templeMockData[templeName].logs) templeMockData[templeName].logs = [];
+                    templeMockData[templeName].logs.unshift(payload);
+                }
+                updateDashboardAfterSubmit(templeName, attendeeName);
+            } catch (error) {
+                console.error("Submit Data Error:", error);
+                updateDashboardAfterSubmit(templeName, attendeeName);
+            }
+        }
+
+        function updateDashboardAfterSubmit(templeName, attendeeName) {
+            if (templeChart) {
+                templeChart.data.datasets[0].data = Object.values(templeMockData).map(d => d.total);
+                templeChart.update();
+            }
+            document.getElementById('temple-inspector-select').value = templeName;
+            renderTempleDetail();
+            calculateBudgetRequirements();
+            document.getElementById('online-reg-form').reset();
+            closeRegistrationModal();
+            showToast(`🎉 成功！已為 [${attendeeName}] 完成報名，資料已送出！`);
+        }
+
+        function updateDriverOptionsAll() {
+            updateTempleDriverOptions();
+            updateSchoolDriverOptions();
+        }
+
+        function updateTempleDriverOptions() {
+            const temple = document.getElementById('reg-temple').value;
+            const trans = document.getElementById('reg-trans-temple').value;
+            const divSeats = document.getElementById('div-temple-seats');
+            const divDriver = document.getElementById('div-temple-driver');
+            const inputSeats = document.getElementById('reg-seats-temple');
+            const selectDriver = document.getElementById('reg-driver-temple');
+
+            if (trans === '自駕') {
+                divSeats.classList.remove('hidden'); 
+                divDriver.classList.add('hidden');
+                inputSeats.required = true; 
+                selectDriver.required = false; 
+                selectDriver.value = "";
+            } else if (trans === '已有人接送') {
+                divSeats.classList.add('hidden'); 
+                inputSeats.required = false; 
+                inputSeats.value = 0;
+                divDriver.classList.remove('hidden'); 
+                selectDriver.required = true;
+                
+                if(temple && globalRecords.length > 0) {
+                    const drivers = globalRecords.filter(r => r.temple === temple && r.transport_sd === '自駕' && r.driver_capacity_sd > 0);
+                    selectDriver.innerHTML = '<option value="" disabled selected>-- 請選擇同壇司機 --</option>';
+                    drivers.forEach(d => {
+                        const passengersCount = globalRecords.filter(r => r.temple === temple && r.transport_sd === '已有人接送' && r.driver_name_sd === d.name).length;
+                        const seatsLeft = d.driver_capacity_sd - passengersCount;
+                        const opt = document.createElement('option');
+                        opt.value = d.name;
+                        if(seatsLeft > 0) { 
+                            opt.text = `${d.name} (剩餘 ${seatsLeft} 位)`; 
+                        } else { 
+                            opt.text = `${d.name} (已滿載)`; 
+                            opt.disabled = true; 
+                        }
+                        selectDriver.appendChild(opt);
+                    });
+                } else {
+                    selectDriver.innerHTML = '<option value="" disabled selected>-- 本壇尚無自駕車輛 --</option>';
+                }
+            } else {
+                divSeats.classList.add('hidden'); 
+                divDriver.classList.add('hidden');
+                inputSeats.required = false; 
+                inputSeats.value = 0; 
+                selectDriver.required = false; 
+                selectDriver.value = "";
+            }
+        }
+
+        function updateSchoolDriverOptions() {
+            const temple = document.getElementById('reg-temple').value;
+            const trans = document.getElementById('reg-trans-school').value;
+            const divSeats = document.getElementById('div-school-seats');
+            const divDriver = document.getElementById('div-school-driver');
+            const inputSeats = document.getElementById('reg-seats-school');
+            const selectDriver = document.getElementById('reg-driver-school');
+
+            if (trans === '自駕') {
+                divSeats.classList.remove('hidden'); 
+                divDriver.classList.add('hidden');
+                inputSeats.required = true; 
+                selectDriver.required = false; 
+                selectDriver.value = "";
+            } else if (trans === '已有人接送') {
+                divSeats.classList.add('hidden'); 
+                inputSeats.required = false; 
+                inputSeats.value = 0;
+                divDriver.classList.remove('hidden'); 
+                selectDriver.required = true;
+                
+                if(temple && globalRecords.length > 0) {
+                    const drivers = globalRecords.filter(r => r.temple === temple && r.transport_ct === '自駕' && r.driver_capacity_ct > 0);
+                    selectDriver.innerHTML = '<option value="" disabled selected>-- 請選擇同壇司機 --</option>';
+                    drivers.forEach(d => {
+                        const passengersCount = globalRecords.filter(r => r.temple === temple && r.transport_ct === '已有人接送' && r.driver_name_ct === d.name).length;
+                        const seatsLeft = d.driver_capacity_ct - passengersCount;
+                        const opt = document.createElement('option');
+                        opt.value = d.name;
+                        if(seatsLeft > 0) { 
+                            opt.text = `${d.name} (剩餘 ${seatsLeft} 位)`; 
+                        } else { 
+                            opt.text = `${d.name} (已滿載)`; 
+                            opt.disabled = true; 
+                        }
+                        selectDriver.appendChild(opt);
+                    });
+                } else {
+                    selectDriver.innerHTML = '<option value="" disabled selected>-- 本壇尚無自駕車輛 --</option>';
+                }
+            } else {
+                divSeats.classList.add('hidden'); 
+                divDriver.classList.add('hidden');
+                inputSeats.required = false; 
+                inputSeats.value = 0; 
+                selectDriver.required = false; 
+                selectDriver.value = "";
+            }
+        }
+
+        // ---------------------------------------------------------
+        // 4. MODALS & UI TOGGLES
+        // ---------------------------------------------------------
+        function openTopicDetail(topicKey) {
+            const badge = document.getElementById('modal-topic-badge');
+            const title = document.getElementById('modal-topic-title');
+            const body = document.getElementById('modal-topic-body');
+
+            const topicMap = {
+                'welcome': { 
+                    badge: '🦁 慶典單元', 
+                    title: '熱鬧迎賓與時光巡禮', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">08:30起祥瑞舞獅迎賓。廣場設有50周年感恩歷史時光巡禮巨型迴廊，重溫半世紀道務歲月。</p>' 
+                },
+                'shows': { 
+                    badge: '🎭 慶典單元', 
+                    title: '精粹展演完整規劃', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">包含《鳳蓮公主》、《秦廣王》、歷史沿革劇、96佛子合唱、口琴樂團、文武讀經與道二代舞蹈。</p>' 
+                },
+                'banquet': { 
+                    badge: '🍱 慶典單元', 
+                    title: '感恩蔬食饗宴', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">席開百桌，嚴選養生食材，為大家準備豐盛美味的健康蔬食辦桌午宴。</p>' 
+                },
+                'gift': { 
+                    badge: '🎁 慶典單元', 
+                    title: '尊榮限定禮品', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">包含50周年特製紀念徽章、珍藏紀念冊與精緻健康伴手禮盒。</p>' 
+                },
+                'overview-full': { 
+                    badge: '📌 慶典總覽', 
+                    title: '聖德宮 50 周年慶典 大綱', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">沐浴天恩師德，聖德宮已走過半世紀。邀您見證輝煌歷史，烙印身為聖德宮一分子的榮耀！詳細流程將於後續公佈。</p>' 
+                },
+                'chart-analysis': { 
+                    badge: '📊 數據分析', 
+                    title: '慶典節目結構與比例分析', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">籌備委員會精心規劃多元演出形式，融合經典顯化劇目、天籟合唱、口琴重奏、文武讀經與青年國際舞蹈，確保各年齡層皆能共鳴。</p>' 
+                },
+                'media-guide': { 
+                    badge: '📣 文宣指南', 
+                    title: '文宣發布與推播指南', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">請各壇負責人善用下方四大模組（LINE接龍文案、DM、邀請函、短片），並依公壇特性選擇適合的媒介轉發至群組，以達到最大宣傳效益。</p>' 
+                },
+                'history-full': { 
+                    badge: '📜 歷史紀實', 
+                    title: '聖德宮歷史沿革與經典顯化紀錄', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">半世紀前，老前人與前人老慈悲指示，應驗天恩師德無疆盛德。包含龍的顯化、功德祿位、長青班等珍貴歷史軌跡。</p>' 
+                },
+                'checklist': { 
+                    badge: '✅ 籌備專區', 
+                    title: '重點事項與擔當檢核表', 
+                    content: '<div class="space-y-4 text-xs"><p class="text-sm font-bold text-red-900">各組別重點事項與擔當確認</p><ul class="list-disc pl-5 space-y-2 text-gray-700"><li><strong>機動組 (廖志煌講師協調)：</strong> 統籌現場突發狀況，文書、壇務、炊事、場佈等組別於任務完成後，請主動協助機動組。</li><li><strong>交通接駁組：</strong> 國內外道親遊覽車與接駁車(莿桐國小)調度與指揮。</li><li><strong>引導接待組：</strong> 依據大會安排之巡禮、宴席、展演廳座位表引導。</li><li><strong>總務與財務組：</strong> 伴手禮點收發放、宴席桌數與物料管控。</li></ul><p class="p-3 mt-4 bg-amber-50 rounded-xl border border-amber-200 leading-relaxed text-amber-900">📋 詳細擔當名冊與檢核進度，將由大會籌備委員會於後續會議中佈達與更新。</p></div>' 
+                }
+            };
+
+            const data = topicMap[topicKey] || { 
+                badge: '詳細資訊', 
+                title: '詳細內容頁', 
+                content: '<p class="text-sm text-gray-700">請聯繫公壇負責人。</p>' 
+            };
+            
+            badge.textContent = data.badge;
+            title.innerHTML = `<span>📌</span> ${data.title}`;
+            body.innerHTML = data.content;
+
+            document.getElementById('topic-detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function openMiracleDetail(miracleKey) {
+            const miracleMap = {
+                'dragon': { 
+                    title: '🐉 龍的顯化 歷史真跡', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">記敘早期開道艱辛之際，老前人睿智指示並親自指引，現場應驗「龍的顯化」神蹟，為聖德宮奠下深厚基礎。</p>' 
+                },
+                'merit': { 
+                    title: '🏛️ 功德祿位 設立緣起', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">老前人慈悲指示設立聖德宮特有之「功德祿位」，感念諸位開道先驅與開沙大德篳路藍縷之偉績。</p>' 
+                },
+                'elders': { 
+                    title: '🌱 緣起長青班 歷史資料', 
+                    content: '<p class="text-sm text-gray-700 leading-relaxed">前人老慈悲指示關懷長者道親，特別造就聖德宮悠久之「長青班」，提攜前賢長輩道氣長存，傳承不斷。</p>' 
+                }
+            };
+            const data = miracleMap[miracleKey];
+            if(!data) return;
+            
+            document.getElementById('modal-topic-badge').textContent = '📜 歷史紀實';
+            document.getElementById('modal-topic-title').innerHTML = `<span>📌</span> ${data.title}`;
+            document.getElementById('modal-topic-body').innerHTML = data.content;
+            
+            document.getElementById('topic-detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTopicDetailModal() { 
+            document.getElementById('topic-detail-modal').classList.add('hidden'); 
+            document.body.style.overflow = 'auto'; 
+        }
+
+        function openRegistrationModal() {
+            const now = new Date();
+            document.getElementById('reg-date').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            document.getElementById('registration-modal').classList.remove('hidden'); 
+            document.body.style.overflow = 'hidden';
+            updateDriverOptionsAll();
+        }
+
+        function closeRegistrationModal() { 
+            document.getElementById('registration-modal').classList.add('hidden'); 
+            document.body.style.overflow = 'auto'; 
+        }
+
+        function copyNameAsAssister() { 
+            const n = document.getElementById('reg-name').value.trim(); 
+            if(n) {
+                document.getElementById('reg-assister').value = n; 
+            }
+        }
+        
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function filterPerformances(category) {
+            document.querySelectorAll('#filter-buttons button').forEach(btn => {
+                btn.classList.remove('bg-red-800', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            event.target.classList.remove('bg-gray-100', 'text-gray-700');
+            event.target.classList.add('bg-red-800', 'text-white', 'shadow-sm');
+            renderPerformanceCards(category);
+        }
+
+        function renderPerformanceCards(category) {
+            const filtered = category === 'all' ? performancesData : performancesData.filter(p => p.category === category);
+            document.getElementById('performance-cards-container').innerHTML = filtered.map(item => `
+                <div class="bg-white rounded-2xl border border-amber-200 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+                    <div>
+                        <span class="inline-block ${item.badgeBg} text-[10px] font-bold px-2 py-0.5 rounded-full mb-3">${item.categoryLabel}</span>
+                        <h4 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2"><span>${item.icon}</span> ${item.title}</h4>
+                        <p class="text-xs text-gray-600 leading-relaxed">${item.summary}</p>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ---------------------------------------------------------
+        // 5. MEDIA TOOLKIT & VIDEO PLAYER (With Passcode Auth)
+        // ---------------------------------------------------------
+        function checkAuth(callback) {
+            if (isAuthorized) {
+                callback();
+                return;
+            }
+            const pwd = prompt("此為各壇負責人專用推播功能。\n請輸入發布密碼以解鎖 (預設: 5050)：");
+            if (pwd === "5050") {
+                isAuthorized = true;
+                showToast("✅ 授權成功！已解鎖推播功能。");
+                callback();
+            } else if (pwd !== null) {
+                alert("密碼錯誤，無法使用推播功能。");
+            }
+        }
+
+        function switchMediaTab(tabId) {
+            document.querySelectorAll('.media-tab-btn').forEach(btn => {
+                btn.classList.remove('border-b-2', 'border-red-800', 'text-red-800', 'bg-white');
+                btn.classList.add('border-b-2', 'border-transparent', 'text-gray-600');
+            });
+            document.getElementById(`btn-${tabId}`).classList.remove('border-transparent', 'text-gray-600');
+            document.getElementById(`btn-${tabId}`).classList.add('border-b-2', 'border-red-800', 'text-red-800', 'bg-white');
+            
+            document.querySelectorAll('.media-content-block').forEach(b => {
+                b.classList.add('hidden');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+        
+        function shareTextToLine(text) {
+            const encodedText = encodeURIComponent(text);
+            window.open(`https://line.me/R/msg/text/?${encodedText}`, '_blank');
+        }
+
+        // Line 專區 (有密碼鎖定)
+        function copyLineText() { 
+            const textSource = document.getElementById('lineTextSource').value;
+            navigator.clipboard.writeText(textSource); 
+            showToast("Line接龍文案已複製"); 
+        }
+        function shareLineToLine() {
+            const textSource = document.getElementById('lineTextSource').value;
+            shareTextToLine(textSource);
+        }
+
+        // DM 專區 (無密碼鎖定)
+        function copyDmText() { 
+            const dmText = "【宣傳 DM】\n承先啟後 五十揚帆 ── 聖德宮 50 周年慶典\n活動日期：2026年12月13日\n活動地點：聖德宮大廣場 / 展演廳 (700席)\n報名期限：即日起至 09/30\n✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨\n\n🌐 聖德宮50周年線上報名專區：\nhttps://creative-kitsune-7de6e1.netlify.app";
+            navigator.clipboard.writeText(dmText); 
+            showToast("DM文案已複製"); 
+        }
+        function shareDmToLine() {
+            const dmText = "【宣傳 DM】\n承先啟後 五十揚帆 ── 聖德宮 50 周年慶典\n活動日期：2026年12月13日\n活動地點：聖德宮大廣場 / 展演廳 (700席)\n報名期限：即日起至 09/30\n✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨\n\n🌐 聖德宮50周年線上報名專區：\nhttps://creative-kitsune-7de6e1.netlify.app/";
+            shareTextToLine(dmText);
+        }
+
+        // 邀請函專區 (無密碼鎖定)
+        function copyInviteText() { 
+            const inviteText = document.getElementById('invite-content-box').innerText;
+            navigator.clipboard.writeText(inviteText); 
+            showToast("正式邀請函已複製"); 
+        }
+        function shareInviteToLine() {
+            const inviteText = document.getElementById('invite-content-box').innerText;
+            shareTextToLine(inviteText);
+        }
+
+        // 短片分鏡專區 (無密碼鎖定)
+        function copyVideoText() {
+            const visualDesc = document.getElementById('video-visual-desc').textContent;
+            const narration = document.getElementById('video-narration').textContent;
+            const text = "【宣傳短片分鏡搶先看】\n畫面：" + visualDesc + "\n" + narration + "\n\n🌐 聖德宮50周年線上報名專區：\nhttps://creative-kitsune-7de6e1.netlify.app/";
+            
+            navigator.clipboard.writeText(text);
+            showToast("短片腳本已複製");
+        }
+        function shareVideoToLine() {
+            const visualDesc = document.getElementById('video-visual-desc').textContent;
+            const narration = document.getElementById('video-narration').textContent;
+            const text = "【宣傳短片分鏡搶先看】\n畫面：" + visualDesc + "\n" + narration + "\n\n🌐 聖德宮50周年線上報名專區：\nhttps://creative-kitsune-7de6e1.netlify.app/";
+            
+            shareTextToLine(text);
+        }
+
+        function setVideoFrame(index) { 
+            currentVideoFrame = index; 
+            updateVideoUI(); 
+        }
+        function nextVideoFrame() { 
+            if(currentVideoFrame < videoFrames.length - 1) { 
+                currentVideoFrame++; 
+                updateVideoUI(); 
+            } 
+        }
+        function prevVideoFrame() { 
+            if(currentVideoFrame > 0) { 
+                currentVideoFrame--; 
+                updateVideoUI(); 
+            } 
+        }
+        
+        function updateVideoUI() {
+            const frame = videoFrames[currentVideoFrame];
+            document.getElementById('video-step-indicator').textContent = `鏡頭 ${currentVideoFrame + 1} / ${videoFrames.length}`;
+            document.getElementById('video-time-code').textContent = frame.time;
+            document.getElementById('video-audio-cue').textContent = frame.audio;
+            document.getElementById('video-visual-desc').textContent = frame.visual;
+            document.getElementById('video-narration').textContent = frame.narration;
+            document.getElementById('video-progress-bar').style.width = `${frame.progress}%`;
+            
+            document.querySelectorAll('.sb-btn').forEach((btn, idx) => {
+                btn.className = idx === currentVideoFrame 
+                    ? "sb-btn p-2 rounded bg-amber-900/40 border border-amber-500/50 text-amber-200 font-bold cursor-pointer"
+                    : "sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer";
+            });
+        }
+
+        // ---------------------------------------------------------
+        // 6. CHARTS & ANALYTICS
+        // ---------------------------------------------------------
+        function initCharts() {
+            const ctxDoughnut = document.getElementById('programStructureChart').getContext('2d');
+            programChart = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: { 
+                    labels: ['舞台劇', '天籟樂音', '道育傳承', '活力國際'], 
+                    datasets: [{ 
+                        data: [3, 2, 1, 1], 
+                        backgroundColor: ['#991B1B', '#D97706', '#059669', '#7C3AED']
+                    }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            
+            const ctxBar = document.getElementById('templeBarChart').getContext('2d');
+            templeChart = new Chart(ctxBar, {
+                type: 'bar',
+                data: { 
+                    labels: Object.keys(templeMockData), 
+                    datasets: [{ 
+                        label: '人數', 
+                        data: Object.values(templeMockData).map(d => d.total), 
+                        backgroundColor: '#B45309' 
+                    }] 
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function calculateBudgetRequirements() {
+            let count = parseInt(document.getElementById('calc-headcount').value) || 0;
+            
+            // 如果手動輸入的值小於實際報名總和，自動拉高至實際報名總和，避免少算
+            const actualSum = Object.values(templeMockData).reduce((a, b) => a + b.total, 0);
+            if (count < actualSum) { 
+                count = actualSum; 
+                document.getElementById('calc-headcount').value = count; 
+            }
+
+            document.getElementById('res-tables').textContent = Math.ceil(count / 10).toLocaleString();
+            document.getElementById('res-gifts').textContent = Math.ceil(count * 1.05).toLocaleString();
+            document.getElementById('res-hall-cap').textContent = `${((count / 700) * 100).toFixed(1)}%`;
+            
+            // 計算需要計程車(接駁車)的人數：搜尋全球紀錄中，莿桐國小交通選擇「需要接駁車接送」的人數
+            let shuttleNeedCount = 0;
+            if(globalRecords.length > 0) {
+                shuttleNeedCount = globalRecords.filter(r => r.transport_ct === '需要接駁車接送').length;
+            }
+            // 國內接駁車(計程車) = (實際需要人數 / 4 無條件進位) + 5
+            let shuttleBuses = shuttleNeedCount > 0 ? Math.ceil(shuttleNeedCount / 4) + 5 : 5;
+            
+            document.getElementById('res-buses-info').innerHTML = `遊覽車 6 台 (40座/台，國外)<br/>計程車 ${shuttleBuses} 台 (國內，需接送 ${shuttleNeedCount} 人)`;
+        }
+
+        function renderTempleDetail() {
+            const templeName = document.getElementById('temple-inspector-select').value;
+            const data = templeMockData[templeName];
+            if (!data) return;
+
+            let logsHtml = '';
+            if (data.logs && data.logs.length > 0) {
+                logsHtml = data.logs.map(log => {
+                    // 使用新的 API 變數名稱 (transport_sd, transport_ct, stay_dinner) 來做顯示判斷
+                    let tTemple = '舊版資料';
+                    if (log.transport_sd) {
+                        if (log.transport_sd === '自駕') tTemple = `自駕(${log.driver_capacity_sd}位)`;
+                        else if (log.transport_sd === '已有人接送') tTemple = `搭車(${log.driver_name_sd})`;
+                        else tTemple = log.transport_sd;
+                    }
+
+                    let tSchool = '舊版資料';
+                    if (log.transport_ct) {
+                        if (log.transport_ct === '自駕') tSchool = `自駕(${log.driver_capacity_ct}位)`;
+                        else if (log.transport_ct === '已有人接送') tSchool = `搭車(${log.driver_name_ct})`;
+                        else tSchool = log.transport_ct;
+                    }
+
+                    let dinnerShow = '➖';
+                    if (log.stay_dinner) {
+                        dinnerShow = log.stay_dinner.includes('是') ? '⭕' : '❌';
+                    }
+
+                    return `<tr class="border-b border-amber-100 text-[11px] sm:text-xs hover:bg-amber-50 transition-colors">
+                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${String(log.date).substring(5, 16)}</td>
+                        <td class="p-2 sm:p-2.5 font-bold text-gray-900 whitespace-nowrap">${log.name}</td>
+                        <td class="p-2 sm:p-2.5 text-gray-600 whitespace-nowrap">${log.assister}</td>
+                        <td class="p-2 sm:p-2.5 text-emerald-700 font-bold whitespace-nowrap">${log.job}</td>
+                        <td class="p-2 sm:p-2.5 text-red-700 font-medium whitespace-nowrap">${tTemple}</td>
+                        <td class="p-2 sm:p-2.5 text-blue-700 font-medium whitespace-nowrap">${tSchool}</td>
+                        <td class="p-2 sm:p-2.5 text-purple-700 text-center whitespace-nowrap">${dinnerShow}</td>
+                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.parking || "待安排"}</td>
+                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.tourSeat || "待安排"}</td>
+                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.banquetSeat || "待安排"}</td>
+                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.showSeat || "待安排"}</td>
+                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.cleanupZone || "待安排"}</td>
+                    </tr>`;
+                }).join('');
+            } else {
+                logsHtml = `<tr><td colspan="12" class="p-6 text-center text-gray-400 text-xs font-medium">本區目前尚無報名資料</td></tr>`;
+            }
+
+            document.getElementById('temple-detail-output').innerHTML = `
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="font-bold text-red-900 mb-3 flex items-center gap-2">
+                        <span>🏛️</span> ${templeName} 報名人數：<span class="text-xl">${data.total}</span> 位
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-amber-200 bg-white shadow-sm">
+                        <table class="w-full text-left min-w-[900px]">
+                            <thead class="bg-amber-100/80 text-amber-900 text-[11px] whitespace-nowrap border-b border-amber-200">
+                                <tr>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">報名時間</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">姓名</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">幫忙壇主</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">身份</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">聖德交通</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">莿桐交通</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-center">晚餐</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">車位</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">巡禮</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">宴席</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">展演</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">環境整理</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${logsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+        }
+    </script>
+</body>
+</html>
