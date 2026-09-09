@@ -667,7 +667,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                     </div>
                     <div class="flex items-center gap-3">
                         <label for="temple-inspector-select" class="text-xs font-bold text-gray-700 whitespace-nowrap">選擇公壇：</label>
-                        <select id="temple-inspector-select" onchange="renderTempleDetail()" class="px-4 py-2 bg-amber-50 border border-amber-300 rounded-lg text-xs md:text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-800">
+                        <select id="temple-inspector-select" onchange="if(checkOverseasDate('temple-inspector-select')) renderTempleDetail()" class="px-4 py-2 bg-amber-50 border border-amber-300 rounded-lg text-xs md:text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-800">
                             <option value="聖德宮">聖德宮</option>
                             <option value="光明講堂">光明講堂</option>
                             <option value="興仁佛堂">興仁佛堂</option>
@@ -681,9 +681,33 @@ https://rmlwin168-star.github.io/ShengDe50/
                             <option value="興中佛堂">興中佛堂</option>
                             <option value="興東佛堂">興東佛堂</option>
                             <option value="興慈佛堂">興慈佛堂</option>
-                            <option value="馬來西亞">馬來西亞</option>
-                            <option value="印尼">印尼</option>
-                            <option value="菲律賓">菲律賓</option>
+                            <option value="古晉-慶德">古晉-慶德</option>
+                            <option value="古晉-慈德">古晉-慈德</option>
+                            <option value="古晉-實德">古晉-實德</option>
+                            <option value="古晉-富德">古晉-富德</option>
+                            <option value="古晉-景德">古晉-景德</option>
+                            <option value="美里-常德">美里-常德</option>
+                            <option value="美里-納德">美里-納德</option>
+                            <option value="美里-宏德">美里-宏德</option>
+                            <option value="民都魯-民德">民都魯-民德</option>
+                            <option value="民都魯-隆德">民都魯-隆德</option>
+                            <option value="詩巫-智德">詩巫-智德</option>
+                            <option value="詩巫-詩德">詩巫-詩德</option>
+                            <option value="詩巫-加德">詩巫-加德</option>
+                            <option value="詩巫-南德">詩巫-南德</option>
+                            <option value="詩巫-旺德">詩巫-旺德</option>
+                            <option value="詩巫-逸德">詩巫-逸德</option>
+                            <option value="沙巴-慶德">沙巴-慶德</option>
+                            <option value="沙巴-富德">沙巴-富德</option>
+                            <option value="沙巴-善德">沙巴-善德</option>
+                            <option value="新山-慶德">新山-慶德</option>
+                            <option value="新山-勤德">新山-勤德</option>
+                            <option value="新加坡-慶德">新加坡-慶德</option>
+                            <option value="棉蘭-崇信">棉蘭-崇信</option>
+                            <option value="棉蘭-培信">棉蘭-培信</option>
+                            <option value="棉蘭-立德">棉蘭-立德</option>
+                            <option value="吉隆坡-金慶德">吉隆坡-金慶德</option>
+                            <option value="印尼德巴士-士德">印尼德巴士-士德</option>
                         </select>
                     </div>
                 </div>
@@ -747,7 +771,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                         <label for="reg-temple" class="block text-xs font-bold text-gray-700 mb-1">
                             🏛️ 所屬公壇 <span class="text-red-600">*</span>
                         </label>
-                        <select id="reg-temple" required onchange="updateDriverOptionsAll()" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
+                        <select id="reg-temple" required onchange="if(checkOverseasDate('reg-temple')) updateDriverOptionsAll()" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
                             <option value="" disabled selected>-- 選擇公壇 --</option>
                             <option value="聖德宮">聖德宮</option>
                             <option value="光明講堂">光明講堂</option>
@@ -762,9 +786,33 @@ https://rmlwin168-star.github.io/ShengDe50/
                             <option value="興中佛堂">興中佛堂</option>
                             <option value="興東佛堂">興東佛堂</option>
                             <option value="興慈佛堂">興慈佛堂</option>
-                            <option value="馬來西亞">馬來西亞</option>
-                            <option value="印尼">印尼</option>
-                            <option value="菲律賓">菲律賓</option>
+                            <option value="古晉-慶德">古晉-慶德</option>
+                            <option value="古晉-慈德">古晉-慈德</option>
+                            <option value="古晉-實德">古晉-實德</option>
+                            <option value="古晉-富德">古晉-富德</option>
+                            <option value="古晉-景德">古晉-景德</option>
+                            <option value="美里-常德">美里-常德</option>
+                            <option value="美里-納德">美里-納德</option>
+                            <option value="美里-宏德">美里-宏德</option>
+                            <option value="民都魯-民德">民都魯-民德</option>
+                            <option value="民都魯-隆德">民都魯-隆德</option>
+                            <option value="詩巫-智德">詩巫-智德</option>
+                            <option value="詩巫-詩德">詩巫-詩德</option>
+                            <option value="詩巫-加德">詩巫-加德</option>
+                            <option value="詩巫-南德">詩巫-南德</option>
+                            <option value="詩巫-旺德">詩巫-旺德</option>
+                            <option value="詩巫-逸德">詩巫-逸德</option>
+                            <option value="沙巴-慶德">沙巴-慶德</option>
+                            <option value="沙巴-富德">沙巴-富德</option>
+                            <option value="沙巴-善德">沙巴-善德</option>
+                            <option value="新山-慶德">新山-慶德</option>
+                            <option value="新山-勤德">新山-勤德</option>
+                            <option value="新加坡-慶德">新加坡-慶德</option>
+                            <option value="棉蘭-崇信">棉蘭-崇信</option>
+                            <option value="棉蘭-培信">棉蘭-培信</option>
+                            <option value="棉蘭-立德">棉蘭-立德</option>
+                            <option value="吉隆坡-金慶德">吉隆坡-金慶德</option>
+                            <option value="印尼德巴士-士德">印尼德巴士-士德</option>
                         </select>
                     </div>
                 </div>
@@ -970,24 +1018,44 @@ https://rmlwin168-star.github.io/ShengDe50/
         ];
 
         let globalRecords = [];
+        const overseasTemplesList = [
+            "古晉-慶德", "古晉-慈德", "古晉-實德", "古晉-富德", "古晉-景德",
+            "美里-常德", "美里-納德", "美里-宏德",
+            "民都魯-民德", "民都魯-隆德",
+            "詩巫-智德", "詩巫-詩德", "詩巫-加德", "詩巫-南德", "詩巫-旺德", "詩巫-逸德",
+            "沙巴-慶德", "沙巴-富德", "沙巴-善德",
+            "新山-慶德", "新山-勤德",
+            "新加坡-慶德",
+            "棉蘭-崇信", "棉蘭-培信", "棉蘭-立德",
+            "吉隆坡-金慶德",
+            "印尼德巴士-士德"
+        ];
+
         let templeMockData = { 
-            "聖德宮":{total:0}, 
-            "光明講堂":{total:0}, 
-            "興仁佛堂":{total:0}, 
-            "興怡佛堂":{total:0},
-            "興崙佛堂":{total:0}, 
-            "弘仁佛堂":{total:0}, 
-            "弘德佛堂":{total:0}, 
-            "興明佛堂":{total:0},
-            "興元佛堂":{total:0}, 
-            "興西佛堂":{total:0}, 
-            "興中佛堂":{total:0}, 
-            "興東佛堂":{total:0},
-            "興慈佛堂":{total:0}, 
-            "馬來西亞":{total:0}, 
-            "印尼":{total:0}, 
-            "菲律賓":{total:0}
+            "聖德宮":{total:0}, "光明講堂":{total:0}, "興仁佛堂":{total:0}, "興怡佛堂":{total:0},
+            "興崙佛堂":{total:0}, "弘仁佛堂":{total:0}, "弘德佛堂":{total:0}, "興明佛堂":{total:0},
+            "興元佛堂":{total:0}, "興西佛堂":{total:0}, "興中佛堂":{total:0}, "興東佛堂":{total:0},
+            "興慈佛堂":{total:0}
         };
+
+        // 10月1日前，圖表禁顯示海外名單
+        if (new Date() >= new Date('2026-10-01T00:00:00')) {
+            overseasTemplesList.forEach(t => {
+                templeMockData[t] = {total: 0};
+            });
+        }
+        
+        function checkOverseasDate(elementId) {
+            const val = document.getElementById(elementId).value;
+            if (overseasTemplesList.includes(val)) {
+                if (new Date() < new Date('2026-10-01T00:00:00')) {
+                    alert("📢 海外各區公壇將於 2026年10月1日 起正式開放報名與查詢，敬請期待！");
+                    document.getElementById(elementId).value = elementId === 'reg-temple' ? "" : "聖德宮";
+                    return false;
+                }
+            }
+            return true;
+        }
         
         let currentVideoFrame = 0;
         let programChart = null;
