@@ -1424,8 +1424,22 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
         
         function shareTextToLine(text) {
-            const encodedText = encodeURIComponent(text);
-            window.open(`https://line.me/R/msg/text/?${encodedText}`, '_blank');
+            // 判斷是否為行動裝置 (手機/平板)
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // 手機版：直接喚醒 LINE App，不受網頁字數限制
+                const encodedText = encodeURIComponent(text);
+                window.open(`https://line.me/R/msg/text/?${encodedText}`, '_blank');
+            } else {
+                // 電腦版：因 LINE Web 網頁分享有嚴格字數限制，過長會導致 HTTP 400 錯誤
+                // 解法：自動複製到剪貼簿，並跳出視窗引導使用者直接貼上
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("⚠️ 系統偵測到您使用電腦版操作。\n\n因 LINE 官方網頁分享有「字數限制」(超過會引發 400 錯誤)，系統已自動幫您【複製完整文案】！\n\n👉 請直接打開您電腦上的 LINE 軟體，在群組或對話框「貼上 (Ctrl+V)」即可發布。");
+                }).catch(() => {
+                    alert("自動複製失敗，請點擊左側的「複製文案」按鈕手動複製。");
+                });
+            }
         }
 
         // Line 專區 (有密碼鎖定)
