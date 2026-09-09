@@ -1465,12 +1465,14 @@ https://rmlwin168-star.github.io/ShengDe50/
 
         // 邀請函專區 (無密碼鎖定)
         function copyInviteText() { 
-            const inviteText = document.getElementById('invite-content-box').innerText;
+            let inviteText = document.getElementById('invite-content-box').innerText;
+            inviteText += "\nhttps://rmlwin168-star.github.io/ShengDe50/";
             navigator.clipboard.writeText(inviteText); 
             showToast("正式邀請函已複製"); 
         }
         function shareInviteToLine() {
-            const inviteText = document.getElementById('invite-content-box').innerText;
+            let inviteText = document.getElementById('invite-content-box').innerText;
+            inviteText += "\nhttps://rmlwin168-star.github.io/ShengDe50/";
             shareTextToLine(inviteText);
         }
 
