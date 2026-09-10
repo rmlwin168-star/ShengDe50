@@ -1516,8 +1516,11 @@ https://rmlwin168-star.github.io/ShengDe50/
                 return;
             }
 
-            // 搜尋該手機登記過的所有道親 (從最新有效名單篩選)
-            const myRecords = globalRecords.filter(r => String(r.assister_phone).trim() === phone);
+            // 雙重驗證：同時比對「手機」與「幫忙壇主姓名」，確保不會拉到別人的預設資料
+            const myRecords = globalRecords.filter(r => 
+                String(r.assister_phone).trim() === phone && 
+                String(r.assister).trim() === name
+            );
 
             if (myRecords.length === 0) {
                 alert("查無此手機號碼登記之資料！\n若為舊名單，請先確認後台已為您補登手機。");
