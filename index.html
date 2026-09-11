@@ -877,6 +877,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                             <option value="道親">道親</option>
                             <option value="新進道親">新進道親</option>
                             <option value="無">無</option>
+                            <option value="❌ 不克出席 (取消)">❌ 不克出席 (取消)</option>
                         </select>
                     </div>
 
@@ -919,7 +920,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                             <option value="大巴４號">大巴４號</option>
                             <option value="大巴５號">大巴５號</option>
                             <option value="大巴６號">大巴６號</option>
-                            <option value="待安排">待安排</option>
+                            <option value="須安排交通">須安排交通</option>
                         </select>
                         
                         <div id="div-temple-seats" class="hidden bg-white p-2 rounded border border-red-100">
@@ -945,7 +946,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                             <option value="" disabled selected>-- 選擇交通方式 --</option>
                             <option value="自駕">自駕 (需輸入可載人數)</option>
                             <option value="已有人接送">已有人接送 (選擇同壇司機)</option>
-                            <option value="需要接駁車接送">需要接駁車接送</option>
+                            <option value="須安排交通">須安排交通</option>
                             <option value="大巴１號">大巴１號</option>
                             <option value="大巴２號">大巴２號</option>
                             <option value="大巴３號">大巴３號</option>
@@ -1317,6 +1318,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                 } else {
                     selectDriver.innerHTML = '<option value="" disabled selected>-- 本壇尚無自駕車輛 --</option>';
                 }
+                selectDriver.insertAdjacentHTML('beforeend', '<option value="" disabled>👉 找不到司機？請回上一步改選『須安排交通』</option>');
             } else {
                 divSeats.classList.add('hidden'); 
                 divDriver.classList.add('hidden');
@@ -1803,10 +1805,10 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById('res-gifts').textContent = Math.ceil(count * 1.05).toLocaleString();
             document.getElementById('res-hall-cap').textContent = `${((count / 700) * 100).toFixed(1)}%`;
             
-            // 計算需要計程車(接駁車)的人數：搜尋全球紀錄中，莿桐國小交通選擇「需要接駁車接送」的人數
+            // 計算需要計程車(接駁車)的人數：搜尋全球紀錄中，莿桐國小交通選擇「須安排交通」的人數
             let shuttleNeedCount = 0;
             if(globalRecords.length > 0) {
-                shuttleNeedCount = globalRecords.filter(r => r.transport_ct === '需要接駁車接送').length;
+                shuttleNeedCount = globalRecords.filter(r => r.transport_ct === '須安排交通').length;
             }
             // 國內接駁車(計程車) = (實際需要人數 / 4 無條件進位) + 5
             let shuttleBuses = shuttleNeedCount > 0 ? Math.ceil(shuttleNeedCount / 4) + 5 : 5;
