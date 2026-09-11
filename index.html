@@ -1202,27 +1202,38 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
         }
 
-        // 智能偵測：取消出席時拔除必填限制
-        // 智能偵測：取消出席時拔除所有必填限制
+        // 智能偵測：取消出席時拔除所有必填限制與視覺清空
         function checkCancelStatus() {
             const job = document.getElementById('reg-job').value;
             const isCancel = (job === '❌ 不克出席 (取消)');
             
-            // 基礎交通與餐飲解除
-            document.getElementById('reg-trans-temple').required = !isCancel;
-            document.getElementById('reg-trans-school').required = !isCancel;
-            document.getElementById('reg-lunch').required = !isCancel;
-            document.getElementById('reg-dinner').required = !isCancel;
+            const transTemple = document.getElementById('reg-trans-temple');
+            const transSchool = document.getElementById('reg-trans-school');
+            const lunch = document.getElementById('reg-lunch');
+            const dinner = document.getElementById('reg-dinner');
+
+            // 切換必填屬性
+            transTemple.required = !isCancel;
+            transSchool.required = !isCancel;
+            lunch.required = !isCancel;
+            dinner.required = !isCancel;
 
             if (isCancel) {
-                // 進階子選項解除 (解決送出被瀏覽器暗中阻擋的問題)
                 document.getElementById('reg-seats-temple').required = false;
                 document.getElementById('reg-driver-temple').required = false;
                 document.getElementById('reg-seats-school').required = false;
                 document.getElementById('reg-driver-school').required = false;
-                showToast("💡 已選擇「不克出席」，下方交通與餐飲已免填，可直接拉到底按確認送出！");
+                
+                // 視覺防呆：若取消，直接將交通與餐飲選項清空，避免誤導
+                transTemple.value = "";
+                transSchool.value = "";
+                lunch.value = "";
+                dinner.value = "";
+                
+                updateDriverOptionsAll();
+                showToast("💡 選擇「不克出席」，下方交通與餐飲已免填，請直接按確認送出！");
             } else {
-                updateDriverOptionsAll(); // 若改回正常身分，恢復應有的必填狀態
+                updateDriverOptionsAll(); // 恢復正常身分，連動檢查子選項
             }
         }
 
@@ -1257,6 +1268,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                 seatsTemple = 0;
                 seatsSchool = 0;
             } else {
+                // 若為正常報名，嚴格阻擋空值
                 if (!templeName || !attendeeName || !assisterName || !assisterPhone || !jobTitle || !transTemple || !transSchool || !lunchSelect || !dinnerSelect) {
                     alert("請完整填寫所有必填欄位！");
                     return;
@@ -1285,13 +1297,13 @@ https://rmlwin168-star.github.io/ShengDe50/
                 cleanupZone: "待安排"
             };
 
-            showToast("⏳ 寫入雲端中，請稍候...");
+            showToast("⏳ 處理中，請稍候...");
 
-            // 1. 本地「樂觀更新」：瞬間改變記憶體資料，畫面零延遲反應！
-            globalRecords = globalRecords.filter(r => !(r.temple === payload.temple && r.name === payload.name));
+            // 1. 本地樂觀更新：精準覆蓋舊資料
+            globalRecords = globalRecords.filter(r => !(String(r.temple).trim() === String(payload.temple).trim() && String(r.name).trim() === String(payload.name).trim()));
             globalRecords.push(payload);
             
-            // 瞬間重算本地圖表與總人數
+            // 重算統計數據 (排除取消者)
             Object.keys(templeMockData).forEach(k => { 
                 templeMockData[k].total = 0; 
                 templeMockData[k].logs = []; 
@@ -1308,111 +1320,26 @@ https://rmlwin168-star.github.io/ShengDe50/
             closeRegistrationModal();
             showToast(`🎉 成功！已為 [${attendeeName}] 更新報名狀態！`);
 
-            // 瞬間刷新壇主面板，不再需要登出登入
+            // 2. 強制全面刷新：同時更新「最底部的公壇明細表」、「圖表」與「預算表」
+            document.getElementById('temple-inspector-select').value = templeName;
+            renderTempleDetail();
+            if (templeChart) {
+                templeChart.data.datasets[0].data = Object.values(templeMockData).map(d => d.total);
+                templeChart.update();
+            }
+            calculateBudgetRequirements();
+
+            // 若壇主面板開著，同步刷新
             if (!document.getElementById('assister-manage-modal').classList.contains('hidden')) {
                 loginAssister();
-            } else {
-                document.getElementById('temple-inspector-select').value = templeName;
-                renderTempleDetail();
-                if (templeChart) {
-                    templeChart.data.datasets[0].data = Object.values(templeMockData).map(d => d.total);
-                    templeChart.update();
-                }
             }
 
-            // 2. 背景非同步寫入 Google Sheets (不卡畫面)
-            // ⛔ 已移除 3 秒後自動抓資料的機制，避免抓到 Google 還沒存好的舊資料覆蓋畫面
+            // 3. 背景寫入 Google Sheets (不卡頓)
             fetch(scriptUrl, { 
                 method: 'POST', 
                 mode: 'no-cors',
                 body: JSON.stringify(payload), 
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-            }).catch(error => console.error("Submit Data Error:", error));
-        }
-
-            // ⚠️ 終極資料庫防呆：若選擇取消，強制覆寫背景資料為無
-            if (jobTitle === '❌ 不克出席 (取消)') {
-                transTemple = "無";
-                transSchool = "無";
-                lunchSelect = "無";
-                dinnerSelect = "無";
-                driverTemple = "";
-                driverSchool = "";
-                seatsTemple = 0;
-                seatsSchool = 0;
-            } else {
-                if (!templeName || !attendeeName || !assisterName || !assisterPhone || !jobTitle || !transTemple || !transSchool || !lunchSelect || !dinnerSelect) {
-                    alert("請完整填寫所有必填欄位！");
-                    return;
-                }
-            }
-
-            const payload = { 
-                date: dateStr, 
-                temple: templeName, 
-                name: attendeeName, 
-                assister: assisterName, 
-                assister_phone: assisterPhone,
-                job: jobTitle,
-                transport_sd: transTemple, 
-                driver_capacity_sd: seatsTemple, 
-                driver_name_sd: driverTemple,
-                transport_ct: transSchool, 
-                driver_capacity_ct: seatsSchool, 
-                driver_name_ct: driverSchool,
-                stay_dinner: dinnerSelect,
-                lunch_box: lunchSelect,
-                parking: "待安排",
-                tourSeat: "待安排",
-                banquetSeat: "待安排",
-                showSeat: "待安排",
-                cleanupZone: "待安排"
-            };
-
-            showToast("⏳ 寫入雲端中，請稍候...");
-
-            // 1. 本地「樂觀更新」：瞬間改變記憶體資料，畫面零延遲反應！
-            globalRecords = globalRecords.filter(r => !(r.temple === payload.temple && r.name === payload.name));
-            globalRecords.push(payload);
-            
-            // 瞬間重算本地圖表與總人數
-            Object.keys(templeMockData).forEach(k => { 
-                templeMockData[k].total = 0; 
-                templeMockData[k].logs = []; 
-            });
-            globalRecords.forEach(row => {
-                const t = row.temple;
-                if (templeMockData[t]) {
-                    if (row.job !== '❌ 不克出席 (取消)') templeMockData[t].total += 1;
-                    if(!templeMockData[t].logs) templeMockData[t].logs = [];
-                    templeMockData[t].logs.unshift(row);
-                }
-            });
-            
-            closeRegistrationModal();
-            showToast(`🎉 成功！已為 [${attendeeName}] 更新報名狀態！`);
-
-            // 瞬間刷新壇主面板，不再需要登出登入
-            if (!document.getElementById('assister-manage-modal').classList.contains('hidden')) {
-                loginAssister();
-            } else {
-                document.getElementById('temple-inspector-select').value = templeName;
-                renderTempleDetail();
-                if (templeChart) {
-                    templeChart.data.datasets[0].data = Object.values(templeMockData).map(d => d.total);
-                    templeChart.update();
-                }
-            }
-
-            // 2. 背景非同步寫入 Google Sheets (不卡畫面)
-            fetch(scriptUrl, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                body: JSON.stringify(payload), 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-            }).then(() => {
-                // 等待 3 秒讓 Google 雲端儲存完畢後，背景默默對齊一次確保資料安全
-                setTimeout(loadLiveRegistrationData, 3000);
             }).catch(error => console.error("Submit Data Error:", error));
         }
 
