@@ -1203,16 +1203,27 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         // 智能偵測：取消出席時拔除必填限制
+        // 智能偵測：取消出席時拔除所有必填限制
         function checkCancelStatus() {
             const job = document.getElementById('reg-job').value;
             const isCancel = (job === '❌ 不克出席 (取消)');
             
+            // 基礎交通與餐飲解除
             document.getElementById('reg-trans-temple').required = !isCancel;
             document.getElementById('reg-trans-school').required = !isCancel;
             document.getElementById('reg-lunch').required = !isCancel;
             document.getElementById('reg-dinner').required = !isCancel;
 
-            if (isCancel) showToast("💡 已選擇「不克出席」，下方交通與餐飲已免填，可直接按確認送出！");
+            if (isCancel) {
+                // 進階子選項解除 (解決送出被瀏覽器暗中阻擋的問題)
+                document.getElementById('reg-seats-temple').required = false;
+                document.getElementById('reg-driver-temple').required = false;
+                document.getElementById('reg-seats-school').required = false;
+                document.getElementById('reg-driver-school').required = false;
+                showToast("💡 已選擇「不克出席」，下方交通與餐飲已免填，可直接拉到底按確認送出！");
+            } else {
+                updateDriverOptionsAll(); // 若改回正常身分，恢復應有的必填狀態
+            }
         }
 
         async function handleRegistrationSubmit(event) {
@@ -1227,15 +1238,97 @@ https://rmlwin168-star.github.io/ShengDe50/
             let transTemple = document.getElementById('reg-trans-temple').value || "";
             let seatsTemple = parseInt(document.getElementById('reg-seats-temple').value) || 0;
             let driverTemple = document.getElementById('reg-driver-temple').value || "";
-            if (driverTemple === 'manual') driverTemple = document.getElementById('reg-driver-temple-manual').value.trim();
             
             let transSchool = document.getElementById('reg-trans-school').value || "";
             let seatsSchool = parseInt(document.getElementById('reg-seats-school').value) || 0;
             let driverSchool = document.getElementById('reg-driver-school').value || "";
-            if (driverSchool === 'manual') driverSchool = document.getElementById('reg-driver-school-manual').value.trim();
             
             let lunchSelect = document.getElementById('reg-lunch').value || "";
             let dinnerSelect = document.getElementById('reg-dinner').value || "";
+
+            // ⚠️ 終極資料庫防呆：若選擇取消，強制覆寫背景資料為無
+            if (jobTitle === '❌ 不克出席 (取消)') {
+                transTemple = "無";
+                transSchool = "無";
+                lunchSelect = "無";
+                dinnerSelect = "無";
+                driverTemple = "";
+                driverSchool = "";
+                seatsTemple = 0;
+                seatsSchool = 0;
+            } else {
+                if (!templeName || !attendeeName || !assisterName || !assisterPhone || !jobTitle || !transTemple || !transSchool || !lunchSelect || !dinnerSelect) {
+                    alert("請完整填寫所有必填欄位！");
+                    return;
+                }
+            }
+
+            const payload = { 
+                date: dateStr, 
+                temple: templeName, 
+                name: attendeeName, 
+                assister: assisterName, 
+                assister_phone: assisterPhone,
+                job: jobTitle,
+                transport_sd: transTemple, 
+                driver_capacity_sd: seatsTemple, 
+                driver_name_sd: driverTemple,
+                transport_ct: transSchool, 
+                driver_capacity_ct: seatsSchool, 
+                driver_name_ct: driverSchool,
+                stay_dinner: dinnerSelect,
+                lunch_box: lunchSelect,
+                parking: "待安排",
+                tourSeat: "待安排",
+                banquetSeat: "待安排",
+                showSeat: "待安排",
+                cleanupZone: "待安排"
+            };
+
+            showToast("⏳ 寫入雲端中，請稍候...");
+
+            // 1. 本地「樂觀更新」：瞬間改變記憶體資料，畫面零延遲反應！
+            globalRecords = globalRecords.filter(r => !(r.temple === payload.temple && r.name === payload.name));
+            globalRecords.push(payload);
+            
+            // 瞬間重算本地圖表與總人數
+            Object.keys(templeMockData).forEach(k => { 
+                templeMockData[k].total = 0; 
+                templeMockData[k].logs = []; 
+            });
+            globalRecords.forEach(row => {
+                const t = row.temple;
+                if (templeMockData[t]) {
+                    if (row.job !== '❌ 不克出席 (取消)') templeMockData[t].total += 1;
+                    if(!templeMockData[t].logs) templeMockData[t].logs = [];
+                    templeMockData[t].logs.unshift(row);
+                }
+            });
+            
+            closeRegistrationModal();
+            showToast(`🎉 成功！已為 [${attendeeName}] 更新報名狀態！`);
+
+            // 瞬間刷新壇主面板，不再需要登出登入
+            if (!document.getElementById('assister-manage-modal').classList.contains('hidden')) {
+                loginAssister();
+            } else {
+                document.getElementById('temple-inspector-select').value = templeName;
+                renderTempleDetail();
+                if (templeChart) {
+                    templeChart.data.datasets[0].data = Object.values(templeMockData).map(d => d.total);
+                    templeChart.update();
+                }
+            }
+
+            // 2. 背景非同步寫入 Google Sheets (不卡畫面)
+            // ⛔ 已移除 3 秒後自動抓資料的機制，避免抓到 Google 還沒存好的舊資料覆蓋畫面
+            fetch(scriptUrl, { 
+                method: 'POST', 
+                mode: 'no-cors',
+                body: JSON.stringify(payload), 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            }).catch(error => console.error("Submit Data Error:", error));
+        }
 
             // ⚠️ 終極資料庫防呆：若選擇取消，強制覆寫背景資料為無
             if (jobTitle === '❌ 不克出席 (取消)') {
