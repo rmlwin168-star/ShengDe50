@@ -1100,7 +1100,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             "興慈佛堂":{total:0}
         };
 
-        // 10月1日前，圖表禁顯示海外名單
         if (new Date() >= new Date('2026-10-01T00:00:00')) {
             overseasTemplesList.forEach(t => {
                 templeMockData[t] = {total: 0};
@@ -1122,7 +1121,7 @@ https://rmlwin168-star.github.io/ShengDe50/
         let currentVideoFrame = 0;
         let programChart = null;
         let templeChart = null;
-        let isAuthorized = false; // 控制內部發布權限
+        let isAuthorized = false; 
         let isBatchMode = false;
         let lockedTemple = "";
         let lockedAssister = "";
@@ -1156,14 +1155,11 @@ https://rmlwin168-star.github.io/ShengDe50/
         // ---------------------------------------------------------
         // 3. DATABASE FETCH & SUBMIT LOGIC
         // ---------------------------------------------------------
-        // 雲端資料同步：自動以「公壇+姓名」去重，保留最後一筆（最新修改），支援管理員刪行復原
-        // 雲端資料同步：自動以「公壇+姓名」去重，保留最後一筆（最新修改），支援管理員刪行復原
         async function loadLiveRegistrationData() {
             try {
                 const response = await fetch(scriptUrl);
                 const records = await response.json();
 
-                // 使用 Map 確保同一公壇同一道親只保留最後出現的紀錄（最新狀態）
                 const latestRecordsMap = new Map();
                 records.forEach(row => {
                     const key = `${row.temple}_${row.name}`;
@@ -1180,7 +1176,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                 globalRecords.forEach(row => {
                     const t = row.temple;
                     if (templeMockData[t]) {
-                        // ❌ 取消名單不列入大會總人數計算
                         if (row.job !== '❌ 不克出席 (取消)') {
                             templeMockData[t].total += 1;
                         }
@@ -1212,7 +1207,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             const lunch = document.getElementById('reg-lunch');
             const dinner = document.getElementById('reg-dinner');
 
-            // 切換必填屬性
             transTemple.required = !isCancel;
             transSchool.required = !isCancel;
             lunch.required = !isCancel;
@@ -1224,7 +1218,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                 document.getElementById('reg-seats-school').required = false;
                 document.getElementById('reg-driver-school').required = false;
                 
-                // 視覺防呆：若取消，直接將交通與餐飲選項清空，避免誤導
                 transTemple.value = "";
                 transSchool.value = "";
                 lunch.value = "";
@@ -1233,7 +1226,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                 updateDriverOptionsAll();
                 showToast("💡 選擇「不克出席」，下方交通與餐飲已免填，請直接按確認送出！");
             } else {
-                updateDriverOptionsAll(); // 恢復正常身分，連動檢查子選項
+                updateDriverOptionsAll(); 
             }
         }
 
@@ -1257,7 +1250,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             let lunchSelect = document.getElementById('reg-lunch').value || "";
             let dinnerSelect = document.getElementById('reg-dinner').value || "";
 
-            // ⚠️ 終極資料庫防呆：若選擇取消，強制覆寫背景資料為無
             if (jobTitle === '❌ 不克出席 (取消)') {
                 transTemple = "無";
                 transSchool = "無";
@@ -1268,7 +1260,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                 seatsTemple = 0;
                 seatsSchool = 0;
             } else {
-                // 若為正常報名，嚴格阻擋空值
                 if (!templeName || !attendeeName || !assisterName || !assisterPhone || !jobTitle || !transTemple || !transSchool || !lunchSelect || !dinnerSelect) {
                     alert("請完整填寫所有必填欄位！");
                     return;
@@ -1299,11 +1290,9 @@ https://rmlwin168-star.github.io/ShengDe50/
 
             showToast("⏳ 處理中，請稍候...");
 
-            // 1. 本地樂觀更新：精準覆蓋舊資料
             globalRecords = globalRecords.filter(r => !(String(r.temple).trim() === String(payload.temple).trim() && String(r.name).trim() === String(payload.name).trim()));
             globalRecords.push(payload);
             
-            // 重算統計數據 (排除取消者)
             Object.keys(templeMockData).forEach(k => { 
                 templeMockData[k].total = 0; 
                 templeMockData[k].logs = []; 
@@ -1320,7 +1309,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             closeRegistrationModal();
             showToast(`🎉 成功！已為 [${attendeeName}] 更新報名狀態！`);
 
-            // 2. 強制全面刷新：同時更新「最底部的公壇明細表」、「圖表」與「預算表」
             document.getElementById('temple-inspector-select').value = templeName;
             renderTempleDetail();
             if (templeChart) {
@@ -1329,12 +1317,10 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
             calculateBudgetRequirements();
 
-            // 若壇主面板開著，同步刷新
             if (!document.getElementById('assister-manage-modal').classList.contains('hidden')) {
                 loginAssister();
             }
 
-            // 3. 背景寫入 Google Sheets (不卡頓)
             fetch(scriptUrl, { 
                 method: 'POST', 
                 mode: 'no-cors',
@@ -1439,6 +1425,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                 } else {
                     selectDriver.innerHTML = '<option value="" disabled selected>-- 本壇尚無自駕車輛 --</option>';
                 }
+                selectDriver.insertAdjacentHTML('beforeend', '<option value="" disabled>👉 找不到司機？請回上一步改選『須安排交通』</option>');
             } else {
                 divSeats.classList.add('hidden'); 
                 divDriver.classList.add('hidden');
@@ -1570,7 +1557,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
         }
 
-        // 壇主批次與修改邏輯
         function openAssisterManageModal() {
             document.getElementById('assister-manage-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -1588,7 +1574,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                 return;
             }
 
-            // 雙重驗證：同時比對「手機」與「幫忙壇主姓名」，確保不會拉到別人的預設資料
             const myRecords = globalRecords.filter(r => 
                 String(r.assister_phone).trim() === phone && 
                 String(r.assister).trim() === name
@@ -1622,7 +1607,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             `).join('');
         }
 
-        // 修改特定道親資料：將資料回填進表單
         function loadRecordToEdit(record) {
             openRegistrationModal();
             document.getElementById('reg-temple').value = record.temple;
@@ -1630,7 +1614,7 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById('reg-assister').value = record.assister;
             document.getElementById('reg-assister-phone').value = record.assister_phone || lockedPhone;
             document.getElementById('reg-job').value = record.job;
-            checkCancelStatus(); // 載入時自動偵測取消狀態，拔除必填限制
+            checkCancelStatus(); 
             document.getElementById('reg-trans-temple').value = record.transport_sd;
             document.getElementById('reg-trans-school').value = record.transport_ct;
             document.getElementById('reg-lunch').value = record.lunch_box || "否，中午在聖德宮正常用餐";
@@ -1646,12 +1630,10 @@ https://rmlwin168-star.github.io/ShengDe50/
             showToast(`已載入 [${record.name}] 的報名資料以供修改`);
         }
 
-        // 批次新增下一位：自動鎖定公壇、壇主與手機，清空道親欄位
         function prepareBatchNew() {
             openRegistrationModal();
             document.getElementById('online-reg-form').reset();
             
-            // 自動帶入並鎖定
             document.getElementById('reg-temple').value = lockedTemple;
             document.getElementById('reg-assister').value = lockedAssister;
             document.getElementById('reg-assister-phone').value = lockedPhone;
@@ -1727,25 +1709,20 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
         
         function shareTextToLine(text) {
-            // 判斷是否為行動裝置 (手機/平板)
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
             if (isMobile) {
-                // 手機版：直接喚醒 LINE App，不受網頁字數限制
                 const encodedText = encodeURIComponent(text);
                 window.open(`https://line.me/R/msg/text/?${encodedText}`, '_blank');
             } else {
-                // 電腦版：因 LINE Web 網頁分享有嚴格字數限制，過長會導致 HTTP 400 錯誤
-                // 解法：自動複製到剪貼簿，並跳出視窗引導使用者直接貼上
                 navigator.clipboard.writeText(text).then(() => {
                     alert("⚠️ 系統偵測到您使用電腦版操作。\n\n因 LINE 官方網頁分享有「字數限制」(超過會引發 400 錯誤)，系統已自動幫您【複製完整文案】！\n\n👉 請直接打開您電腦上的 LINE 軟體，在群組或對話框「貼上 (Ctrl+V)」即可發布。");
                 }).catch(() => {
-                    alert("自動複製失敗，請點擊左側的「複製文案」按鈕手手動複製。");
+                    alert("自動複製失敗，請點擊左側的「複製文案」按鈕手動複製。");
                 });
             }
         }
 
-        // Line 專區 (有密碼鎖定)
         function copyLineText() { 
             const textSource = document.getElementById('lineTextSource').value;
             navigator.clipboard.writeText(textSource); 
@@ -1756,7 +1733,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             shareTextToLine(textSource);
         }
 
-        // DM 專區 (無密碼鎖定)
         function copyDmText() { 
             const dmText = "【宣傳 DM】\n承先啟後 五十揚帆 ── 聖德宮 50 周年慶典\n活動日期：2026年12月13日\n活動地點：聖德宮大廣場 / 展演廳 (700席)\n報名期限：即日起至 09/30\n✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨\n\n🌐 聖德宮50周年線上報名專區：\nhttps://rmlwin168-star.github.io/ShengDe50/";
             navigator.clipboard.writeText(dmText); 
@@ -1767,7 +1743,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             shareTextToLine(dmText);
         }
 
-        // 邀請函專區 (無密碼鎖定)
         function copyInviteText() { 
             let inviteText = document.getElementById('invite-content-box').innerText;
             inviteText += "\nhttps://rmlwin168-star.github.io/ShengDe50/";
@@ -1780,7 +1755,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             shareTextToLine(inviteText);
         }
 
-        // 短片分鏡專區 (無密碼鎖定)
         function copyVideoText() {
             const visualDesc = document.getElementById('video-visual-desc').textContent;
             const narration = document.getElementById('video-narration').textContent;
@@ -1865,7 +1839,6 @@ https://rmlwin168-star.github.io/ShengDe50/
         function calculateBudgetRequirements() {
             let count = parseInt(document.getElementById('calc-headcount').value) || 0;
             
-            // 如果手動輸入的值小於實際報名總和，自動拉高至實際報名總和，避免少算
             const actualSum = Object.values(templeMockData).reduce((a, b) => a + b.total, 0);
             if (count < actualSum) { 
                 count = actualSum; 
@@ -1876,12 +1849,10 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById('res-gifts').textContent = Math.ceil(count * 1.05).toLocaleString();
             document.getElementById('res-hall-cap').textContent = `${((count / 700) * 100).toFixed(1)}%`;
             
-            // 計算需要計程車(接駁車)的人數：搜尋全球紀錄中，莿桐國小交通選擇「須安排交通」的人數
             let shuttleNeedCount = 0;
             if(globalRecords.length > 0) {
                 shuttleNeedCount = globalRecords.filter(r => r.transport_ct === '須安排交通').length;
             }
-            // 國內接駁車(計程車) = (實際需要人數 / 4 無條件進位) + 5
             let shuttleBuses = shuttleNeedCount > 0 ? Math.ceil(shuttleNeedCount / 4) + 5 : 5;
             
             document.getElementById('res-buses-info').innerHTML = `遊覽車 6 台 (40座/台，國外)<br/>計程車 ${shuttleBuses} 台 (國內，需接送 ${shuttleNeedCount} 人)`;
@@ -1895,7 +1866,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             let logsHtml = '';
             if (data.logs && data.logs.length > 0) {
                 logsHtml = data.logs.map(log => {
-                    // 使用新的 API 變數名稱 (transport_sd, transport_ct, stay_dinner) 來做顯示判斷
                     let tTemple = '舊版資料';
                     if (log.transport_sd) {
                         if (log.transport_sd === '自駕') tTemple = `自駕(${log.driver_capacity_sd}位)`;
