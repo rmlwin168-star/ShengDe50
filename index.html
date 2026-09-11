@@ -1494,19 +1494,42 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.body.style.overflow = 'auto';
         }
 
+        // --- 核心防呆：全自動電話正規化清洗器 ---
+        function cleanPhone(val) {
+            if (!val) return "";
+            let s = String(val).replace(/\D/g, ''); // 拔除所有非數字 (去除單引號 '、空格、連字號 -)
+            if (s.length === 9 && s.startsWith('9')) {
+                s = '0' + s; // 若被 Google Sheets 吞掉開頭 0，自動補回
+            }
+            return s;
+        }
+
+        let currentAssisterRecords = []; // 暫存壇主名單陣列，徹底避免 HTML 單引號衝突
+
         function loginAssister() {
-            const name = document.getElementById('manage-input-name').value.trim();
-            const phone = document.getElementById('manage-input-phone').value.trim();
+            const inputNameEl = document.getElementById('manage-input-name');
+            const inputPhoneEl = document.getElementById('manage-input-phone');
+            const name = (inputNameEl ? inputNameEl.value.trim() : '') || lockedAssister;
+            const phone = cleanPhone(inputPhoneEl ? inputPhoneEl.value.trim() : '') || cleanPhone(lockedPhone);
+
             if (!name || !phone) {
-                alert("請完整輸入壇主姓名與 10 碼手機號碼！"); return;
+                alert("請完整輸入壇主姓名與 10 碼手機號碼！"); 
+                return;
             }
 
-            const myRecords = globalRecords.filter(r => String(r.assister_phone).trim() === phone && String(r.assister).trim() === name);
+            // 雙重清洗比對：自動校正 0 與單引號，確保 100% 撈出名單
+            const myRecords = globalRecords.filter(r => {
+                const rPhone = cleanPhone(r.assister_phone);
+                const rName = String(r.assister || '').trim();
+                return rPhone === phone && rName === name;
+            });
 
             if (myRecords.length === 0) {
-                alert("查無此手機號碼登記之資料！\n若為舊名單，請先確認後台已為您補登手機。"); return;
+                alert("查無此手機號碼登記之資料！\n若為舊名單，請先確認後台已為您補登手機。"); 
+                return;
             }
 
+            currentAssisterRecords = myRecords;
             lockedTemple = myRecords[0].temple;
             lockedAssister = name;
             lockedPhone = phone;
@@ -1517,17 +1540,29 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById('manage-dashboard-section').classList.remove('hidden');
 
             const listContainer = document.getElementById('manage-attendees-list');
-            listContainer.innerHTML = myRecords.map(r => `
-                <div class="p-3 bg-white border border-gray-200 rounded-xl flex justify-between items-center hover:border-amber-400 transition-colors">
-                    <div>
-                        <div class="font-bold text-gray-900 text-sm">${r.name} <span class="text-xs text-amber-700 font-normal">(${r.job})</span></div>
-                        <div class="text-[11px] text-gray-500 mt-0.5">早上: ${r.transport_sd} | 下午: ${r.transport_ct} | 晚餐: ${r.stay_dinner.includes('是')?'⭕':'❌'}</div>
+            listContainer.innerHTML = myRecords.map((r, idx) => {
+                // 安全讀取晚餐狀態，避免 undefined 崩潰
+                const dinnerShow = r.stay_dinner ? (String(r.stay_dinner).includes('是') ? '⭕' : '❌') : '➖';
+                return `
+                    <div class="p-3 bg-white border border-gray-200 rounded-xl flex justify-between items-center hover:border-amber-400 transition-colors">
+                        <div>
+                            <div class="font-bold text-gray-900 text-sm">${r.name} <span class="text-xs text-amber-700 font-normal">(${r.job || '道親'})</span></div>
+                            <div class="text-[11px] text-gray-500 mt-0.5">早上: ${r.transport_sd || '無'} | 下午: ${r.transport_ct || '無'} | 晚餐: ${dinnerShow}</div>
+                        </div>
+                        <button onclick="loadRecordToEditByIndex(${idx})" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold cursor-pointer">
+                            ✏️ 修改
+                        </button>
                     </div>
-                    <button onclick='loadRecordToEdit(${JSON.stringify(r)})' class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold cursor-pointer">
-                        ✏️ 修改
-                    </button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        // 藉由索引呼叫，杜絕 JSON 塞在 HTML 標籤內產生的單引號截斷 bug
+        function loadRecordToEditByIndex(index) {
+            const record = currentAssisterRecords[index];
+            if (record) {
+                loadRecordToEdit(record);
+            }
         }
 
         function loadRecordToEdit(record) {
