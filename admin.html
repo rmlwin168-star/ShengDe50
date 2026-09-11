@@ -8,29 +8,102 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <style> body { font-family: 'Noto Sans TC', sans-serif; background-color: #F3F4F6; } </style>
 </head>
-<body class="antialiased flex h-screen overflow-hidden">
+<body class="antialiased flex h-screen overflow-hidden text-gray-800">
 
     <script>
-        // 🚨 務必換成您新帳號重新發布的 API 網址
+        // 🚨 請將下方引號內的網址，替換為您目前可以成功連線的 API 網址！
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec';
+		
         let globalRecords = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
-            document.getElementById('status-msg').textContent = "資料載入中...";
+            const statusEl = document.getElementById('status-msg');
+            statusEl.textContent = "⏳ 資料載入與運算中...";
+            statusEl.className = "text-sm font-bold text-amber-700 bg-amber-50 px-4 py-2 rounded-full border border-amber-200";
+
             try {
                 const response = await fetch(scriptUrl);
                 const records = await response.json();
                 
-                // 去重邏輯 (保留最新)
+                // 去重邏輯 (保留最新狀態)
                 const latestMap = new Map();
                 records.forEach(row => latestMap.set(`${row.temple}_${row.name}`, row));
+                
+                // 排除取消名單，得到有效總表
                 globalRecords = Array.from(latestMap.values()).filter(r => r.job !== '❌ 不克出席 (取消)');
                 
-                document.getElementById('status-msg').textContent = `✅ 載入成功，共 ${globalRecords.length} 筆有效報名`;
+                statusEl.innerHTML = `<span>✅</span> 載入成功，共 <span class="text-lg">${globalRecords.length}</span> 筆有效報名`;
+                statusEl.className = "text-sm font-bold text-emerald-800 bg-emerald-100 px-4 py-2 rounded-full border border-emerald-300 flex items-center gap-1.5";
+                
+                // 資料載入完成後，立刻渲染「總覽面板」的數據
+                renderOverviewDashboard();
+                
             } catch (e) {
-                document.getElementById('status-msg').textContent = "❌ 資料載入失敗";
+                statusEl.textContent = "❌ 資料載入失敗，請檢查網路或 API 網址";
+                statusEl.className = "text-sm font-bold text-red-700 bg-red-50 px-4 py-2 rounded-full border border-red-200";
             }
         });
+
+        // 左側導覽列切換邏輯
+        function switchTab(tabId) {
+            // 1. 重置所有按鈕樣式
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all';
+            });
+            // 2. 標亮目前點擊的按鈕
+            document.getElementById(`btn-${tabId}`).className = 'nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md';
+
+            // 3. 隱藏所有內容面板
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            // 4. 顯示目標內容面板
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+        }
+
+        // 結算與渲染「大會總覽與便當」面板
+        function renderOverviewDashboard() {
+            let totalBento = 0;
+            let totalDinner = 0;
+            let templeStats = {};
+
+            // 運算每位道親的便當與晚餐需求
+            globalRecords.forEach(r => {
+                const needsBento = (r.lunch_box && String(r.lunch_box).includes('是'));
+                const needsDinner = (r.stay_dinner && String(r.stay_dinner).includes('是'));
+                
+                if (needsBento) totalBento++;
+                if (needsDinner) totalDinner++;
+
+                // 統計各公壇細項
+                if (!templeStats[r.temple]) {
+                    templeStats[r.temple] = { total: 0, bento: 0, dinner: 0 };
+                }
+                templeStats[r.temple].total += 1;
+                if (needsBento) templeStats[r.temple].bento += 1;
+                if (needsDinner) templeStats[r.temple].dinner += 1;
+            });
+
+            // 寫入頂端總數大看板
+            document.getElementById('dash-total-attendees').textContent = globalRecords.length;
+            document.getElementById('dash-total-bento').textContent = totalBento;
+            document.getElementById('dash-total-dinner').textContent = totalDinner;
+            document.getElementById('dash-total-tables').textContent = Math.ceil(totalDinner / 10);
+
+            // 寫入各公壇明細表格
+            const tbody = document.getElementById('dash-temple-tbody');
+            tbody.innerHTML = Object.keys(templeStats).sort().map(t => {
+                const stat = templeStats[t];
+                return `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                        <td class="p-3 font-bold text-gray-800">${t}</td>
+                        <td class="p-3 text-center text-gray-600">${stat.total}</td>
+                        <td class="p-3 text-center text-amber-700 font-bold">${stat.bento}</td>
+                        <td class="p-3 text-center text-purple-700 font-bold">${stat.dinner}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
     </script>
 
     <!-- 側邊導覽列 Sidebar -->
@@ -40,13 +113,13 @@
             <p class="text-xs text-gray-400 mt-1">大會後台管理中心</p>
         </div>
         <nav class="flex-1 px-4 py-6 space-y-2">
-            <button class="w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md">
+            <button id="btn-overview" onclick="switchTab('overview')" class="nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md">
                 📊 大會總覽與便當
             </button>
-            <button class="w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">
+            <button id="btn-transport" onclick="switchTab('transport')" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">
                 🚗 交通與停車位配置
             </button>
-            <button class="w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">
+            <button id="btn-seating" onclick="switchTab('seating')" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">
                 🪑 巡禮與展演座位表
             </button>
         </nav>
@@ -56,19 +129,99 @@
     </aside>
 
     <!-- 主要內容區 Main Content -->
-    <main class="flex-1 flex flex-col h-full relative overflow-y-auto">
+    <main class="flex-1 flex flex-col h-full relative overflow-y-auto bg-gray-50">
+        
+        <!-- 頂部狀態列 -->
         <header class="bg-white shadow-sm px-8 py-5 flex justify-between items-center z-10 sticky top-0">
-            <h2 class="text-2xl font-bold text-gray-800">大會總覽與物料結算</h2>
-            <div id="status-msg" class="text-sm font-bold text-amber-700 bg-amber-50 px-4 py-2 rounded-full border border-amber-200">
-                等待連線中...
-            </div>
+            <h2 class="text-2xl font-bold text-gray-800">儀表板</h2>
+            <div id="status-msg"></div>
         </header>
 
         <div class="p-8">
-            <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center">
-                <h3 class="text-gray-500 font-bold mb-2">後台系統已成功建立</h3>
-                <p class="text-sm text-gray-400">目前資料庫連線已接通。請告訴我您希望先實作哪一個後台報表？<br>(例如：便當總表計算、停車區劃分，或排座位清單)</p>
+            
+            <!-- 【模組 1】：大會總覽與便當結算 (預設顯示) -->
+            <div id="tab-overview" class="tab-content block space-y-6">
+                <div class="flex items-center gap-2 mb-6 border-l-4 border-amber-600 pl-3">
+                    <h3 class="text-xl font-bold text-gray-800">大會報名與餐飲結算總表</h3>
+                </div>
+
+                <!-- 頂部四大指標看板 -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-gray-500 mb-1">有效報名總人數</p>
+                            <p class="text-3xl font-black text-gray-800"><span id="dash-total-attendees">0</span><span class="text-sm text-gray-400 font-medium ml-1">人</span></p>
+                        </div>
+                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-2xl">👥</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-amber-700 mb-1">中午表演場 (高級午餐盒)</p>
+                            <p class="text-3xl font-black text-amber-600"><span id="dash-total-bento">0</span><span class="text-sm text-amber-500/70 font-medium ml-1">個</span></p>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl">🍱</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-purple-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-purple-700 mb-1">留下享用晚餐 (歐式自助)</p>
+                            <p class="text-3xl font-black text-purple-600"><span id="dash-total-dinner">0</span><span class="text-sm text-purple-500/70 font-medium ml-1">人</span></p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-2xl">🍽️</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-blue-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-blue-700 mb-1">晚餐預估換算桌數</p>
+                            <p class="text-3xl font-black text-blue-600"><span id="dash-total-tables">0</span><span class="text-sm text-blue-500/70 font-medium ml-1">桌</span></p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl">🪑</div>
+                    </div>
+                </div>
+
+                <!-- 各公壇細項表格 -->
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
+                    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+                        <h4 class="font-bold text-gray-700">📋 各區公壇餐飲預備明細清單</h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                                <tr>
+                                    <th class="p-3 font-bold border-b border-gray-200">公壇名稱</th>
+                                    <th class="p-3 font-bold border-b border-gray-200 text-center">報名總人數</th>
+                                    <th class="p-3 font-bold border-b border-gray-200 text-center">中午便當需求數</th>
+                                    <th class="p-3 font-bold border-b border-gray-200 text-center">晚餐留下人數</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-temple-tbody">
+                                <!-- 由 JS 動態生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
+
+            <!-- 【模組 2】：交通與停車位 (預留隱藏) -->
+            <div id="tab-transport" class="tab-content hidden space-y-6">
+                <div class="flex items-center gap-2 mb-6 border-l-4 border-gray-400 pl-3">
+                    <h3 class="text-xl font-bold text-gray-800">交通接駁與停車位配置</h3>
+                </div>
+                <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center">
+                    <p class="text-gray-500 font-bold mb-2">🚗 模組建置中...</p>
+                    <p class="text-sm text-gray-400">此區塊將自動抓取「自駕」名單，並提供配對停車區塊 (P1/P2) 之功能。</p>
+                </div>
+            </div>
+
+            <!-- 【模組 3】：座位表 (預留隱藏) -->
+            <div id="tab-seating" class="tab-content hidden space-y-6">
+                <div class="flex items-center gap-2 mb-6 border-l-4 border-gray-400 pl-3">
+                    <h3 class="text-xl font-bold text-gray-800">大會座位表與打掃區域</h3>
+                </div>
+                <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center">
+                    <p class="text-gray-500 font-bold mb-2">🪑 模組建置中...</p>
+                    <p class="text-sm text-gray-400">此區塊將提供「巡禮」、「宴席」、「展演」的智慧分區座位名單匯出功能。</p>
+                </div>
+            </div>
+
         </div>
     </main>
 
