@@ -852,7 +852,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                         <label for="reg-job" class="block text-xs font-bold text-gray-700 mb-1">
                             🛠️ 身份 <span class="text-red-600">*</span>
                         </label>
-                        <select id="reg-job" required class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
+                        <select id="reg-job" required onchange="checkCancelStatus()" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-sm font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-800 shadow-sm">
                             <option value="" disabled selected>-- 選擇身份 --</option>
                             <option value="召集點傳師">召集點傳師</option>
                             <option value="點傳師">點傳師</option>
@@ -1157,6 +1157,7 @@ https://rmlwin168-star.github.io/ShengDe50/
         // 3. DATABASE FETCH & SUBMIT LOGIC
         // ---------------------------------------------------------
         // 雲端資料同步：自動以「公壇+姓名」去重，保留最後一筆（最新修改），支援管理員刪行復原
+        // 雲端資料同步：自動以「公壇+姓名」去重，保留最後一筆（最新修改），支援管理員刪行復原
         async function loadLiveRegistrationData() {
             try {
                 const response = await fetch(scriptUrl);
@@ -1179,7 +1180,10 @@ https://rmlwin168-star.github.io/ShengDe50/
                 globalRecords.forEach(row => {
                     const t = row.temple;
                     if (templeMockData[t]) {
-                        templeMockData[t].total += 1;
+                        // ❌ 取消名單不列入大會總人數計算
+                        if (row.job !== '❌ 不克出席 (取消)') {
+                            templeMockData[t].total += 1;
+                        }
                         if(!templeMockData[t].logs) templeMockData[t].logs = [];
                         templeMockData[t].logs.unshift(row);
                     }
@@ -1191,12 +1195,24 @@ https://rmlwin168-star.github.io/ShengDe50/
                 }
                 renderTempleDetail();
                 calculateBudgetRequirements();
-                showToast("✅ 雲端資料同步完成！");
             } catch (e) {
                 console.error("Fetch Data Error: ", e);
                 renderTempleDetail();
                 calculateBudgetRequirements();
             }
+        }
+
+        // 智能偵測：取消出席時拔除必填限制
+        function checkCancelStatus() {
+            const job = document.getElementById('reg-job').value;
+            const isCancel = (job === '❌ 不克出席 (取消)');
+            
+            document.getElementById('reg-trans-temple').required = !isCancel;
+            document.getElementById('reg-trans-school').required = !isCancel;
+            document.getElementById('reg-lunch').required = !isCancel;
+            document.getElementById('reg-dinner').required = !isCancel;
+
+            if (isCancel) showToast("💡 已選擇「不克出席」，下方交通與餐飲已免填，可直接按確認送出！");
         }
 
         async function handleRegistrationSubmit(event) {
@@ -1208,18 +1224,35 @@ https://rmlwin168-star.github.io/ShengDe50/
             const assisterPhone = document.getElementById('reg-assister-phone').value.trim();
             const jobTitle = document.getElementById('reg-job').value;
             
-            const transTemple = document.getElementById('reg-trans-temple').value;
-            const seatsTemple = parseInt(document.getElementById('reg-seats-temple').value) || 0;
-            const driverTemple = document.getElementById('reg-driver-temple').value || "";
+            let transTemple = document.getElementById('reg-trans-temple').value || "";
+            let seatsTemple = parseInt(document.getElementById('reg-seats-temple').value) || 0;
+            let driverTemple = document.getElementById('reg-driver-temple').value || "";
+            if (driverTemple === 'manual') driverTemple = document.getElementById('reg-driver-temple-manual').value.trim();
             
-            const transSchool = document.getElementById('reg-trans-school').value;
-            const seatsSchool = parseInt(document.getElementById('reg-seats-school').value) || 0;
-            const driverSchool = document.getElementById('reg-driver-school').value || "";
+            let transSchool = document.getElementById('reg-trans-school').value || "";
+            let seatsSchool = parseInt(document.getElementById('reg-seats-school').value) || 0;
+            let driverSchool = document.getElementById('reg-driver-school').value || "";
+            if (driverSchool === 'manual') driverSchool = document.getElementById('reg-driver-school-manual').value.trim();
             
-            const lunchSelect = document.getElementById('reg-lunch').value;
-            const dinnerSelect = document.getElementById('reg-dinner').value;
+            let lunchSelect = document.getElementById('reg-lunch').value || "";
+            let dinnerSelect = document.getElementById('reg-dinner').value || "";
 
-            if (!templeName || !attendeeName || !assisterName || !assisterPhone || !jobTitle || !transTemple || !transSchool || !dinnerSelect) return;
+            // ⚠️ 終極資料庫防呆：若選擇取消，強制覆寫背景資料為無
+            if (jobTitle === '❌ 不克出席 (取消)') {
+                transTemple = "無";
+                transSchool = "無";
+                lunchSelect = "無";
+                dinnerSelect = "無";
+                driverTemple = "";
+                driverSchool = "";
+                seatsTemple = 0;
+                seatsSchool = 0;
+            } else {
+                if (!templeName || !attendeeName || !assisterName || !assisterPhone || !jobTitle || !transTemple || !transSchool || !lunchSelect || !dinnerSelect) {
+                    alert("請完整填寫所有必填欄位！");
+                    return;
+                }
+            }
 
             const payload = { 
                 date: dateStr, 
@@ -1235,42 +1268,59 @@ https://rmlwin168-star.github.io/ShengDe50/
                 driver_capacity_ct: seatsSchool, 
                 driver_name_ct: driverSchool,
                 stay_dinner: dinnerSelect,
-                lunch_box: lunchSelect
+                lunch_box: lunchSelect,
+                parking: "待安排",
+                tourSeat: "待安排",
+                banquetSeat: "待安排",
+                showSeat: "待安排",
+                cleanupZone: "待安排"
             };
 
-            showToast("⏳ 寫入雲端中，因排隊防護機制可能需等候數秒...");
+            showToast("⏳ 寫入雲端中，請稍候...");
 
-            try {
-                await fetch(scriptUrl, { 
-                    method: 'POST', 
-                    mode: 'no-cors',
-                    body: JSON.stringify(payload), 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                });
-                
-                await loadLiveRegistrationData();
-                
-                // 本地預先載入畫面防呆
-                if (templeMockData[templeName] && !document.getElementById('assister-manage-modal').classList.contains('hidden')) {
-                    document.getElementById('temple-inspector-select').value = templeName;
-                    renderTempleDetail();
+            // 1. 本地「樂觀更新」：瞬間改變記憶體資料，畫面零延遲反應！
+            globalRecords = globalRecords.filter(r => !(r.temple === payload.temple && r.name === payload.name));
+            globalRecords.push(payload);
+            
+            // 瞬間重算本地圖表與總人數
+            Object.keys(templeMockData).forEach(k => { 
+                templeMockData[k].total = 0; 
+                templeMockData[k].logs = []; 
+            });
+            globalRecords.forEach(row => {
+                const t = row.temple;
+                if (templeMockData[t]) {
+                    if (row.job !== '❌ 不克出席 (取消)') templeMockData[t].total += 1;
+                    if(!templeMockData[t].logs) templeMockData[t].logs = [];
+                    templeMockData[t].logs.unshift(row);
                 }
+            });
+            
+            closeRegistrationModal();
+            showToast(`🎉 成功！已為 [${attendeeName}] 更新報名狀態！`);
 
-                closeRegistrationModal();
-                showToast(`🎉 成功！已為 [${attendeeName}] 更新報名資料！`);
-
-                // 若在批次/修改模式中，自動刷新壇主面板
-                if (document.getElementById('assister-manage-modal').classList.contains('hidden') === false) {
-                    loginAssister();
-                } else {
-                    document.getElementById('temple-inspector-select').value = templeName;
-                    renderTempleDetail();
+            // 瞬間刷新壇主面板，不再需要登出登入
+            if (!document.getElementById('assister-manage-modal').classList.contains('hidden')) {
+                loginAssister();
+            } else {
+                document.getElementById('temple-inspector-select').value = templeName;
+                renderTempleDetail();
+                if (templeChart) {
+                    templeChart.data.datasets[0].data = Object.values(templeMockData).map(d => d.total);
+                    templeChart.update();
                 }
-            } catch (error) {
-                console.error("Submit Data Error:", error);
-                await loadLiveRegistrationData();
-                closeRegistrationModal();
             }
+
+            // 2. 背景非同步寫入 Google Sheets (不卡畫面)
+            fetch(scriptUrl, { 
+                method: 'POST', 
+                mode: 'no-cors',
+                body: JSON.stringify(payload), 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            }).then(() => {
+                // 等待 3 秒讓 Google 雲端儲存完畢後，背景默默對齊一次確保資料安全
+                setTimeout(loadLiveRegistrationData, 3000);
+            }).catch(error => console.error("Submit Data Error:", error));
         }
 
         function updateDriverOptionsAll() {
@@ -1560,6 +1610,7 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById('reg-assister').value = record.assister;
             document.getElementById('reg-assister-phone').value = record.assister_phone || lockedPhone;
             document.getElementById('reg-job').value = record.job;
+            checkCancelStatus(); // 載入時自動偵測取消狀態，拔除必填限制
             document.getElementById('reg-trans-temple').value = record.transport_sd;
             document.getElementById('reg-trans-school').value = record.transport_ct;
             document.getElementById('reg-lunch').value = record.lunch_box || "否，中午在聖德宮正常用餐";
