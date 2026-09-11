@@ -411,7 +411,7 @@
 
                 <div class="p-6 md:p-8">
                     
-                    <!-- LINE TAB (有密碼鎖定) -->
+                    <!-- LINE TAB -->
                     <div id="line-tab" class="media-content-block block space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-amber-50 p-3 rounded-lg border border-amber-200 mb-4">
                             <span class="text-xs font-bold text-amber-900">💡 提示：按鈕具備安全鎖定，需驗證密碼後方可發布至 LINE 群組</span>
@@ -449,7 +449,7 @@ https://rmlwin168-star.github.io/ShengDe50/
 3. </textarea>
                     </div>
 
-                    <!-- DM TAB (無密碼鎖定) -->
+                    <!-- DM TAB -->
                     <div id="dm-tab" class="media-content-block hidden space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
                             <span class="text-xs font-bold text-red-900">💡 提示：點擊按鈕，自動帶入活動大綱與報名網址至 LINE</span>
@@ -491,7 +491,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                         </div>
                     </div>
 
-                    <!-- INVITE TAB (無密碼鎖定) -->
+                    <!-- INVITE TAB -->
                     <div id="invite-tab" class="media-content-block hidden space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-amber-50 p-3 rounded-lg border border-amber-200 mb-4">
                             <span class="text-xs font-bold text-amber-900">💡 提示：點擊按鈕，自動帶入邀請函全文與報名網址至 LINE</span>
@@ -533,7 +533,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                         </div>
                     </div>
 
-                    <!-- VIDEO TAB (無密碼鎖定) -->
+                    <!-- VIDEO TAB -->
                     <div id="video-tab" class="media-content-block hidden space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-gray-800 p-3 rounded-lg border border-gray-700 mb-4">
                             <span class="text-xs font-bold text-gray-300">💡 提示：點擊分享，將自動帶出您當前停留的「鏡頭畫面」與網址</span>
@@ -745,14 +745,14 @@ https://rmlwin168-star.github.io/ShengDe50/
         </div>
     </div>
 
-    <!-- GUIDED REGISTRATION MODAL DRAWER -->
-    <div id="registration-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
+    <!-- GUIDED REGISTRATION MODAL DRAWER (Z-index 60) -->
+    <div id="registration-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all duration-300">
         <div class="bg-gradient-to-b from-amber-50 to-white w-full max-w-3xl rounded-3xl shadow-2xl border-2 border-amber-300 overflow-hidden transform transition-all duration-300 max-h-[95vh] flex flex-col">
             <div class="bg-gradient-to-r from-red-900 via-red-800 to-amber-900 text-white p-4 sm:p-5 flex justify-between items-center relative border-b border-amber-400/30">
                 <div class="space-y-1">
                     <span class="bg-amber-500/30 border border-amber-300/40 text-amber-200 text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full">官方線上接龍系統</span>
                     <h3 class="text-xl sm:text-2xl font-serif-tc font-bold text-amber-200 flex items-center gap-2">
-                        <span>📝</span> 快速線上報名單
+                        <span>📝</span> 線上報名單
                     </h3>
                 </div>
                 <button onclick="closeRegistrationModal()" class="w-8 h-8 bg-black/30 hover:bg-black/50 text-amber-200 hover:text-white rounded-full flex items-center justify-center font-bold text-lg transition-all cursor-pointer">
@@ -761,8 +761,10 @@ https://rmlwin168-star.github.io/ShengDe50/
             </div>
             
             <form id="online-reg-form" onsubmit="handleRegistrationSubmit(event)" class="p-5 sm:p-6 pb-16 sm:pb-8 overflow-y-auto space-y-5 text-gray-800">
-                <div class="bg-amber-100/80 border border-amber-300 p-3 rounded-xl text-xs text-amber-900 font-bold flex items-center gap-2">
-                    <span>💡</span> 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀！
+                
+                <div id="edit-mode-hint" class="hidden bg-red-50 border border-red-200 p-3 rounded-xl text-xs text-red-800 font-bold flex items-start gap-2 shadow-inner">
+                    <span class="mt-0.5">⚠️</span> 
+                    <span>【安全鎖定】：為避免重複建檔，公壇與姓名已鎖定。若需更換名單，請點擊下方「❌ 註銷此報名」後重新登錄。</span>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -846,7 +848,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                     </div>
                 </div>
                 
-                <!-- 職務、午餐與晚餐區塊 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="reg-job" class="block text-xs font-bold text-gray-700 mb-1">
@@ -903,9 +904,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                     </div>
                 </div>
 
-                <!-- 交通安排雙區塊 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- 到聖德宮 -->
                     <div class="bg-red-50 p-4 rounded-xl border border-red-200 space-y-3">
                         <label for="reg-trans-temple" class="block text-sm font-bold text-red-900 border-b border-red-200 pb-1">
                             🚗 早上：到聖德宮交通 <span class="text-red-600">*</span>
@@ -926,18 +925,15 @@ https://rmlwin168-star.github.io/ShengDe50/
                         <div id="div-temple-seats" class="hidden bg-white p-2 rounded border border-red-100">
                             <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 可接送人數(不含司機) <span class="text-red-600">*</span></label>
                             <input type="number" id="reg-seats-temple" value="0" min="0" class="w-full px-2 py-1 border rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-800">
-                            <p class="text-[10px] text-gray-500 mt-1">請輸入車上還能載幾位同壇道親。</p>
                         </div>
                         <div id="div-temple-driver" class="hidden bg-white p-2 rounded border border-red-100">
-                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 搭乘誰的車 (同壇自動配對) <span class="text-red-600">*</span></label>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 搭乘誰的車 <span class="text-red-600">*</span></label>
                             <select id="reg-driver-temple" class="w-full px-2 py-1 border rounded text-sm font-bold bg-white focus:outline-none focus:ring-2 focus:ring-red-800">
                                 <option value="" disabled selected>-- 請先選擇公壇 --</option>
                             </select>
-                            <p class="text-[10px] text-gray-500 mt-1">系統會自動計算司機剩餘空位。</p>
                         </div>
                     </div>
 
-                    <!-- 到莿桐國小 -->
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 space-y-3">
                         <label for="reg-trans-school" class="block text-sm font-bold text-blue-900 border-b border-blue-200 pb-1">
                             🚌 下午：到莿桐國小交通 <span class="text-red-600">*</span>
@@ -958,36 +954,33 @@ https://rmlwin168-star.github.io/ShengDe50/
                         <div id="div-school-seats" class="hidden bg-white p-2 rounded border border-blue-100">
                             <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 可接送人數(不含司機) <span class="text-red-600">*</span></label>
                             <input type="number" id="reg-seats-school" value="0" min="0" class="w-full px-2 py-1 border rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-800">
-                            <p class="text-[10px] text-gray-500 mt-1">請輸入車上還能載幾位同壇道親。</p>
                         </div>
                         <div id="div-school-driver" class="hidden bg-white p-2 rounded border border-blue-100">
-                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 搭乘誰的車 (同壇自動配對) <span class="text-red-600">*</span></label>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">🚙 搭乘誰的車 <span class="text-red-600">*</span></label>
                             <select id="reg-driver-school" class="w-full px-2 py-1 border rounded text-sm font-bold bg-white focus:outline-none focus:ring-2 focus:ring-blue-800">
                                 <option value="" disabled selected>-- 請先選擇公壇 --</option>
                             </select>
-                            <p class="text-[10px] text-gray-500 mt-1">系統會自動計算司機剩餘空位。</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="pt-3 border-t border-gray-200">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">🪑 大會安排唯讀區 (提交後由後台統一分配)</label>
-                    <textarea readonly class="w-full px-3 py-2 bg-gray-100 text-xs text-gray-500 font-bold cursor-not-allowed border rounded-xl focus:outline-none" rows="2">1. 停車位安排  2. 早上聖德巡禮座位  3. 聖德宴席座位
-4. 聖德展演廳座位  5. 會後環境整理-負責區域</textarea>
-                </div>
-
-                <div class="pt-4 flex items-center justify-end gap-3 relative z-10">
-                    <button type="button" onclick="closeRegistrationModal()" class="px-5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all cursor-pointer">取消</button>
+                <div class="pt-4 flex flex-wrap items-center justify-end gap-3 relative z-10">
+                    <button type="button" id="btn-abandon-record" onclick="abandonCurrentRecord()" class="hidden mr-auto px-4 py-2.5 bg-gray-800 text-red-400 border border-gray-700 rounded-xl text-xs font-bold hover:bg-gray-900 transition-all cursor-pointer">
+                        ❌ 註銷此報名
+                    </button>
+                    <button type="button" onclick="closeRegistrationModal()" class="px-5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all cursor-pointer">
+                        取消
+                    </button>
                     <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-red-800 to-amber-700 text-white font-extrabold text-sm rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer">
-                        <span>✅</span> 確認提交報名
+                        <span>✅</span> 確認提交
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ASSISTER BATCH & EDIT MODAL -->
-    <div id="assister-manage-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all duration-300">
+    <!-- ASSISTER BATCH & EDIT MODAL (Z-index 50) -->
+    <div id="assister-manage-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[50] hidden flex items-center justify-center p-4 transition-all duration-300">
         <div class="bg-gradient-to-b from-amber-50 to-white w-full max-w-2xl rounded-3xl shadow-2xl border-2 border-amber-300 overflow-hidden max-h-[90vh] flex flex-col">
             <div class="bg-gradient-to-r from-red-900 via-red-800 to-amber-900 text-white p-5 flex justify-between items-center border-b border-amber-400/30">
                 <div>
@@ -1052,9 +1045,6 @@ https://rmlwin168-star.github.io/ShengDe50/
 
     <!-- JavaScript -->
     <script>
-        // ---------------------------------------------------------
-        // 1. DATA STRUCTURES & VARIABLES
-        // ---------------------------------------------------------
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbzyiN8C6SP2TVxTGOHz5e60mj0eBhZM4-Sa1k-zbmbKV4Dc0-dkQgQ9TNxnG5hzrvEp/exec';
 
         const performancesData = [
@@ -1099,7 +1089,9 @@ https://rmlwin168-star.github.io/ShengDe50/
         };
 
         if (new Date() >= new Date('2026-10-01T00:00:00')) {
-            overseasTemplesList.forEach(t => { templeMockData[t] = {total: 0}; });
+            overseasTemplesList.forEach(t => {
+                templeMockData[t] = {total: 0};
+            });
         }
         
         function checkOverseasDate(elementId) {
@@ -1122,9 +1114,6 @@ https://rmlwin168-star.github.io/ShengDe50/
         let lockedAssister = "";
         let lockedPhone = "";
 
-        // ---------------------------------------------------------
-        // 2. INITIALIZATION
-        // ---------------------------------------------------------
         document.addEventListener('DOMContentLoaded', async () => {
             initCountdown();
             renderPerformanceCards('all');
@@ -1147,9 +1136,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             setInterval(update, 1000);
         }
 
-        // ---------------------------------------------------------
-        // 3. DATABASE FETCH & SUBMIT LOGIC
-        // ---------------------------------------------------------
         async function loadLiveRegistrationData() {
             try {
                 const response = await fetch(scriptUrl);
@@ -1192,19 +1178,47 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
         }
 
+        // --- 核心安全鎖定功能：防止改名產生重複資料 ---
+        function setEditMode(isEdit) {
+            const templeSelect = document.getElementById('reg-temple');
+            const nameInput = document.getElementById('reg-name');
+            const abandonBtn = document.getElementById('btn-abandon-record');
+            const editHint = document.getElementById('edit-mode-hint');
+            
+            if (isEdit) {
+                templeSelect.style.pointerEvents = "none";
+                templeSelect.classList.add("bg-gray-200", "text-gray-500");
+                nameInput.readOnly = true;
+                nameInput.classList.add("bg-gray-200", "text-gray-500");
+                abandonBtn.classList.remove("hidden");
+                editHint.classList.remove("hidden");
+            } else {
+                templeSelect.style.pointerEvents = "auto";
+                templeSelect.classList.remove("bg-gray-200", "text-gray-500");
+                nameInput.readOnly = false;
+                nameInput.classList.remove("bg-gray-200", "text-gray-500");
+                abandonBtn.classList.add("hidden");
+                editHint.classList.add("hidden");
+            }
+        }
+
+        function abandonCurrentRecord() {
+            if(confirm("確定要註銷(取消)此道親的報名嗎？\n系統將保留歷史紀錄，但不再計算此人名額，且釋出車位。")) {
+                document.getElementById('reg-job').value = '❌ 不克出席 (取消)';
+                checkCancelStatus();
+                // 直接呼叫儲存程序
+                handleRegistrationSubmit(new Event('submit', { cancelable: true }));
+            }
+        }
+
         function checkCancelStatus() {
             const job = document.getElementById('reg-job').value;
             const isCancel = (job === '❌ 不克出席 (取消)');
             
-            const transTemple = document.getElementById('reg-trans-temple');
-            const transSchool = document.getElementById('reg-trans-school');
-            const lunch = document.getElementById('reg-lunch');
-            const dinner = document.getElementById('reg-dinner');
-
-            transTemple.required = !isCancel;
-            transSchool.required = !isCancel;
-            lunch.required = !isCancel;
-            dinner.required = !isCancel;
+            document.getElementById('reg-trans-temple').required = !isCancel;
+            document.getElementById('reg-trans-school').required = !isCancel;
+            document.getElementById('reg-lunch').required = !isCancel;
+            document.getElementById('reg-dinner').required = !isCancel;
 
             if (isCancel) {
                 document.getElementById('reg-seats-temple').required = false;
@@ -1212,20 +1226,21 @@ https://rmlwin168-star.github.io/ShengDe50/
                 document.getElementById('reg-seats-school').required = false;
                 document.getElementById('reg-driver-school').required = false;
                 
-                transTemple.value = "";
-                transSchool.value = "";
-                lunch.value = "";
-                dinner.value = "";
+                document.getElementById('reg-trans-temple').value = "";
+                document.getElementById('reg-trans-school').value = "";
+                document.getElementById('reg-lunch').value = "";
+                document.getElementById('reg-dinner').value = "";
                 
                 updateDriverOptionsAll();
-                showToast("💡 選擇「不克出席」，下方交通與餐飲已免填，請直接按確認送出！");
+                showToast("💡 已切換為「不克出席」，請按確認送出完成註銷！");
             } else {
                 updateDriverOptionsAll(); 
             }
         }
 
         async function handleRegistrationSubmit(event) {
-            event.preventDefault();
+            if (event && event.preventDefault) event.preventDefault();
+            
             const dateStr = document.getElementById('reg-date').value;
             const templeName = document.getElementById('reg-temple').value;
             const attendeeName = document.getElementById('reg-name').value.trim();
@@ -1234,62 +1249,55 @@ https://rmlwin168-star.github.io/ShengDe50/
             const jobTitle = document.getElementById('reg-job').value;
             
             let transTemple = document.getElementById('reg-trans-temple').value || "";
-            let seatsTemple = parseInt(document.getElementById('reg-seats-temple').value) || 0;
+            let seatsTemple = parseInt(document.getElementById('reg-seats-temple').value);
             let driverTemple = document.getElementById('reg-driver-temple').value || "";
             
             let transSchool = document.getElementById('reg-trans-school').value || "";
-            let seatsSchool = parseInt(document.getElementById('reg-seats-school').value) || 0;
+            let seatsSchool = parseInt(document.getElementById('reg-seats-school').value);
             let driverSchool = document.getElementById('reg-driver-school').value || "";
             
             let lunchSelect = document.getElementById('reg-lunch').value || "";
             let dinnerSelect = document.getElementById('reg-dinner').value || "";
 
+            // ⚠️ 終極資料庫防呆與嚴格驗證
             if (jobTitle === '❌ 不克出席 (取消)') {
-                transTemple = "無";
-                transSchool = "無";
-                lunchSelect = "無";
-                dinnerSelect = "無";
-                driverTemple = "";
-                driverSchool = "";
-                seatsTemple = 0;
-                seatsSchool = 0;
+                transTemple = "無"; transSchool = "無"; lunchSelect = "無"; dinnerSelect = "無";
+                driverTemple = ""; driverSchool = ""; seatsTemple = 0; seatsSchool = 0;
             } else {
                 if (!templeName || !attendeeName || !assisterName || !assisterPhone || !jobTitle || !transTemple || !transSchool || !lunchSelect || !dinnerSelect) {
-                    alert("請完整填寫所有必填欄位！");
-                    return;
+                    alert("⚠️ 請完整填寫所有必填欄位！(不允許空白)"); return;
+                }
+                if (transTemple === '自駕' && (document.getElementById('reg-seats-temple').value === "")) {
+                    alert("⚠️ 錯誤：請輸入早上到聖德宮的「可接送人數」！(沒空位請填 0)"); return;
+                }
+                if (transTemple === '已有人接送' && !driverTemple) {
+                    alert("⚠️ 錯誤：請選擇早上到聖德宮的「搭乘司機」！"); return;
+                }
+                if (transSchool === '自駕' && (document.getElementById('reg-seats-school').value === "")) {
+                    alert("⚠️ 錯誤：請輸入下午到莿桐國小的「可接送人數」！(沒空位請填 0)"); return;
+                }
+                if (transSchool === '已有人接送' && !driverSchool) {
+                    alert("⚠️ 錯誤：請選擇下午到莿桐國小的「搭乘司機」！"); return;
                 }
             }
 
             const payload = { 
-                date: dateStr, 
-                temple: templeName, 
-                name: attendeeName, 
-                assister: assisterName, 
-                assister_phone: assisterPhone,
-                job: jobTitle,
-                transport_sd: transTemple, 
-                driver_capacity_sd: seatsTemple, 
-                driver_name_sd: driverTemple,
-                transport_ct: transSchool, 
-                driver_capacity_ct: seatsSchool, 
-                driver_name_ct: driverSchool,
-                stay_dinner: dinnerSelect,
-                lunch_box: lunchSelect,
-                parking: "待安排",
-                tourSeat: "待安排",
-                banquetSeat: "待安排",
-                showSeat: "待安排",
-                cleanupZone: "待安排"
+                date: dateStr, temple: templeName, name: attendeeName, 
+                assister: assisterName, assister_phone: assisterPhone, job: jobTitle,
+                transport_sd: transTemple, driver_capacity_sd: seatsTemple || 0, driver_name_sd: driverTemple,
+                transport_ct: transSchool, driver_capacity_ct: seatsSchool || 0, driver_name_ct: driverSchool,
+                stay_dinner: dinnerSelect, lunch_box: lunchSelect,
+                parking: "待安排", tourSeat: "待安排", banquetSeat: "待安排", showSeat: "待安排", cleanupZone: "待安排"
             };
 
             showToast("⏳ 處理中，請稍候...");
 
+            // 瞬間樂觀更新
             globalRecords = globalRecords.filter(r => !(String(r.temple).trim() === String(payload.temple).trim() && String(r.name).trim() === String(payload.name).trim()));
             globalRecords.push(payload);
             
             Object.keys(templeMockData).forEach(k => { 
-                templeMockData[k].total = 0; 
-                templeMockData[k].logs = []; 
+                templeMockData[k].total = 0; templeMockData[k].logs = []; 
             });
             globalRecords.forEach(row => {
                 const t = row.temple;
@@ -1300,9 +1308,9 @@ https://rmlwin168-star.github.io/ShengDe50/
                 }
             });
             
-            // 🛑 核心導航邏輯：送出後關閉(B)，若(A)在背後，則自動刷新(A)
+            // 🛑 核心導航修正：無縫返回
             closeRegistrationModal();
-            showToast(`🎉 成功！已為 [${attendeeName}] 更新報名狀態！`);
+            showToast(`🎉 成功！已為 [${attendeeName}] 儲存紀錄！`);
 
             document.getElementById('temple-inspector-select').value = templeName;
             renderTempleDetail();
@@ -1312,17 +1320,16 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
             calculateBudgetRequirements();
 
-            // 若壇主面板(A)還開著，瞬間刷新名單，完美返回
+            // 瞬間刷新壇主面板 (A)
             if (!document.getElementById('assister-manage-modal').classList.contains('hidden')) {
                 loginAssister();
             }
 
+            // 背景上傳
             fetch(scriptUrl, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                body: JSON.stringify(payload), 
+                method: 'POST', mode: 'no-cors', body: JSON.stringify(payload), 
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-            }).catch(error => console.error("Submit Data Error:", error));
+            }).catch(error => console.error("Submit Error:", error));
         }
 
         function updateDriverOptionsAll() {
@@ -1339,18 +1346,11 @@ https://rmlwin168-star.github.io/ShengDe50/
             const selectDriver = document.getElementById('reg-driver-temple');
 
             if (trans === '自駕') {
-                divSeats.classList.remove('hidden'); 
-                divDriver.classList.add('hidden');
-                inputSeats.required = true; 
-                selectDriver.required = false; 
-                selectDriver.value = "";
+                divSeats.classList.remove('hidden'); divDriver.classList.add('hidden');
+                inputSeats.required = true; selectDriver.required = false; selectDriver.value = "";
             } else if (trans === '已有人接送') {
-                divSeats.classList.add('hidden'); 
-                inputSeats.required = false; 
-                inputSeats.value = 0;
-                divDriver.classList.remove('hidden'); 
-                selectDriver.required = true;
-                
+                divSeats.classList.add('hidden'); inputSeats.required = false; inputSeats.value = "";
+                divDriver.classList.remove('hidden'); selectDriver.required = true;
                 if(temple && globalRecords.length > 0) {
                     const drivers = globalRecords.filter(r => r.temple === temple && r.transport_sd === '自駕' && r.driver_capacity_sd > 0);
                     selectDriver.innerHTML = '<option value="" disabled selected>-- 請選擇同壇司機 --</option>';
@@ -1359,12 +1359,8 @@ https://rmlwin168-star.github.io/ShengDe50/
                         const seatsLeft = d.driver_capacity_sd - passengersCount;
                         const opt = document.createElement('option');
                         opt.value = d.name;
-                        if(seatsLeft > 0) { 
-                            opt.text = `${d.name} (剩餘 ${seatsLeft} 位)`; 
-                        } else { 
-                            opt.text = `${d.name} (已滿載)`; 
-                            opt.disabled = true; 
-                        }
+                        if(seatsLeft > 0) { opt.text = `${d.name} (剩餘 ${seatsLeft} 位)`; } 
+                        else { opt.text = `${d.name} (已滿載)`; opt.disabled = true; }
                         selectDriver.appendChild(opt);
                     });
                 } else {
@@ -1372,12 +1368,8 @@ https://rmlwin168-star.github.io/ShengDe50/
                 }
                 selectDriver.insertAdjacentHTML('beforeend', '<option value="" disabled>👉 找不到司機？請回上一步改選『須安排交通』</option>');
             } else {
-                divSeats.classList.add('hidden'); 
-                divDriver.classList.add('hidden');
-                inputSeats.required = false; 
-                inputSeats.value = 0; 
-                selectDriver.required = false; 
-                selectDriver.value = "";
+                divSeats.classList.add('hidden'); divDriver.classList.add('hidden');
+                inputSeats.required = false; inputSeats.value = ""; selectDriver.required = false; selectDriver.value = "";
             }
         }
 
@@ -1390,18 +1382,11 @@ https://rmlwin168-star.github.io/ShengDe50/
             const selectDriver = document.getElementById('reg-driver-school');
 
             if (trans === '自駕') {
-                divSeats.classList.remove('hidden'); 
-                divDriver.classList.add('hidden');
-                inputSeats.required = true; 
-                selectDriver.required = false; 
-                selectDriver.value = "";
+                divSeats.classList.remove('hidden'); divDriver.classList.add('hidden');
+                inputSeats.required = true; selectDriver.required = false; selectDriver.value = "";
             } else if (trans === '已有人接送') {
-                divSeats.classList.add('hidden'); 
-                inputSeats.required = false; 
-                inputSeats.value = 0;
-                divDriver.classList.remove('hidden'); 
-                selectDriver.required = true;
-                
+                divSeats.classList.add('hidden'); inputSeats.required = false; inputSeats.value = "";
+                divDriver.classList.remove('hidden'); selectDriver.required = true;
                 if(temple && globalRecords.length > 0) {
                     const drivers = globalRecords.filter(r => r.temple === temple && r.transport_ct === '自駕' && r.driver_capacity_ct > 0);
                     selectDriver.innerHTML = '<option value="" disabled selected>-- 請選擇同壇司機 --</option>';
@@ -1410,12 +1395,8 @@ https://rmlwin168-star.github.io/ShengDe50/
                         const seatsLeft = d.driver_capacity_ct - passengersCount;
                         const opt = document.createElement('option');
                         opt.value = d.name;
-                        if(seatsLeft > 0) { 
-                            opt.text = `${d.name} (剩餘 ${seatsLeft} 位)`; 
-                        } else { 
-                            opt.text = `${d.name} (已滿載)`; 
-                            opt.disabled = true; 
-                        }
+                        if(seatsLeft > 0) { opt.text = `${d.name} (剩餘 ${seatsLeft} 位)`; } 
+                        else { opt.text = `${d.name} (已滿載)`; opt.disabled = true; }
                         selectDriver.appendChild(opt);
                     });
                 } else {
@@ -1423,12 +1404,8 @@ https://rmlwin168-star.github.io/ShengDe50/
                 }
                 selectDriver.insertAdjacentHTML('beforeend', '<option value="" disabled>👉 找不到司機？請回上一步改選『須安排交通』</option>');
             } else {
-                divSeats.classList.add('hidden'); 
-                divDriver.classList.add('hidden');
-                inputSeats.required = false; 
-                inputSeats.value = 0; 
-                selectDriver.required = false; 
-                selectDriver.value = "";
+                divSeats.classList.add('hidden'); divDriver.classList.add('hidden');
+                inputSeats.required = false; inputSeats.value = ""; selectDriver.required = false; selectDriver.value = "";
             }
         }
 
@@ -1483,25 +1460,21 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.body.style.overflow = 'auto'; 
         }
 
-        // 🛑 核心修復：強制將報名表單 (B) 的圖層 (z-index) 拉到 60，蓋過壇主面板 (A) 的 50
         function openRegistrationModal() {
+            setEditMode(false);
             const now = new Date();
             document.getElementById('reg-date').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             
             const modal = document.getElementById('registration-modal');
             modal.classList.remove('hidden'); 
-            modal.style.zIndex = '60'; 
             document.body.style.overflow = 'hidden';
-            
             updateDriverOptionsAll();
         }
 
         function closeRegistrationModal() { 
             const modal = document.getElementById('registration-modal');
             modal.classList.add('hidden'); 
-            modal.style.zIndex = '50'; // 關閉時把圖層降回預設
             
-            // 判斷如果壇主面板(A)不在畫面上，才把網頁的滾動條打開
             if (document.getElementById('assister-manage-modal').classList.contains('hidden')) {
                 document.body.style.overflow = 'auto'; 
             }
@@ -1525,18 +1498,13 @@ https://rmlwin168-star.github.io/ShengDe50/
             const name = document.getElementById('manage-input-name').value.trim();
             const phone = document.getElementById('manage-input-phone').value.trim();
             if (!name || !phone) {
-                alert("請完整輸入壇主姓名與 10 碼手機號碼！");
-                return;
+                alert("請完整輸入壇主姓名與 10 碼手機號碼！"); return;
             }
 
-            const myRecords = globalRecords.filter(r => 
-                String(r.assister_phone).trim() === phone && 
-                String(r.assister).trim() === name
-            );
+            const myRecords = globalRecords.filter(r => String(r.assister_phone).trim() === phone && String(r.assister).trim() === name);
 
             if (myRecords.length === 0) {
-                alert("查無此手機號碼登記之資料！\n若為舊名單，請先確認後台已為您補登手機。");
-                return;
+                alert("查無此手機號碼登記之資料！\n若為舊名單，請先確認後台已為您補登手機。"); return;
             }
 
             lockedTemple = myRecords[0].temple;
@@ -1564,6 +1532,8 @@ https://rmlwin168-star.github.io/ShengDe50/
 
         function loadRecordToEdit(record) {
             openRegistrationModal();
+            setEditMode(true);
+            
             document.getElementById('reg-temple').value = record.temple;
             document.getElementById('reg-name').value = record.name;
             document.getElementById('reg-assister').value = record.assister;
@@ -1604,9 +1574,7 @@ https://rmlwin168-star.github.io/ShengDe50/
             const toast = document.getElementById('toast');
             toast.textContent = msg;
             toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
         }
 
         function filterPerformances(category) {
@@ -1635,18 +1603,12 @@ https://rmlwin168-star.github.io/ShengDe50/
         // 5. MEDIA TOOLKIT & VIDEO PLAYER
         // ---------------------------------------------------------
         function checkAuth(callback) {
-            if (isAuthorized) {
-                callback();
-                return;
-            }
+            if (isAuthorized) { callback(); return; }
             const pwd = prompt("此為各壇負責人專用推播功能。\n請輸入發布密碼以解鎖 (預設: 5050)：");
             if (pwd === "5050") {
                 isAuthorized = true;
-                showToast("✅ 授權成功！已解鎖推播功能。");
-                callback();
-            } else if (pwd !== null) {
-                alert("密碼錯誤，無法使用推播功能。");
-            }
+                showToast("✅ 授權成功！已解鎖推播功能。"); callback();
+            } else if (pwd !== null) { alert("密碼錯誤，無法使用推播功能。"); }
         }
 
         function switchMediaTab(tabId) {
@@ -1657,15 +1619,12 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById(`btn-${tabId}`).classList.remove('border-transparent', 'text-gray-600');
             document.getElementById(`btn-${tabId}`).classList.add('border-b-2', 'border-red-800', 'text-red-800', 'bg-white');
             
-            document.querySelectorAll('.media-content-block').forEach(b => {
-                b.classList.add('hidden');
-            });
+            document.querySelectorAll('.media-content-block').forEach(b => { b.classList.add('hidden'); });
             document.getElementById(tabId).classList.remove('hidden');
         }
         
         function shareTextToLine(text) {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            
             if (isMobile) {
                 const encodedText = encodeURIComponent(text);
                 window.open(`https://line.me/R/msg/text/?${encodedText}`, '_blank');
@@ -1678,20 +1637,12 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
         }
 
-        function copyLineText() { 
-            const textSource = document.getElementById('lineTextSource').value;
-            navigator.clipboard.writeText(textSource); 
-            showToast("Line接龍文案已複製"); 
-        }
-        function shareLineToLine() {
-            const textSource = document.getElementById('lineTextSource').value;
-            shareTextToLine(textSource);
-        }
+        function copyLineText() { navigator.clipboard.writeText(document.getElementById('lineTextSource').value); showToast("Line接龍文案已複製"); }
+        function shareLineToLine() { shareTextToLine(document.getElementById('lineTextSource').value); }
 
         function copyDmText() { 
             const dmText = "【宣傳 DM】\n承先啟後 五十揚帆 ── 聖德宮 50 周年慶典\n活動日期：2026年12月13日\n活動地點：聖德宮大廣場 / 展演廳 (700席)\n報名期限：即日起至 09/30\n✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨\n\n🌐 聖德宮50周年線上報名專區：\nhttps://rmlwin168-star.github.io/ShengDe50/";
-            navigator.clipboard.writeText(dmText); 
-            showToast("DM文案已複製"); 
+            navigator.clipboard.writeText(dmText); showToast("DM文案已複製"); 
         }
         function shareDmToLine() {
             const dmText = "【宣傳 DM】\n承先啟後 五十揚帆 ── 聖德宮 50 周年慶典\n活動日期：2026年12月13日\n活動地點：聖德宮大廣場 / 展演廳 (700席)\n報名期限：即日起至 09/30\n✨ 您的參與將見證聖德宮的50周年輝煌歷史，也將烙印身為聖德宮一分子的榮耀 ✨\n\n🌐 聖德宮50周年線上報名專區：\nhttps://rmlwin168-star.github.io/ShengDe50/";
@@ -1699,49 +1650,26 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         function copyInviteText() { 
-            let inviteText = document.getElementById('invite-content-box').innerText;
-            inviteText += "\nhttps://rmlwin168-star.github.io/ShengDe50/";
-            navigator.clipboard.writeText(inviteText); 
-            showToast("正式邀請函已複製"); 
+            let inviteText = document.getElementById('invite-content-box').innerText + "\nhttps://rmlwin168-star.github.io/ShengDe50/";
+            navigator.clipboard.writeText(inviteText); showToast("正式邀請函已複製"); 
         }
         function shareInviteToLine() {
-            let inviteText = document.getElementById('invite-content-box').innerText;
-            inviteText += "\nhttps://rmlwin168-star.github.io/ShengDe50/";
+            let inviteText = document.getElementById('invite-content-box').innerText + "\nhttps://rmlwin168-star.github.io/ShengDe50/";
             shareTextToLine(inviteText);
         }
 
         function copyVideoText() {
-            const visualDesc = document.getElementById('video-visual-desc').textContent;
-            const narration = document.getElementById('video-narration').textContent;
-            const text = "【宣傳短片分鏡搶先看】\n畫面：" + visualDesc + "\n" + narration + "\n\n🌐 聖德宮50周年線上報名專區：\nhttps://rmlwin168-star.github.io/ShengDe50/";
-            
-            navigator.clipboard.writeText(text);
-            showToast("短片腳本已複製");
+            const text = "【宣傳短片分鏡搶先看】\n畫面：" + document.getElementById('video-visual-desc').textContent + "\n" + document.getElementById('video-narration').textContent + "\n\n🌐 聖德宮50周年線上報名專區：\nhttps://rmlwin168-star.github.io/ShengDe50/";
+            navigator.clipboard.writeText(text); showToast("短片腳本已複製");
         }
         function shareVideoToLine() {
-            const visualDesc = document.getElementById('video-visual-desc').textContent;
-            const narration = document.getElementById('video-narration').textContent;
-            const text = "【宣傳短片分鏡搶先看】\n畫面：" + visualDesc + "\n" + narration + "\n\n🌐 聖德宮50周年線上報名專區：\nhttps://rmlwin168-star.github.io/ShengDe50/";
-            
+            const text = "【宣傳短片分鏡搶先看】\n畫面：" + document.getElementById('video-visual-desc').textContent + "\n" + document.getElementById('video-narration').textContent + "\n\n🌐 聖德宮50周年線上報名專區：\nhttps://rmlwin168-star.github.io/ShengDe50/";
             shareTextToLine(text);
         }
 
-        function setVideoFrame(index) { 
-            currentVideoFrame = index; 
-            updateVideoUI(); 
-        }
-        function nextVideoFrame() { 
-            if(currentVideoFrame < videoFrames.length - 1) { 
-                currentVideoFrame++; 
-                updateVideoUI(); 
-            } 
-        }
-        function prevVideoFrame() { 
-            if(currentVideoFrame > 0) { 
-                currentVideoFrame--; 
-                updateVideoUI(); 
-            } 
-        }
+        function setVideoFrame(index) { currentVideoFrame = index; updateVideoUI(); }
+        function nextVideoFrame() { if(currentVideoFrame < videoFrames.length - 1) { currentVideoFrame++; updateVideoUI(); } }
+        function prevVideoFrame() { if(currentVideoFrame > 0) { currentVideoFrame--; updateVideoUI(); } }
         
         function updateVideoUI() {
             const frame = videoFrames[currentVideoFrame];
@@ -1751,11 +1679,8 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById('video-visual-desc').textContent = frame.visual;
             document.getElementById('video-narration').textContent = frame.narration;
             document.getElementById('video-progress-bar').style.width = `${frame.progress}%`;
-            
             document.querySelectorAll('.sb-btn').forEach((btn, idx) => {
-                btn.className = idx === currentVideoFrame 
-                    ? "sb-btn p-2 rounded bg-amber-900/40 border border-amber-500/50 text-amber-200 font-bold cursor-pointer"
-                    : "sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer";
+                btn.className = idx === currentVideoFrame ? "sb-btn p-2 rounded bg-amber-900/40 border border-amber-500/50 text-amber-200 font-bold cursor-pointer" : "sb-btn p-2 rounded bg-gray-800 border border-gray-700 text-gray-400 cursor-pointer";
             });
         }
 
@@ -1766,50 +1691,29 @@ https://rmlwin168-star.github.io/ShengDe50/
             const ctxDoughnut = document.getElementById('programStructureChart').getContext('2d');
             programChart = new Chart(ctxDoughnut, {
                 type: 'doughnut',
-                data: { 
-                    labels: ['舞台劇', '天籟樂音', '道育傳承', '活力國際'], 
-                    datasets: [{ 
-                        data: [3, 2, 1, 1], 
-                        backgroundColor: ['#991B1B', '#D97706', '#059669', '#7C3AED']
-                    }] 
-                },
+                data: { labels: ['舞台劇', '天籟樂音', '道育傳承', '活力國際'], datasets: [{ data: [3, 2, 1, 1], backgroundColor: ['#991B1B', '#D97706', '#059669', '#7C3AED'] }] },
                 options: { responsive: true, maintainAspectRatio: false }
             });
-            
             const ctxBar = document.getElementById('templeBarChart').getContext('2d');
             templeChart = new Chart(ctxBar, {
                 type: 'bar',
-                data: { 
-                    labels: Object.keys(templeMockData), 
-                    datasets: [{ 
-                        label: '人數', 
-                        data: Object.values(templeMockData).map(d => d.total), 
-                        backgroundColor: '#B45309' 
-                    }] 
-                },
+                data: { labels: Object.keys(templeMockData), datasets: [{ label: '人數', data: Object.values(templeMockData).map(d => d.total), backgroundColor: '#B45309' }] },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
             });
         }
 
         function calculateBudgetRequirements() {
             let count = parseInt(document.getElementById('calc-headcount').value) || 0;
-            
             const actualSum = Object.values(templeMockData).reduce((a, b) => a + b.total, 0);
-            if (count < actualSum) { 
-                count = actualSum; 
-                document.getElementById('calc-headcount').value = count; 
-            }
+            if (count < actualSum) { count = actualSum; document.getElementById('calc-headcount').value = count; }
 
             document.getElementById('res-tables').textContent = Math.ceil(count / 10).toLocaleString();
             document.getElementById('res-gifts').textContent = Math.ceil(count * 1.05).toLocaleString();
             document.getElementById('res-hall-cap').textContent = `${((count / 700) * 100).toFixed(1)}%`;
             
             let shuttleNeedCount = 0;
-            if(globalRecords.length > 0) {
-                shuttleNeedCount = globalRecords.filter(r => r.transport_ct === '須安排交通').length;
-            }
+            if(globalRecords.length > 0) { shuttleNeedCount = globalRecords.filter(r => r.transport_ct === '須安排交通').length; }
             let shuttleBuses = shuttleNeedCount > 0 ? Math.ceil(shuttleNeedCount / 4) + 5 : 5;
-            
             document.getElementById('res-buses-info').innerHTML = `遊覽車 6 台 (40座/台，國外)<br/>計程車 ${shuttleBuses} 台 (國內，需接送 ${shuttleNeedCount} 人)`;
         }
 
@@ -1827,18 +1731,14 @@ https://rmlwin168-star.github.io/ShengDe50/
                         else if (log.transport_sd === '已有人接送') tTemple = `搭車(${log.driver_name_sd})`;
                         else tTemple = log.transport_sd;
                     }
-
                     let tSchool = '舊版資料';
                     if (log.transport_ct) {
                         if (log.transport_ct === '自駕') tSchool = `自駕(${log.driver_capacity_ct}位)`;
                         else if (log.transport_ct === '已有人接送') tSchool = `搭車(${log.driver_name_ct})`;
                         else tSchool = log.transport_ct;
                     }
-
                     let dinnerShow = '➖';
-                    if (log.stay_dinner) {
-                        dinnerShow = log.stay_dinner.includes('是') ? '⭕' : '❌';
-                    }
+                    if (log.stay_dinner) { dinnerShow = log.stay_dinner.includes('是') ? '⭕' : '❌'; }
 
                     return `<tr class="border-b border-amber-100 text-[11px] sm:text-xs hover:bg-amber-50 transition-colors">
                         <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${String(log.date).substring(5, 16)}</td>
@@ -1861,30 +1761,18 @@ https://rmlwin168-star.github.io/ShengDe50/
 
             document.getElementById('temple-detail-output').innerHTML = `
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <div class="font-bold text-red-900 mb-3 flex items-center gap-2">
-                        <span>🏛️</span> ${templeName} 報名人數：<span class="text-xl">${data.total}</span> 位
-                    </div>
+                    <div class="font-bold text-red-900 mb-3 flex items-center gap-2"><span>🏛️</span> ${templeName} 報名人數：<span class="text-xl">${data.total}</span> 位</div>
                     <div class="overflow-x-auto rounded-lg border border-amber-200 bg-white shadow-sm">
                         <table class="w-full text-left min-w-[900px]">
                             <thead class="bg-amber-100/80 text-amber-900 text-[11px] whitespace-nowrap border-b border-amber-200">
                                 <tr>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide">報名時間</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide">姓名</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide">幫忙壇主</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide">身份</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide">聖德交通</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide">莿桐交通</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-center">晚餐</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">車位</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">巡禮</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">宴席</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">展演</th>
-                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">環境整理</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">報名時間</th><th class="p-2 sm:p-3 font-bold tracking-wide">姓名</th><th class="p-2 sm:p-3 font-bold tracking-wide">幫忙壇主</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide">身份</th><th class="p-2 sm:p-3 font-bold tracking-wide">聖德交通</th><th class="p-2 sm:p-3 font-bold tracking-wide">莿桐交通</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-center">晚餐</th><th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">車位</th><th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">巡禮</th>
+                                    <th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">宴席</th><th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">展演</th><th class="p-2 sm:p-3 font-bold tracking-wide text-gray-600">環境整理</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${logsHtml}
-                            </tbody>
+                            <tbody>${logsHtml}</tbody>
                         </table>
                     </div>
                 </div>`;
