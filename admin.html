@@ -101,7 +101,12 @@
                 }
                 
                 if (!templeStats[r.temple]) {
-                    templeStats[r.temple] = { total: 0, bento: 0, banquet: 0, dinner: 0 };
+                    templeStats[r.temple] = { 
+                        total: 0, 
+                        bento: 0, 
+                        banquet: 0, 
+                        dinner: 0 
+                    };
                 }
                 
                 templeStats[r.temple].total += 1;
@@ -140,26 +145,34 @@
             }).join('');
         }
 
-        // P1~P3 停車場清單設定
+        // 停車場清單 P1, P2, P3
         const amParkingZones = [
             {val: '', label: '未指定'}, 
             {val: '聖德宮P1', label: '聖德宮P1'}, 
-            {val: '聖德宮P2', label: '聖德宮P2'},
+            {val: '聖德宮P2', label: '聖德宮P2'}, 
             {val: '聖德宮P3', label: '聖德宮P3'}
         ];
 
         const pmParkingZones = [
             {val: '', label: '未指定'}, 
             {val: '莿桐國小P1', label: '莿桐國小P1'}, 
-            {val: '莿桐國小P2', label: '莿桐國小P2'},
+            {val: '莿桐國小P2', label: '莿桐國小P2'}, 
             {val: '莿桐國小P3', label: '莿桐國小P3'}
         ];
 
+        // 建立下拉選單，並支援智慧舊資料顯示
         function buildOptions(zonesArray, selectedValue) {
-            return zonesArray.map(z => {
+            let html = zonesArray.map(z => {
                 const isSelected = z.val === selectedValue ? 'selected' : '';
                 return `<option value="${z.val}" ${isSelected}>${z.label}</option>`;
             }).join('');
+            
+            // 防呆：如果資料庫裡存的是舊名字 (且不是空值)，為了避免變成未指定，我們強制把它加進選項裡
+            if (selectedValue && !zonesArray.some(z => z.val === selectedValue)) {
+                html += `<option value="${selectedValue}" selected>⚠️舊資料: ${selectedValue}</option>`;
+            }
+            
+            return html;
         }
 
         // 結算與渲染「交通接駁與停車配置」面板
@@ -176,7 +189,7 @@
             
             const staffKeywords = ['表演', '機動', '交通', '總務'];
             
-            // 預先建立大巴物件與指定顯示名稱
+            // 定義大巴名稱與畫面上的顯示名稱
             const busNames = [
                 { key: '大巴１號', displayName: '大巴１號' },
                 { key: '大巴２號', displayName: '大巴２號' },
@@ -187,11 +200,14 @@
                 { key: '大巴慶德', displayName: '台北:慶德' }
             ];
             
+            // 預先建立大巴物件，確保它們固定顯示
             busNames.forEach(b => {
                 busTransport[`[大巴] ${b.key}`] = { 
-                    displayName: b.displayName,
-                    carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
-                    busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
+                    displayName: b.displayName, 
+                    busSd: 0, 
+                    busCt: 0, 
+                    savedAm: '', 
+                    savedPm: '' 
                 };
             });
 
@@ -204,20 +220,32 @@
 
                 if (!targetObj[groupName]) {
                     targetObj[groupName] = { 
-                        displayName: groupName,
-                        carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
-                        busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
+                        displayName: groupName, 
+                        carsSd: 0, 
+                        carsCt: 0, 
+                        shuttleSd: 0, 
+                        shuttleCt: 0, 
+                        busSd: 0, 
+                        busCt: 0, 
+                        driversSd: [], 
+                        savedAm: '', 
+                        savedPm: '' 
                     };
                 }
                 
                 const t = targetObj[groupName];
 
-                // 解析資料庫中是否已有分配紀錄 (格式如： 早:P1 | 午:P2)
-                if (r.parking && r.parking !== '待安排') {
-                    const matchAm = r.parking.match(/早:\s*([^ |]+)/); 
-                    const matchPm = r.parking.match(/午:\s*([^ |]+)/);
-                    if (matchAm) t.savedAm = matchAm[1];
-                    if (matchPm) t.savedPm = matchPm[1];
+                // 解析資料庫中是否已有分配紀錄 (支援 parking 或 中文的 停車位)
+                let dbParking = r.parking || r['停車位'];
+                if (dbParking && dbParking !== '待安排') {
+                    const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
+                    const matchPm = dbParking.match(/午:\s*([^ |]+)/);
+                    if (matchAm) {
+                        t.savedAm = matchAm[1];
+                    }
+                    if (matchPm) {
+                        t.savedPm = matchPm[1];
+                    }
                 }
 
                 const transSd = String(r.transport_sd || ''); 
@@ -236,11 +264,15 @@
                     let bKey = `[大巴] ${transSd}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busSd++;
-                        if (r.parking && r.parking !== '待安排') {
-                            const matchAm = r.parking.match(/早:\s*([^ |]+)/); 
-                            const matchPm = r.parking.match(/午:\s*([^ |]+)/);
-                            if (matchAm) busTransport[bKey].savedAm = matchAm[1];
-                            if (matchPm) busTransport[bKey].savedPm = matchPm[1];
+                        if (dbParking && dbParking !== '待安排') {
+                            const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
+                            const matchPm = dbParking.match(/午:\s*([^ |]+)/);
+                            if (matchAm) {
+                                busTransport[bKey].savedAm = matchAm[1];
+                            }
+                            if (matchPm) {
+                                busTransport[bKey].savedPm = matchPm[1];
+                            }
                         }
                     }
                 }
@@ -257,16 +289,20 @@
                     let bKey = `[大巴] ${transCt}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busCt++;
-                        if (r.parking && r.parking !== '待安排') {
-                            const matchAm = r.parking.match(/早:\s*([^ |]+)/); 
-                            const matchPm = r.parking.match(/午:\s*([^ |]+)/);
-                            if (matchAm) busTransport[bKey].savedAm = matchAm[1];
-                            if (matchPm) busTransport[bKey].savedPm = matchPm[1];
+                        if (dbParking && dbParking !== '待安排') {
+                            const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
+                            const matchPm = dbParking.match(/午:\s*([^ |]+)/);
+                            if (matchAm) {
+                                busTransport[bKey].savedAm = matchAm[1];
+                            }
+                            if (matchPm) {
+                                busTransport[bKey].savedPm = matchPm[1];
+                            }
                         }
                     }
                 }
 
-                // 抓取下午轉乘孤兒名單
+                // 抓取下午轉乘孤兒名單：早上沒自駕也沒搭接駁，但下午明確需要接駁
                 if (!transSd.includes('自駕') && !transSd.includes('安排交通') && transCt.includes('安排交通')) {
                     transferList.push(`${r.temple} - ${r.name} (早上：${transSd})`);
                 }
@@ -282,10 +318,18 @@
             const transferContainer = document.getElementById('dash-transfer-list');
             if (transferList.length > 0) {
                 transferContainer.innerHTML = transferList.map(txt => {
-                    return `<span class="inline-block bg-red-100 text-red-800 border border-red-200 rounded px-2 py-1 text-xs font-bold mr-2 mb-2">${txt}</span>`;
+                    return `
+                        <span class="inline-block bg-red-100 text-red-800 border border-red-200 rounded px-2 py-1 text-xs font-bold mr-2 mb-2">
+                            ${txt}
+                        </span>
+                    `;
                 }).join('');
             } else {
-                transferContainer.innerHTML = '<span class="text-sm text-gray-500 font-bold">✅ 目前無人需要下午轉乘接駁</span>';
+                transferContainer.innerHTML = `
+                    <span class="text-sm text-gray-500 font-bold">
+                        ✅ 目前無人需要下午轉乘接駁
+                    </span>
+                `;
             }
 
             // 輔助渲染表格內容
@@ -299,11 +343,11 @@
                         return '';
                     }
                     
-                    // 若為大巴，使用合併儲存格設計以簡化顯示
+                    // 大巴專屬極簡顯示：隱藏自駕/接駁/司機，合併儲存格
                     if (isBus) {
                         return `
                             <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
-                                <td class="p-3 font-bold text-gray-800">${displayName}</td>
+                                <td class="p-3 font-bold text-blue-800 text-base">${displayName}</td>
                                 <td colspan="6" class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50 tracking-wide">
                                     此車搭乘總數：早 ${d.busSd} 人 / 午 ${d.busCt} 人
                                 </td>
@@ -326,6 +370,7 @@
                             </tr>
                         `;
                     } else {
+                        // 一般公壇/工作組顯示
                         return `
                             <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td class="p-3 font-bold text-gray-800">${displayName}</td>
@@ -358,12 +403,30 @@
             };
 
             const busHTML = buildTableRows(busTransport, true);
-            const staffHTML = buildTableRows(staffTransport);
-            const templeHTML = buildTableRows(templeTransport);
+            const staffHTML = buildTableRows(staffTransport, false);
+            const templeHTML = buildTableRows(templeTransport, false);
 
             document.getElementById('dash-transport-bus').innerHTML = busHTML;
-            document.getElementById('dash-transport-staff').innerHTML = staffHTML || '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無工作組資料</td></tr>';
-            document.getElementById('dash-transport-temple').innerHTML = templeHTML || '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無一般公壇資料</td></tr>';
+            
+            if (staffHTML) {
+                document.getElementById('dash-transport-staff').innerHTML = staffHTML;
+            } else {
+                document.getElementById('dash-transport-staff').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="p-4 text-center text-gray-400">尚無工作組資料</td>
+                    </tr>
+                `;
+            }
+            
+            if (templeHTML) {
+                document.getElementById('dash-transport-temple').innerHTML = templeHTML;
+            } else {
+                document.getElementById('dash-transport-temple').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="p-4 text-center text-gray-400">尚無一般公壇資料</td>
+                    </tr>
+                `;
+            }
         }
 
         // 執行整批次寫入資料庫邏輯
@@ -377,11 +440,11 @@
             }
 
             const updates = {};
-            // 完全廢除 ID 讀取，改用 data-group，確保 100% 讀取成功
+            
+            // 透過 data-group 抓取，確保不受 ID 命名規則(空格、冒號)的限制
             document.querySelectorAll('.park-am-select').forEach(sel => {
                 const groupKey = sel.getAttribute('data-group');
                 const amValue = sel.value; 
-                
                 const tr = sel.closest('tr');
                 const pmValue = tr.querySelector('.park-pm-select').value;
                 
