@@ -233,6 +233,20 @@
                 };
             });
 
+            // 預先建立國內所有公壇，確保「未顯示的佛堂」也能呈現
+            const allDomesticTemples = [
+                '聖德宮', '光明講堂', '興仁佛堂', '興怡佛堂', '興崙佛堂', '弘仁佛堂', '弘德佛堂', 
+                '興明佛堂', '興元佛堂', '興西佛堂', '興中佛堂', '興東佛堂', '興慈佛堂', 
+                '台北:慶德', '台北:日新', '桃園:秀德', '嘉義:賀德'
+            ];
+            allDomesticTemples.forEach(tName => {
+                templeTransport[tName] = { 
+                    displayName: tName, 
+                    carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
+                    busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
+                };
+            });
+
             globalRecords.forEach(r => {
                 const job = String(r.job || '');
                 const isStaff = staffKeywords.some(keyword => job.includes(keyword));
@@ -243,35 +257,26 @@
                 if (!targetObj[groupName]) {
                     targetObj[groupName] = { 
                         displayName: groupName, 
-                        carsSd: 0, 
-                        carsCt: 0, 
-                        shuttleSd: 0, 
-                        shuttleCt: 0, 
-                        busSd: 0, 
-                        busCt: 0, 
-                        driversSd: [], 
-                        savedAm: '', 
-                        savedPm: '' 
+                        carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
+                        busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
                     };
                 }
                 
                 const t = targetObj[groupName];
-
-                // 解析資料庫中是否已有分配紀錄 (支援 parking 或 中文的 停車位)
-                let dbParking = r.parking || r['停車位'];
-                if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
-                    const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
-                    const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                    if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') {
-                        t.savedAm = matchAm[1];
-                    }
-                    if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') {
-                        t.savedPm = matchPm[1];
-                    }
-                }
-
                 const transSd = String(r.transport_sd || ''); 
                 const transCt = String(r.transport_ct || '');
+
+                // ⚠️ 關鍵 Bug 修復：只有當此人是「自駕」時，他身上的車位設定才能代表該公壇的車位。
+                // 這防止了搭車人員身上的「舊資料」在迴圈中覆蓋掉自駕人員的正確車位！
+                if (transSd.includes('自駕') || transCt.includes('自駕')) {
+                    let dbParking = r.parking || r['停車位'];
+                    if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
+                        const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
+                        const matchPm = dbParking.match(/午:\s*([^ |]+)/);
+                        if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') t.savedAm = matchAm[1];
+                        if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') t.savedPm = matchPm[1];
+                    }
+                }
 
                 // 早上交通結算
                 if (transSd.includes('自駕')) { 
@@ -286,15 +291,13 @@
                     let bKey = `[大巴] ${transSd}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busSd++;
+                        // 大巴乘客的車位設定就代表該大巴的車位
+                        let dbParking = r.parking || r['停車位'];
                         if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                             const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                             const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') {
-                                busTransport[bKey].savedAm = matchAm[1];
-                            }
-                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') {
-                                busTransport[bKey].savedPm = matchPm[1];
-                            }
+                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') busTransport[bKey].savedAm = matchAm[1];
+                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') busTransport[bKey].savedPm = matchPm[1];
                         }
                     }
                 }
@@ -311,20 +314,17 @@
                     let bKey = `[大巴] ${transCt}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busCt++;
+                        let dbParking = r.parking || r['停車位'];
                         if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                             const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                             const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') {
-                                busTransport[bKey].savedAm = matchAm[1];
-                            }
-                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') {
-                                busTransport[bKey].savedPm = matchPm[1];
-                            }
+                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') busTransport[bKey].savedAm = matchAm[1];
+                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') busTransport[bKey].savedPm = matchPm[1];
                         }
                     }
                 }
 
-                // 抓取下午轉乘孤兒名單：早上沒自駕也沒搭接駁，但下午明確需要接駁
+                // 抓取下午轉乘孤兒名單
                 if (!transSd.includes('自駕') && !transSd.includes('安排交通') && transCt.includes('安排交通')) {
                     transferList.push(`${r.temple} - ${r.name} (早上：${transSd})`);
                 }
@@ -360,24 +360,20 @@
                     const d = dataObj[groupKey];
                     const displayName = d.displayName;
                     
-                    // 若公壇數據皆為0則隱藏 (大巴不隱藏)
-                    if (!isBus && d.carsSd === 0 && d.carsCt === 0 && d.shuttleSd === 0 && d.shuttleCt === 0 && d.busSd === 0 && d.busCt === 0) {
-                        return '';
-                    }
+                    // 判斷是否為「完全無人登錄」
+                    const isTotallyEmpty = (d.carsSd === 0 && d.carsCt === 0 && d.shuttleSd === 0 && d.shuttleCt === 0 && d.busSd === 0 && d.busCt === 0);
 
                     // 根據是否為大巴，動態套用不同的停車場清單
                     let currentAmZones = isBus ? amBusParkingZones : amGeneralParkingZones;
                     let currentPmZones = isBus ? pmBusParkingZones : pmGeneralParkingZones;
 
-                    // 大巴專屬顯示邏輯：隱藏自駕/接駁/司機，合併儲存格
                     if (isBus) {
                         let busParkingHTML = '';
-                        // 防呆：沒有乘客的大巴不顯示選單，防止設定無效
-                        if (d.busSd === 0 && d.busCt === 0) {
+                        if (isTotallyEmpty) {
                             busParkingHTML = `
                                 <div class="flex justify-center">
                                     <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
-                                        無乘客，不需車位
+                                        暫無乘客登錄
                                     </span>
                                 </div>
                             `;
@@ -412,10 +408,30 @@
                             </tr>
                         `;
                     } else {
-                        // 一般公壇/工作組顯示邏輯
+                        // 一般公壇或工作組
+                        // 防呆：如果工作組沒人，因為是動態產生的，所以直接隱藏。但公壇即使沒人也會被印出來
+                        if (isTotallyEmpty && displayName.includes('[工作組]')) {
+                            return '';
+                        }
+                        
                         let parkingHTML = '';
-                        // 防呆：若無自駕車，不顯示選單
-                        if (d.carsSd > 0 || d.carsCt > 0) {
+                        if (isTotallyEmpty) {
+                            parkingHTML = `
+                                <div class="flex justify-center">
+                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
+                                        暫無登錄
+                                    </span>
+                                </div>
+                            `;
+                        } else if (d.carsSd === 0 && d.carsCt === 0) {
+                            parkingHTML = `
+                                <div class="flex justify-center">
+                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
+                                        目前都在公務車位
+                                    </span>
+                                </div>
+                            `;
+                        } else {
                             parkingHTML = `
                                 <div class="space-y-1.5">
                                     <div class="flex items-center gap-1 text-[11px]">
@@ -430,14 +446,6 @@
                                             ${buildOptions(currentPmZones, d.savedPm)}
                                         </select>
                                     </div>
-                                </div>
-                            `;
-                        } else {
-                            parkingHTML = `
-                                <div class="flex justify-center">
-                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
-                                        無自駕車，不需車位
-                                    </span>
                                 </div>
                             `;
                         }
