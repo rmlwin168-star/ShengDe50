@@ -145,19 +145,41 @@
             }).join('');
         }
 
-        // 停車場清單 P1, P2, P3
-        const amParkingZones = [
+        // 🚌 大巴專屬停車場清單 (P1, P2, P3)
+        const amBusParkingZones = [
             {val: '', label: '未指定'}, 
             {val: '聖德宮P1', label: '聖德宮P1'}, 
             {val: '聖德宮P2', label: '聖德宮P2'}, 
             {val: '聖德宮P3', label: '聖德宮P3'}
         ];
 
-        const pmParkingZones = [
+        const pmBusParkingZones = [
             {val: '', label: '未指定'}, 
             {val: '莿桐國小P1', label: '莿桐國小P1'}, 
             {val: '莿桐國小P2', label: '莿桐國小P2'}, 
             {val: '莿桐國小P3', label: '莿桐國小P3'}
+        ];
+
+        // 🏠 一般公壇與工作組專用停車場清單 (保留舊有詳細區域)
+        const amGeneralParkingZones = [
+            {val: '', label: '未指定'}, 
+            {val: '聖德宮停車場', label: '聖德宮停車場'}, 
+            {val: '尚品宴會廳', label: '尚品宴會廳'},
+            {val: '莿桐國小A區', label: '莿桐國小A區'}, 
+            {val: '莿桐國小B區', label: '莿桐國小B區'},
+            {val: '路邊A區', label: '路邊A區'}, 
+            {val: '路邊B區', label: '路邊B區'}, 
+            {val: '路邊C區', label: '路邊C區'}, 
+            {val: '路邊D區', label: '路邊D區'}
+        ];
+
+        const pmGeneralParkingZones = [
+            {val: '', label: '未指定'}, 
+            {val: '莿桐國小A區', label: '莿桐國小A區'}, 
+            {val: '莿桐國小B區', label: '莿桐國小B區'},
+            {val: '莿桐國小C區', label: '莿桐國小C區'}, 
+            {val: '莿桐國小D區', label: '莿桐國小D區'}, 
+            {val: '莿桐國小E區', label: '莿桐國小E區'}
         ];
 
         // 建立下拉選單，並支援智慧舊資料顯示
@@ -167,8 +189,8 @@
                 return `<option value="${z.val}" ${isSelected}>${z.label}</option>`;
             }).join('');
             
-            // 防呆：如果資料庫裡存的是舊名字 (且不是空值)，為了避免變成未指定，我們強制把它加進選項裡
-            if (selectedValue && !zonesArray.some(z => z.val === selectedValue)) {
+            // 防呆：如果資料庫裡存的是舊名字 (且不為空值)，強制把它加進選項裡避免變成未指定
+            if (selectedValue && selectedValue !== '待安排' && selectedValue !== '未排' && !zonesArray.some(z => z.val === selectedValue)) {
                 html += `<option value="${selectedValue}" selected>⚠️舊資料: ${selectedValue}</option>`;
             }
             
@@ -237,13 +259,13 @@
 
                 // 解析資料庫中是否已有分配紀錄 (支援 parking 或 中文的 停車位)
                 let dbParking = r.parking || r['停車位'];
-                if (dbParking && dbParking !== '待安排') {
+                if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                     const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                     const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                    if (matchAm) {
+                    if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') {
                         t.savedAm = matchAm[1];
                     }
-                    if (matchPm) {
+                    if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') {
                         t.savedPm = matchPm[1];
                     }
                 }
@@ -264,13 +286,13 @@
                     let bKey = `[大巴] ${transSd}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busSd++;
-                        if (dbParking && dbParking !== '待安排') {
+                        if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                             const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                             const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                            if (matchAm) {
+                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') {
                                 busTransport[bKey].savedAm = matchAm[1];
                             }
-                            if (matchPm) {
+                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') {
                                 busTransport[bKey].savedPm = matchPm[1];
                             }
                         }
@@ -289,13 +311,13 @@
                     let bKey = `[大巴] ${transCt}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busCt++;
-                        if (dbParking && dbParking !== '待安排') {
+                        if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                             const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                             const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                            if (matchAm) {
+                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') {
                                 busTransport[bKey].savedAm = matchAm[1];
                             }
-                            if (matchPm) {
+                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') {
                                 busTransport[bKey].savedPm = matchPm[1];
                             }
                         }
@@ -342,8 +364,12 @@
                     if (!isBus && d.carsSd === 0 && d.carsCt === 0 && d.shuttleSd === 0 && d.shuttleCt === 0 && d.busSd === 0 && d.busCt === 0) {
                         return '';
                     }
-                    
-                    // 智慧防呆：如果該公壇/工作組「完全沒有自駕車」，就不顯示下拉選單，改為文字提示
+
+                    // 根據是否為大巴，動態套用不同的停車場清單
+                    let currentAmZones = isBus ? amBusParkingZones : amGeneralParkingZones;
+                    let currentPmZones = isBus ? pmBusParkingZones : pmGeneralParkingZones;
+
+                    // 智慧防呆：如果該公壇/工作組「完全沒有自駕車且非大巴」，就不顯示下拉選單，改為文字提示
                     let parkingHTML = '';
                     if (isBus || d.carsSd > 0 || d.carsCt > 0) {
                         parkingHTML = `
@@ -351,13 +377,13 @@
                                 <div class="flex items-center gap-1 text-[11px]">
                                     <span class="text-blue-700 font-bold w-4">早:</span>
                                     <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                        ${buildOptions(amParkingZones, d.savedAm)}
+                                        ${buildOptions(currentAmZones, d.savedAm)}
                                     </select>
                                 </div>
                                 <div class="flex items-center gap-1 text-[11px]">
                                     <span class="text-green-700 font-bold w-4">午:</span>
                                     <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                        ${buildOptions(pmParkingZones, d.savedPm)}
+                                        ${buildOptions(currentPmZones, d.savedPm)}
                                     </select>
                                 </div>
                             </div>
@@ -371,7 +397,7 @@
                             </div>
                         `;
                     }
-
+                    
                     // 大巴專屬極簡顯示：隱藏自駕/接駁/司機，合併儲存格
                     if (isBus) {
                         return `
@@ -451,8 +477,12 @@
                 const tr = sel.closest('tr');
                 const pmValue = tr.querySelector('.park-pm-select').value;
                 
-                if (amValue || pmValue) {
-                    updates[groupKey] = `早:${amValue || '未排'} | 午:${pmValue || '未排'}`;
+                if (!amValue && !pmValue) {
+                    updates[groupKey] = '待安排';
+                } else {
+                    const amStr = amValue ? amValue : '未排';
+                    const pmStr = pmValue ? pmValue : '未排';
+                    updates[groupKey] = `早:${amStr} | 午:${pmStr}`;
                 }
             });
 
