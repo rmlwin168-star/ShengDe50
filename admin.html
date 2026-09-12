@@ -343,6 +343,35 @@
                         return '';
                     }
                     
+                    // 智慧防呆：如果該公壇/工作組「完全沒有自駕車」，就不顯示下拉選單，改為文字提示
+                    let parkingHTML = '';
+                    if (isBus || d.carsSd > 0 || d.carsCt > 0) {
+                        parkingHTML = `
+                            <div class="space-y-1.5">
+                                <div class="flex items-center gap-1 text-[11px]">
+                                    <span class="text-blue-700 font-bold w-4">早:</span>
+                                    <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
+                                        ${buildOptions(amParkingZones, d.savedAm)}
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-1 text-[11px]">
+                                    <span class="text-green-700 font-bold w-4">午:</span>
+                                    <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
+                                        ${buildOptions(pmParkingZones, d.savedPm)}
+                                    </select>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        parkingHTML = `
+                            <div class="flex justify-center">
+                                <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
+                                    目前全部在公務車位
+                                </span>
+                            </div>
+                        `;
+                    }
+
                     // 大巴專屬極簡顯示：隱藏自駕/接駁/司機，合併儲存格
                     if (isBus) {
                         return `
@@ -352,20 +381,7 @@
                                     此車搭乘總數：早 ${d.busSd} 人 / 午 ${d.busCt} 人
                                 </td>
                                 <td class="p-3 w-48 min-w-[180px]">
-                                    <div class="space-y-1.5">
-                                        <div class="flex items-center gap-1 text-[11px]">
-                                            <span class="text-blue-700 font-bold w-4">早:</span>
-                                            <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                                ${buildOptions(amParkingZones, d.savedAm)}
-                                            </select>
-                                        </div>
-                                        <div class="flex items-center gap-1 text-[11px]">
-                                            <span class="text-green-700 font-bold w-4">午:</span>
-                                            <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                                ${buildOptions(pmParkingZones, d.savedPm)}
-                                            </select>
-                                        </div>
-                                    </div>
+                                    ${parkingHTML}
                                 </td>
                             </tr>
                         `;
@@ -381,20 +397,7 @@
                                 <td class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50">${d.busSd} / ${d.busCt} 人</td>
                                 <td class="p-3 text-[11px] text-gray-500 font-medium leading-tight min-w-[150px]">${d.driversSd.join(', ') || '無'}</td>
                                 <td class="p-3 w-48 min-w-[180px]">
-                                    <div class="space-y-1.5">
-                                        <div class="flex items-center gap-1 text-[11px]">
-                                            <span class="text-blue-700 font-bold w-4">早:</span>
-                                            <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                                ${buildOptions(amParkingZones, d.savedAm)}
-                                            </select>
-                                        </div>
-                                        <div class="flex items-center gap-1 text-[11px]">
-                                            <span class="text-green-700 font-bold w-4">午:</span>
-                                            <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                                ${buildOptions(pmParkingZones, d.savedPm)}
-                                            </select>
-                                        </div>
-                                    </div>
+                                    ${parkingHTML}
                                 </td>
                             </tr>
                         `;
