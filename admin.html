@@ -140,26 +140,19 @@
             }).join('');
         }
 
-        // 預留容量參數的停車場清單
+        // P1~P3 停車場清單設定
         const amParkingZones = [
             {val: '', label: '未指定'}, 
-            {val: '聖德宮停車場', label: '聖德宮停車場 (容: ?)'}, 
-            {val: '尚品宴會廳', label: '尚品宴會廳 (容: ?)'},
-            {val: '莿桐國小A區', label: '莿桐國小A區 (容: ?)'}, 
-            {val: '莿桐國小B區', label: '莿桐國小B區 (容: ?)'},
-            {val: '路邊A區', label: '路邊A區 (容: ?)'}, 
-            {val: '路邊B區', label: '路邊B區 (容: ?)'}, 
-            {val: '路邊C區', label: '路邊C區 (容: ?)'}, 
-            {val: '路邊D區', label: '路邊D區 (容: ?)'}
+            {val: '聖德宮P1', label: '聖德宮P1'}, 
+            {val: '聖德宮P2', label: '聖德宮P2'},
+            {val: '聖德宮P3', label: '聖德宮P3'}
         ];
 
         const pmParkingZones = [
             {val: '', label: '未指定'}, 
-            {val: '莿桐國小A區', label: '莿桐國小A區 (容: ?)'}, 
-            {val: '莿桐國小B區', label: '莿桐國小B區 (容: ?)'},
-            {val: '莿桐國小C區', label: '莿桐國小C區 (容: ?)'}, 
-            {val: '莿桐國小D區', label: '莿桐國小D區 (容: ?)'}, 
-            {val: '莿桐國小E區', label: '莿桐國小E區 (容: ?)'}
+            {val: '莿桐國小P1', label: '莿桐國小P1'}, 
+            {val: '莿桐國小P2', label: '莿桐國小P2'},
+            {val: '莿桐國小P3', label: '莿桐國小P3'}
         ];
 
         function buildOptions(zonesArray, selectedValue) {
@@ -183,14 +176,20 @@
             
             const staffKeywords = ['表演', '機動', '交通', '總務'];
             
-            // 預先建立 7 台大巴的物件，確保它們固定顯示在畫面上
+            // 預先建立大巴物件與指定顯示名稱
             const busNames = [
-                '大巴１號', '大巴２號', '大巴３號', '大巴４號', 
-                '大巴５號', '大巴興東', '大巴慶德'
+                { key: '大巴１號', displayName: '大巴１號' },
+                { key: '大巴２號', displayName: '大巴２號' },
+                { key: '大巴３號', displayName: '大巴３號' },
+                { key: '大巴４號', displayName: '大巴４號' },
+                { key: '大巴５號', displayName: '大巴５號' },
+                { key: '大巴興東', displayName: '興東佛堂' },
+                { key: '大巴慶德', displayName: '台北:慶德' }
             ];
             
             busNames.forEach(b => {
-                busTransport[`[大巴] ${b}`] = { 
+                busTransport[`[大巴] ${b.key}`] = { 
+                    displayName: b.displayName,
                     carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
                     busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
                 };
@@ -205,6 +204,7 @@
 
                 if (!targetObj[groupName]) {
                     targetObj[groupName] = { 
+                        displayName: groupName,
                         carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
                         busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
                     };
@@ -216,12 +216,8 @@
                 if (r.parking && r.parking !== '待安排') {
                     const matchAm = r.parking.match(/早:\s*([^ |]+)/); 
                     const matchPm = r.parking.match(/午:\s*([^ |]+)/);
-                    if (matchAm) {
-                        t.savedAm = matchAm[1];
-                    }
-                    if (matchPm) {
-                        t.savedPm = matchPm[1];
-                    }
+                    if (matchAm) t.savedAm = matchAm[1];
+                    if (matchPm) t.savedPm = matchPm[1];
                 }
 
                 const transSd = String(r.transport_sd || ''); 
@@ -243,12 +239,8 @@
                         if (r.parking && r.parking !== '待安排') {
                             const matchAm = r.parking.match(/早:\s*([^ |]+)/); 
                             const matchPm = r.parking.match(/午:\s*([^ |]+)/);
-                            if (matchAm) {
-                                busTransport[bKey].savedAm = matchAm[1];
-                            }
-                            if (matchPm) {
-                                busTransport[bKey].savedPm = matchPm[1];
-                            }
+                            if (matchAm) busTransport[bKey].savedAm = matchAm[1];
+                            if (matchPm) busTransport[bKey].savedPm = matchPm[1];
                         }
                     }
                 }
@@ -268,17 +260,13 @@
                         if (r.parking && r.parking !== '待安排') {
                             const matchAm = r.parking.match(/早:\s*([^ |]+)/); 
                             const matchPm = r.parking.match(/午:\s*([^ |]+)/);
-                            if (matchAm) {
-                                busTransport[bKey].savedAm = matchAm[1];
-                            }
-                            if (matchPm) {
-                                busTransport[bKey].savedPm = matchPm[1];
-                            }
+                            if (matchAm) busTransport[bKey].savedAm = matchAm[1];
+                            if (matchPm) busTransport[bKey].savedPm = matchPm[1];
                         }
                     }
                 }
 
-                // 抓取下午轉乘孤兒名單：早上沒自駕也沒搭接駁，但下午明確需要接駁
+                // 抓取下午轉乘孤兒名單
                 if (!transSd.includes('自駕') && !transSd.includes('安排交通') && transCt.includes('安排交通')) {
                     transferList.push(`${r.temple} - ${r.name} (早上：${transSd})`);
                 }
@@ -302,47 +290,70 @@
 
             // 輔助渲染表格內容
             const buildTableRows = (dataObj, isBus = false) => {
-                return Object.keys(dataObj).sort().map(group => {
-                    const d = dataObj[group];
+                return Object.keys(dataObj).sort().map(groupKey => {
+                    const d = dataObj[groupKey];
+                    const displayName = d.displayName;
                     
-                    // 若公壇所有數據皆為0，則隱藏 (但大巴專區不隱藏)
+                    // 若公壇數據皆為0則隱藏 (大巴不隱藏)
                     if (!isBus && d.carsSd === 0 && d.carsCt === 0 && d.shuttleSd === 0 && d.shuttleCt === 0 && d.busSd === 0 && d.busCt === 0) {
                         return '';
                     }
                     
-                    const titleClass = isBus ? 'text-blue-800 text-base' : 'text-gray-800';
-                    const displayCarsSd = isBus ? '-' : d.carsSd + ' 台';
-                    const displayCarsCt = isBus ? '-' : d.carsCt + ' 台';
-                    const displayShuttleSd = isBus ? '-' : d.shuttleSd + ' 人';
-                    const displayShuttleCt = isBus ? '-' : d.shuttleCt + ' 人';
-                    
-                    return `
-                        <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
-                            <td class="p-3 font-bold ${titleClass}">${group}</td>
-                            <td class="p-3 text-center text-blue-600 font-bold bg-blue-50/50">${displayCarsSd}</td>
-                            <td class="p-3 text-center text-blue-600 font-bold">${displayCarsCt}</td>
-                            <td class="p-3 text-center text-red-600 font-bold bg-red-50/50">${displayShuttleSd}</td>
-                            <td class="p-3 text-center text-red-600 font-bold">${displayShuttleCt}</td>
-                            <td class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50">${d.busSd} / ${d.busCt} 人</td>
-                            <td class="p-3 text-[11px] text-gray-500 font-medium leading-tight min-w-[150px]">${d.driversSd.join(', ') || '無'}</td>
-                            <td class="p-3 w-48 min-w-[180px]">
-                                <div class="space-y-1.5">
-                                    <div class="flex items-center gap-1 text-[11px]">
-                                        <span class="text-blue-700 font-bold w-4">早:</span>
-                                        <select id="park-am-${group}" class="border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700">
-                                            ${buildOptions(amParkingZones, d.savedAm)}
-                                        </select>
+                    // 若為大巴，使用合併儲存格設計以簡化顯示
+                    if (isBus) {
+                        return `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                                <td class="p-3 font-bold text-gray-800">${displayName}</td>
+                                <td colspan="6" class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50 tracking-wide">
+                                    此車搭乘總數：早 ${d.busSd} 人 / 午 ${d.busCt} 人
+                                </td>
+                                <td class="p-3 w-48 min-w-[180px]">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-1 text-[11px]">
+                                            <span class="text-blue-700 font-bold w-4">早:</span>
+                                            <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
+                                                ${buildOptions(amParkingZones, d.savedAm)}
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[11px]">
+                                            <span class="text-green-700 font-bold w-4">午:</span>
+                                            <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
+                                                ${buildOptions(pmParkingZones, d.savedPm)}
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-1 text-[11px]">
-                                        <span class="text-green-700 font-bold w-4">午:</span>
-                                        <select id="park-pm-${group}" class="border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700">
-                                            ${buildOptions(pmParkingZones, d.savedPm)}
-                                        </select>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        return `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                                <td class="p-3 font-bold text-gray-800">${displayName}</td>
+                                <td class="p-3 text-center text-blue-600 font-bold bg-blue-50/50">${d.carsSd} 台</td>
+                                <td class="p-3 text-center text-blue-600 font-bold">${d.carsCt} 台</td>
+                                <td class="p-3 text-center text-red-600 font-bold bg-red-50/50">${d.shuttleSd} 人</td>
+                                <td class="p-3 text-center text-red-600 font-bold">${d.shuttleCt} 人</td>
+                                <td class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50">${d.busSd} / ${d.busCt} 人</td>
+                                <td class="p-3 text-[11px] text-gray-500 font-medium leading-tight min-w-[150px]">${d.driversSd.join(', ') || '無'}</td>
+                                <td class="p-3 w-48 min-w-[180px]">
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-1 text-[11px]">
+                                            <span class="text-blue-700 font-bold w-4">早:</span>
+                                            <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
+                                                ${buildOptions(amParkingZones, d.savedAm)}
+                                            </select>
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[11px]">
+                                            <span class="text-green-700 font-bold w-4">午:</span>
+                                            <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
+                                                ${buildOptions(pmParkingZones, d.savedPm)}
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+                                </td>
+                            </tr>
+                        `;
+                    }
                 }).join('');
             };
 
@@ -351,18 +362,8 @@
             const templeHTML = buildTableRows(templeTransport);
 
             document.getElementById('dash-transport-bus').innerHTML = busHTML;
-            
-            if (staffHTML) {
-                document.getElementById('dash-transport-staff').innerHTML = staffHTML;
-            } else {
-                document.getElementById('dash-transport-staff').innerHTML = '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無工作組資料</td></tr>';
-            }
-            
-            if (templeHTML) {
-                document.getElementById('dash-transport-temple').innerHTML = templeHTML;
-            } else {
-                document.getElementById('dash-transport-temple').innerHTML = '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無一般公壇資料</td></tr>';
-            }
+            document.getElementById('dash-transport-staff').innerHTML = staffHTML || '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無工作組資料</td></tr>';
+            document.getElementById('dash-transport-temple').innerHTML = templeHTML || '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無一般公壇資料</td></tr>';
         }
 
         // 執行整批次寫入資料庫邏輯
@@ -376,13 +377,16 @@
             }
 
             const updates = {};
-            document.querySelectorAll('select[id^="park-am-"]').forEach(sel => {
-                const groupName = sel.id.replace("park-am-", "");
+            // 完全廢除 ID 讀取，改用 data-group，確保 100% 讀取成功
+            document.querySelectorAll('.park-am-select').forEach(sel => {
+                const groupKey = sel.getAttribute('data-group');
                 const amValue = sel.value; 
-                const pmValue = document.getElementById(`park-pm-${groupName}`).value;
+                
+                const tr = sel.closest('tr');
+                const pmValue = tr.querySelector('.park-pm-select').value;
                 
                 if (amValue || pmValue) {
-                    updates[groupName] = `早:${amValue || '未排'} | 午:${pmValue || '未排'}`;
+                    updates[groupKey] = `早:${amValue || '未排'} | 午:${pmValue || '未排'}`;
                 }
             });
 
@@ -403,7 +407,7 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "batchUpdateParking", updates: updates }) 
                 });
-                alert("✅ 整批次停車位更改成功！(大巴停車位已自動寫入乘客資料中)");
+                alert("✅ 整批次停車位更改成功！(大巴停車位已自動寫入該車乘客資料中)");
             } catch (e) { 
                 alert("❌ 寫入失敗，請檢查網路連線。"); 
             }
