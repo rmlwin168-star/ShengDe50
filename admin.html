@@ -11,7 +11,7 @@
 <body class="antialiased flex h-screen overflow-hidden text-gray-800">
 
     <script>
-        // 🚨 務必替換為您目前可成功連線的 API 網址！
+        // 🚨 這是您之前提供的專屬 API 網址
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec';
         let globalRecords = [];
 
@@ -44,17 +44,28 @@
             }
         });
 
-        // 左側導覽列切換邏輯
+        // 導覽列切換邏輯 (支援電腦版與手機版同步切換)
         function switchTab(tabId) {
+            // 1. 電腦版按鈕狀態重置與標亮
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all';
             });
-            document.getElementById(`btn-${tabId}`).className = 'nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md';
+            const desktopBtn = document.getElementById(`btn-${tabId}`);
+            if (desktopBtn) desktopBtn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md';
             
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
+            // 2. 手機版按鈕狀態重置與標亮
+            document.querySelectorAll('.nav-btn-mobile').forEach(btn => {
+                btn.className = 'nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-white transition-all';
             });
+            const mobileBtn = document.getElementById(`btn-${tabId}-mobile`);
+            if (mobileBtn) mobileBtn.className = 'nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-amber-400 font-bold';
+            
+            // 3. 隱藏/顯示對應內容面板
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            // 切換後自動滾動到最上方
+            document.querySelector('main').scrollTo(0, 0);
         }
 
         // 結算與渲染「大會總覽與餐飲」面板
@@ -234,8 +245,8 @@
                             <td class="p-3 text-center text-blue-600 font-bold">${d.carsCt} 台</td>
                             <td class="p-3 text-center text-red-600 font-bold bg-red-50/50">${d.shuttleSd} 人</td>
                             <td class="p-3 text-center text-red-600 font-bold">${d.shuttleCt} 人</td>
-                            <td class="p-3 text-[11px] text-gray-500 font-medium leading-tight">${d.driversSd.join(', ') || '無'}</td>
-                            <td class="p-3 w-48">
+                            <td class="p-3 text-[11px] text-gray-500 font-medium leading-tight min-w-[150px]">${d.driversSd.join(', ') || '無'}</td>
+                            <td class="p-3 w-48 min-w-[180px]">
                                 <div class="space-y-1.5">
                                     <div class="flex items-center gap-1 text-[11px]">
                                         <span class="text-blue-700 font-bold w-4">早:</span>
@@ -310,7 +321,7 @@
         }
     </script>
 
-    <!-- 側邊導覽列 Sidebar -->
+    <!-- 側邊導覽列 Sidebar (電腦版顯示) -->
     <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl z-20 hidden md:flex">
         <div class="p-6 border-b border-gray-800">
             <h1 class="text-xl font-bold text-amber-400 tracking-wide">聖德宮 50周年</h1>
@@ -333,14 +344,15 @@
     </aside>
 
     <!-- 主要內容區 Main Content -->
-    <main class="flex-1 flex flex-col h-full relative overflow-y-auto bg-gray-50">
+    <!-- pb-20 是為了預留底部手機導覽列的空間，避免內容被遮擋 -->
+    <main class="flex-1 flex flex-col h-full relative overflow-y-auto bg-gray-50 pb-20 md:pb-0">
         
         <!-- 頂部狀態列 -->
         <header class="bg-white shadow-sm px-8 py-5 flex justify-end items-center z-10 sticky top-0">
             <div id="status-msg"></div>
         </header>
 
-        <div class="p-8">
+        <div class="p-4 md:p-8">
             
             <!-- 【模組 1】：大會總覽與餐飲結算 -->
             <div id="tab-overview" class="tab-content block space-y-6">
@@ -375,11 +387,11 @@
 
                 <!-- 各公壇細項表格 -->
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
-                    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+                    <div class="bg-gray-100 px-4 md:px-6 py-4 border-b border-gray-200">
                         <h4 class="font-bold text-gray-700">📋 各區公壇餐飲預備明細清單</h4>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left">
+                        <table class="w-full text-left min-w-[500px]">
                             <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
                                 <tr>
                                     <th class="p-3 font-bold border-b border-gray-200">公壇名稱</th>
@@ -405,41 +417,41 @@
                 </div>
                 
                 <!-- 警告：下午轉乘孤兒名單 -->
-                <div class="bg-red-50 border border-red-200 rounded-xl p-5 shadow-sm mb-4">
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 md:p-5 shadow-sm mb-4">
                     <h4 class="text-red-800 font-bold mb-2 flex items-center gap-2">⚠️ 下午轉乘接駁清單 (早搭便車，午須接駁)</h4>
                     <div id="dash-transfer-list">
                         <!-- 由 JS 動態生成 -->
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-xs font-bold text-blue-700 mb-1">早上：聖德宮 (預估自駕車)</p>
-                        <p class="text-2xl font-black text-blue-600"><span id="dash-cars-sd">0</span><span class="text-sm font-medium ml-1">台</span></p>
+                        <p class="text-[11px] md:text-xs font-bold text-blue-700 mb-1">早：自駕(台)</p>
+                        <p class="text-2xl font-black text-blue-600"><span id="dash-cars-sd">0</span></p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-xs font-bold text-blue-700 mb-1">下午：莿桐國小 (預估自駕車)</p>
-                        <p class="text-2xl font-black text-blue-600"><span id="dash-cars-ct">0</span><span class="text-sm font-medium ml-1">台</span></p>
+                        <p class="text-[11px] md:text-xs font-bold text-blue-700 mb-1">午：自駕(台)</p>
+                        <p class="text-2xl font-black text-blue-600"><span id="dash-cars-ct">0</span></p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-xs font-bold text-red-700 mb-1">早上：需安排接駁人數</p>
-                        <p class="text-2xl font-black text-red-600"><span id="dash-shuttle-sd">0</span><span class="text-sm font-medium ml-1">人</span></p>
+                        <p class="text-[11px] md:text-xs font-bold text-red-700 mb-1">早：接駁(人)</p>
+                        <p class="text-2xl font-black text-red-600"><span id="dash-shuttle-sd">0</span></p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-xs font-bold text-red-700 mb-1">下午：需安排接駁人數</p>
-                        <p class="text-2xl font-black text-red-600"><span id="dash-shuttle-ct">0</span><span class="text-sm font-medium ml-1">人</span></p>
+                        <p class="text-[11px] md:text-xs font-bold text-red-700 mb-1">午：接駁(人)</p>
+                        <p class="text-2xl font-black text-red-600"><span id="dash-shuttle-ct">0</span></p>
                     </div>
                 </div>
 
                 <!-- 雙軌表格設計 -->
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
-                    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <div class="bg-gray-100 px-4 md:px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
                         <div class="flex items-center gap-3">
                             <h4 class="font-bold text-gray-700">📋 派車與車位設定總表</h4>
                             <span class="text-[10px] text-gray-500 bg-white px-2 py-1 rounded border border-gray-200 hidden md:block">不含搭乘大巴者</span>
                         </div>
                         <button id="btn-batch-parking" onclick="batchUpdateParking()" class="bg-gray-800 hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                            💾 儲存並整批次更改車位
+                            💾 儲存更改
                         </button>
                     </div>
                     <div class="overflow-x-auto">
@@ -497,6 +509,22 @@
 
         </div>
     </main>
+
+    <!-- 手機版專屬底部導覽列 (Mobile Bottom Nav) -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-gray-900 text-white flex justify-around shadow-[0_-5px_20px_rgba(0,0,0,0.2)] z-50 border-t border-gray-800">
+        <button id="btn-overview-mobile" onclick="switchTab('overview')" class="nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-amber-400 font-bold">
+            <span class="text-xl">📊</span>
+            <span class="text-[10px]">總覽餐飲</span>
+        </button>
+        <button id="btn-transport-mobile" onclick="switchTab('transport')" class="nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-white transition-all">
+            <span class="text-xl">🚗</span>
+            <span class="text-[10px]">交通派車</span>
+        </button>
+        <button id="btn-seating-mobile" onclick="switchTab('seating')" class="nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-white transition-all">
+            <span class="text-xl">🪑</span>
+            <span class="text-[10px]">大會座位</span>
+        </button>
+    </nav>
 
 </body>
 </html>
