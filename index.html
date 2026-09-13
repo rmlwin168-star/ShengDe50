@@ -1148,7 +1148,7 @@ https://rmlwin168-star.github.io/ShengDe50/
 
         async function loadLiveRegistrationData() {
             try {
-                const response = await fetch(scriptUrl);
+                const response = await fetch(scriptUrl + '?v=' + Math.random());
                 const records = await response.json();
 
                 const latestRecordsMap = new Map();
