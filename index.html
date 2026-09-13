@@ -1153,8 +1153,13 @@ https://rmlwin168-star.github.io/ShengDe50/
 
                 const latestRecordsMap = new Map();
                 records.forEach(row => {
-                    const key = `${row.temple}_${row.name}`;
-                    latestRecordsMap.set(key, row);
+                    const cleanTemple = String(row.temple || '').replace(/\s/g, '');
+                    const cleanName = String(row.name || '').replace(/\s/g, '');
+                    const key = `${cleanTemple}_${cleanName}`;
+                    
+                    if (!latestRecordsMap.has(key)) {
+                        latestRecordsMap.set(key, row);
+                    }
                 });
 
                 globalRecords = Array.from(latestRecordsMap.values()); 
@@ -1302,8 +1307,8 @@ https://rmlwin168-star.github.io/ShengDe50/
 
             showToast("⏳ 處理中，請稍候...");
 
-            // 瞬間樂觀更新
-            globalRecords = globalRecords.filter(r => !(String(r.temple).trim() === String(payload.temple).trim() && String(r.name).trim() === String(payload.name).trim()));
+            // 瞬間樂觀更新 (改為無空白嚴格比對)
+            globalRecords = globalRecords.filter(r => !(String(r.temple).replace(/\s/g, '') === String(payload.temple).replace(/\s/g, '') && String(r.name).replace(/\s/g, '') === String(payload.name).replace(/\s/g, '')));
             globalRecords.push(payload);
             
             Object.keys(templeMockData).forEach(k => { 
@@ -1471,6 +1476,10 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         function openRegistrationModal() {
+            if (!globalRecords || globalRecords.length === 0) {
+                alert("⏳ 系統正在同步雲端最新資料，請稍等 3~5 秒後再點擊一次！");
+                return;
+            }
             setEditMode(false);
             const now = new Date();
             document.getElementById('reg-date').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -1496,6 +1505,10 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         function openAssisterManageModal() {
+            if (!globalRecords || globalRecords.length === 0) {
+                alert("⏳ 系統正在同步雲端最新資料，請稍等 3~5 秒後再點擊一次！");
+                return;
+            }
             document.getElementById('assister-manage-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
@@ -1519,7 +1532,7 @@ https://rmlwin168-star.github.io/ShengDe50/
         function loginAssister() {
             const inputNameEl = document.getElementById('manage-input-name');
             const inputPhoneEl = document.getElementById('manage-input-phone');
-            const name = (inputNameEl ? inputNameEl.value.trim() : '') || lockedAssister;
+            const name = (inputNameEl ? inputNameEl.value.replace(/\s/g, '') : '') || lockedAssister;
             const phone = cleanPhone(inputPhoneEl ? inputPhoneEl.value.trim() : '') || cleanPhone(lockedPhone);
 
             if (!name || !phone) {
@@ -1527,10 +1540,9 @@ https://rmlwin168-star.github.io/ShengDe50/
                 return;
             }
 
-            // 雙重清洗比對：自動校正 0 與單引號，確保 100% 撈出名單
             const myRecords = globalRecords.filter(r => {
                 const rPhone = cleanPhone(r.assister_phone);
-                const rName = String(r.assister || '').trim();
+                const rName = String(r.assister || '').replace(/\s/g, '');
                 return rPhone === phone && rName === name;
             });
 
@@ -1582,7 +1594,7 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.getElementById('reg-temple').value = record.temple;
             document.getElementById('reg-name').value = record.name;
             document.getElementById('reg-assister').value = record.assister;
-            document.getElementById('reg-assister-phone').value = record.assister_phone || lockedPhone;
+            document.getElementById('reg-assister-phone').value = cleanPhone(record.assister_phone || lockedPhone);
             document.getElementById('reg-job').value = record.job;
             checkCancelStatus(); 
             document.getElementById('reg-trans-temple').value = record.transport_sd;
