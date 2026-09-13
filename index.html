@@ -921,6 +921,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                             <option value="" disabled selected>-- 選擇交通方式 --</option>
                             <option value="自駕">自駕 (需輸入可載人數)</option>
                             <option value="已有人接送">已有人接送 (選擇同壇司機)</option>
+                            <option value="須安排交通">須安排交通</option>
                             <option value="大巴１號">大巴１號</option>
                             <option value="大巴２號">大巴２號</option>
                             <option value="大巴３號">大巴３號</option>
@@ -928,7 +929,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                             <option value="大巴５號">大巴５號</option>
                             <option value="大巴興東">大巴興東</option>
                             <option value="大巴慶德">大巴慶德</option>
-                            <option value="須安排交通">須安排交通</option>
                         </select>
                         
                         <div id="div-temple-seats" class="hidden bg-white p-2 rounded border border-red-100">
@@ -1123,7 +1123,7 @@ https://rmlwin168-star.github.io/ShengDe50/
         let lockedTemple = "";
         let lockedAssister = "";
         let lockedPhone = "";
-        let isDataSyncing = true; // 🌟 核心防呆：追蹤資料是否載入完成
+        let isDataSyncing = true; 
 
         document.addEventListener('DOMContentLoaded', async () => {
             initCountdown();
@@ -1148,7 +1148,7 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         async function loadLiveRegistrationData() {
-            isDataSyncing = true; // 開始同步鎖定
+            isDataSyncing = true; 
             try {
                 const response = await fetch(scriptUrl + '?t=' + new Date().getTime());
                 const records = await response.json();
@@ -1188,17 +1188,16 @@ https://rmlwin168-star.github.io/ShengDe50/
                 }
                 renderTempleDetail();
                 calculateBudgetRequirements();
-                isDataSyncing = false; // 🌟 成功載入，解除鎖定
+                isDataSyncing = false; 
             } catch (e) {
                 console.error("Fetch Data Error: ", e);
                 renderTempleDetail();
                 calculateBudgetRequirements();
-                isDataSyncing = false; // 🌟 就算連線失敗也要解除鎖定，以免永遠無法操作
+                isDataSyncing = false; 
                 showToast("⚠️ 資料庫連線異常，請檢查網路或重新整理網頁");
             }
         }
 
-        // --- 核心安全鎖定功能：防止改名產生重複資料 ---
         function setEditMode(isEdit) {
             const templeSelect = document.getElementById('reg-temple');
             const nameInput = document.getElementById('reg-name');
@@ -1784,6 +1783,15 @@ https://rmlwin168-star.github.io/ShengDe50/
                     let dinnerShow = '➖';
                     if (log.stay_dinner) { dinnerShow = log.stay_dinner.includes('是') ? '⭕' : '❌'; }
 
+                    // 💡 判斷車位顯示邏輯：如果沒有自駕，且車位狀態是預設的「待安排」，則顯示空白
+                    let parkingDisplay = log.parking || "待安排";
+                    if (parkingDisplay === "待安排") {
+                        let isDriver = String(log.transport_sd || '').includes('自駕') || String(log.transport_ct || '').includes('自駕');
+                        if (!isDriver) {
+                            parkingDisplay = "";
+                        }
+                    }
+
                     return `<tr class="border-b border-amber-100 text-[11px] sm:text-xs hover:bg-amber-50 transition-colors">
                         <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${String(log.date).substring(5, 16)}</td>
                         <td class="p-2 sm:p-2.5 font-bold text-gray-900 whitespace-nowrap">${log.name}</td>
@@ -1793,7 +1801,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                         <td class="p-2 sm:p-2.5 text-blue-700 font-medium whitespace-nowrap">${tSchool}</td>
 						<td class="p-2 sm:p-2.5 text-amber-700 font-medium whitespace-nowrap">${log.lunch_box || '➖'}</td>
                         <td class="p-2 sm:p-2.5 text-purple-700 text-center whitespace-nowrap">${dinnerShow}</td>
-                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.parking || "待安排"}</td>
+                        <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${parkingDisplay}</td>
                         <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.tourSeat || "待安排"}</td>
                         <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.banquetSeat || "待安排"}</td>
                         <td class="p-2 sm:p-2.5 text-gray-500 whitespace-nowrap">${log.showSeat || "待安排"}</td>
@@ -1801,7 +1809,7 @@ https://rmlwin168-star.github.io/ShengDe50/
                     </tr>`;
                 }).join('');
             } else {
-                logsHtml = `<tr><td colspan="12" class="p-6 text-center text-gray-400 text-xs font-medium">本區目前尚無報名資料</td></tr>`;
+                logsHtml = `<tr><td colspan="13" class="p-6 text-center text-gray-400 text-xs font-medium">本區目前尚無報名資料</td></tr>`;
             }
 
             document.getElementById('temple-detail-output').innerHTML = `
