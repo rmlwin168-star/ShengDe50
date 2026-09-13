@@ -26,7 +26,7 @@
             statusEl.className = "text-sm font-bold text-amber-700 bg-amber-50 px-4 py-2 rounded-full border border-amber-200";
 
             try {
-                // 💡 加入時間戳防快取機制，確保每次都抓取最新資料！
+                // 💡 時間戳防快取：強迫每次重整都去抓取最新資料，拒絕舊備份干擾
                 const response = await fetch(scriptUrl + '?t=' + new Date().getTime());
                 const records = await response.json();
                 
@@ -52,7 +52,7 @@
             }
         });
 
-        // 導覽列切換邏輯 (支援電腦版與手機版同步切換)
+        // 導覽列切換邏輯
         function switchTab(tabId) {
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all';
@@ -93,14 +93,25 @@
                 if (needsDinner) totalDinner++;
                 
                 if (!templeStats[r.temple]) {
-                    templeStats[r.temple] = { total: 0, bento: 0, banquet: 0, dinner: 0 };
+                    templeStats[r.temple] = { 
+                        total: 0, 
+                        bento: 0, 
+                        banquet: 0, 
+                        dinner: 0 
+                    };
                 }
                 
                 templeStats[r.temple].total += 1;
-                if (needsBento) templeStats[r.temple].bento += 1;
-                else templeStats[r.temple].banquet += 1;
                 
-                if (needsDinner) templeStats[r.temple].dinner += 1;
+                if (needsBento) {
+                    templeStats[r.temple].bento += 1;
+                } else {
+                    templeStats[r.temple].banquet += 1;
+                }
+                
+                if (needsDinner) {
+                    templeStats[r.temple].dinner += 1;
+                }
             });
 
             const totalBanquet = totalValid - totalBento;
@@ -140,7 +151,7 @@
             {val: '莿桐國小P3', label: '莿桐國小P3'}
         ];
 
-        // 🏠 一般公壇與工作組專用停車場清單 (保留舊有詳細區域)
+        // 🏠 一般公壇與工作組專用停車場清單
         const amGeneralParkingZones = [
             {val: '', label: '未指定'}, 
             {val: '聖德宮停車場', label: '聖德宮停車場'}, 
@@ -162,23 +173,23 @@
             {val: '莿桐國小E區', label: '莿桐國小E區'}
         ];
 
-        // 建立下拉選單，並支援智慧舊資料顯示
         function buildOptions(zonesArray, selectedValue) {
             let html = zonesArray.map(z => {
                 const isSelected = z.val === selectedValue ? 'selected' : '';
                 return `<option value="${z.val}" ${isSelected}>${z.label}</option>`;
             }).join('');
             
-            // 防呆：如果資料庫裡存的是舊名字，強制把它加進選項裡避免變成未指定
             if (selectedValue && selectedValue !== '待安排' && selectedValue !== '未排' && !zonesArray.some(z => z.val === selectedValue)) {
                 html += `<option value="${selectedValue}" selected>⚠️舊資料: ${selectedValue}</option>`;
             }
             return html;
         }
 
-        // 結算與渲染「交通接駁與停車配置」面板
         function renderTransportDashboard() {
-            let carsMorning = 0, carsAfternoon = 0, shuttleMorning = 0, shuttleAfternoon = 0;
+            let carsMorning = 0;
+            let carsAfternoon = 0;
+            let shuttleMorning = 0;
+            let shuttleAfternoon = 0;
             
             let staffTransport = {};
             let templeTransport = {};
@@ -187,7 +198,6 @@
             
             const staffKeywords = ['表演', '機動', '交通', '總務'];
             
-            // 定義大巴名稱與畫面上的顯示名稱
             const busNames = [
                 { key: '大巴１號', displayName: '大巴１號' },
                 { key: '大巴２號', displayName: '大巴２號' },
@@ -198,13 +208,32 @@
                 { key: '大巴慶德', displayName: '台北:慶德' }
             ];
             
+            // 🛡️ 建立車輛空位計算中心
+            let pmVehicles = {};
             busNames.forEach(b => {
                 busTransport[`[大巴] ${b.key}`] = { 
-                    displayName: b.displayName, busSd: 0, busCt: 0, savedAm: '', savedPm: '' 
+                    displayName: b.displayName, 
+                    busSd: 0, 
+                    busCt: 0, 
+                    savedAm: '', 
+                    savedPm: '' 
+                };
+                pmVehicles[b.key] = { 
+                    type: 'bus', 
+                    capacity: 40, 
+                    assigned: 0, 
+                    trip: 1, 
+                    label: b.key 
+                };
+                pmVehicles[`${b.key}(空檔接駁)`] = { 
+                    type: 'bus', 
+                    capacity: 40, 
+                    assigned: 0, 
+                    trip: 2, 
+                    label: `${b.key}(空檔接駁)` 
                 };
             });
 
-            // 定義標準排序陣列 (依此順序顯示，無人者下沉)
             const allDomesticTemples = [
                 '聖德宮', '光明講堂', '興仁佛堂', '興怡佛堂', '興崙佛堂', '弘仁佛堂', '弘德佛堂', 
                 '興明佛堂', '興元佛堂', '興西佛堂', '興中佛堂', '興東佛堂', '興慈佛堂', 
@@ -213,32 +242,60 @@
             
             allDomesticTemples.forEach(tName => {
                 templeTransport[tName] = { 
-                    displayName: tName, carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
-                    busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
+                    displayName: tName, 
+                    carsSd: 0, 
+                    carsCt: 0, 
+                    shuttleSd: 0, 
+                    shuttleCt: 0, 
+                    busSd: 0, 
+                    busCt: 0, 
+                    driversSd: [], 
+                    savedAm: '', 
+                    savedPm: '' 
                 };
             });
 
+            // 第一次迴圈：初始化所有下午開車的自駕司機容量
+            globalRecords.forEach(r => {
+                const transCt = String(r.transport_ct || '');
+                if (transCt.includes('自駕')) {
+                    let cap = parseInt(r.driver_capacity_ct || r.driver_capacity_sd) || 4;
+                    pmVehicles[r.name] = { type: 'car', capacity: cap, assigned: 0, trip: 1, label: r.name };
+                    pmVehicles[`${r.name}(第二趟)`] = { type: 'car', capacity: cap, assigned: 0, trip: 2, label: `${r.name}(第二趟)` };
+                    pmVehicles[`${r.name}(第三趟)`] = { type: 'car', capacity: cap, assigned: 0, trip: 3, label: `${r.name}(第三趟)` };
+                }
+            });
+
+            // 第二次迴圈：主邏輯與車位結算
             globalRecords.forEach(r => {
                 const job = String(r.job || '');
                 const isStaff = staffKeywords.some(keyword => job.includes(keyword));
                 const groupName = isStaff ? `[工作組] ${job}` : r.temple;
-                
                 const targetObj = isStaff ? staffTransport : templeTransport;
 
                 if (!targetObj[groupName]) {
                     targetObj[groupName] = { 
-                        displayName: groupName, carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, 
-                        busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' 
+                        displayName: groupName, 
+                        carsSd: 0, 
+                        carsCt: 0, 
+                        shuttleSd: 0, 
+                        shuttleCt: 0, 
+                        busSd: 0, 
+                        busCt: 0, 
+                        driversSd: [], 
+                        savedAm: '', 
+                        savedPm: '' 
                     };
                 }
                 
                 const t = targetObj[groupName];
-                const transSd = String(r.transport_sd || ''); 
-                const transCt = String(r.transport_ct || '');
+                const transSd = String(r.transport_sd || '').trim(); 
+                const transCt = String(r.transport_ct || '').trim();
+                const pmDriver = String(r.pm_driver || r['下午搭乘司機'] || r['下午司機'] || '').trim();
+                let dbParking = r.parking || r['停車位'];
 
-                // 只有自駕的人員，才能設定代表該公壇/工作組的車位 (防止被搭車人員的舊資料蓋掉)
+                // 早午獨立雙軌讀取
                 if (transSd.includes('自駕') || transCt.includes('自駕')) {
-                    let dbParking = r.parking || r['停車位'];
                     if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                         const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                         const matchPm = dbParking.match(/午:\s*([^ |]+)/);
@@ -247,82 +304,172 @@
                     }
                 }
 
-                // 早上交通結算
+                // 結算早上交通
                 if (transSd.includes('自駕')) { 
-                    carsMorning++; t.carsSd++; t.driversSd.push(`${r.name}(載${r.driver_capacity_sd || '?'})`); 
+                    carsMorning++; 
+                    t.carsSd++; 
+                    t.driversSd.push(`${r.name}(載${r.driver_capacity_sd || '?'})`); 
                 } else if (transSd.includes('安排交通')) { 
-                    shuttleMorning++; t.shuttleSd++; 
+                    shuttleMorning++; 
+                    t.shuttleSd++; 
                 } else if (transSd.includes('大巴')) {
                     t.busSd++; 
                     let bKey = `[大巴] ${transSd}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busSd++;
-                        let dbParking = r.parking || r['停車位'];
                         if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                             const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
-                            const matchPm = dbParking.match(/午:\s*([^ |]+)/);
                             if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') busTransport[bKey].savedAm = matchAm[1];
-                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') busTransport[bKey].savedPm = matchPm[1];
                         }
                     }
                 }
 
-                // 下午交通結算
-                if (transCt.includes('自駕')) { 
-                    carsAfternoon++; t.carsCt++; 
-                } else if (transCt.includes('安排交通')) { 
-                    shuttleAfternoon++; t.shuttleCt++; 
-                } else if (transCt.includes('大巴')) {
+                // 結算下午交通與【扣除車輛空位】
+                if (transCt.includes('大巴')) {
                     t.busCt++;
-                    let bKey = `[大巴] ${transCt}`;
+                    
+                    // 扣除大巴空位 (包含空檔接駁)
+                    let baseBusKey = transCt.replace('(空檔接駁)', '').trim();
+                    let bKey = `[大巴] ${baseBusKey}`;
+                    
+                    if (pmVehicles[transCt]) pmVehicles[transCt].assigned++;
+                    
                     if(busTransport[bKey]) {
                         busTransport[bKey].busCt++;
-                        let dbParking = r.parking || r['停車位'];
                         if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
-                            const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                             const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') busTransport[bKey].savedAm = matchAm[1];
                             if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') busTransport[bKey].savedPm = matchPm[1];
                         }
                     }
+                } else if (transCt.includes('自駕')) { 
+                    carsAfternoon++; 
+                    t.carsCt++; 
+                    if (pmVehicles[r.name]) pmVehicles[r.name].assigned++; 
+                } else if (transCt.includes('已有人接送')) {
+                    if (pmDriver && pmVehicles[pmDriver]) {
+                        pmVehicles[pmDriver].assigned++;
+                    }
+                } else if (transCt.includes('安排交通')) { 
+                    shuttleAfternoon++; 
+                    t.shuttleCt++; 
                 }
 
+                // 抓取下午轉乘孤兒名單
                 if (!transSd.includes('自駕') && !transSd.includes('安排交通') && transCt.includes('安排交通')) {
-                    transferList.push(`${r.temple} - ${r.name} (早上：${transSd})`);
+                    transferList.push({ temple: r.temple, name: r.name, transSd: transSd });
                 }
             });
 
-            // 寫入總數看板
             document.getElementById('dash-cars-sd').textContent = carsMorning; 
             document.getElementById('dash-cars-ct').textContent = carsAfternoon;
             document.getElementById('dash-shuttle-sd').textContent = shuttleMorning; 
             document.getElementById('dash-shuttle-ct').textContent = shuttleAfternoon;
 
+            // 🚗 產生孤兒智慧指派下拉選單
+            let assignOptionsHtml = `
+                <option value="">-- 請選擇下午指派車輛 --</option>
+            `;
+            
+            assignOptionsHtml += `
+                <optgroup label="【第一趟 - 尚有空位車輛】">
+            `;
+            Object.values(pmVehicles).filter(v => v.trip === 1).forEach(v => {
+                let disabled = v.assigned >= v.capacity ? 'disabled' : '';
+                let text = v.assigned >= v.capacity 
+                    ? `🔘 ${v.label} (已滿載 ${v.capacity}/${v.capacity}人)` 
+                    : `⚪ ${v.label} (已排 ${v.assigned}/${v.capacity}人 - 剩 ${v.capacity - v.assigned} 位)`;
+                assignOptionsHtml += `
+                    <option value="${v.label}" ${disabled}>${text}</option>
+                `;
+            });
+            assignOptionsHtml += `
+                </optgroup>
+            `;
+
+            assignOptionsHtml += `
+                <optgroup label="【空檔接駁 - 大巴專區 (最多一趟)】">
+            `;
+            Object.values(pmVehicles).filter(v => v.type === 'bus' && v.trip === 2).forEach(v => {
+                let disabled = v.assigned >= v.capacity ? 'disabled' : '';
+                let text = v.assigned >= v.capacity 
+                    ? `🔘 ${v.label} (已滿載 ${v.capacity}/${v.capacity}人)` 
+                    : `⚪ ${v.label} (目前 ${v.assigned}/${v.capacity}人)`;
+                assignOptionsHtml += `
+                    <option value="${v.label}" ${disabled}>${text}</option>
+                `;
+            });
+            assignOptionsHtml += `
+                </optgroup>
+            `;
+
+            assignOptionsHtml += `
+                <optgroup label="【多趟接駁 - 休旅/自駕車 (需現場協調)】">
+            `;
+            Object.values(pmVehicles).filter(v => v.type === 'car' && v.trip > 1).forEach(v => {
+                let disabled = v.assigned >= v.capacity ? 'disabled' : '';
+                let text = v.assigned >= v.capacity 
+                    ? `🔘 ${v.label} (已滿載 ${v.capacity}/${v.capacity}人)` 
+                    : `⚪ ${v.label} (目前 ${v.assigned}/${v.capacity}人)`;
+                assignOptionsHtml += `
+                    <option value="${v.label}" ${disabled}>${text}</option>
+                `;
+            });
+            assignOptionsHtml += `
+                </optgroup>
+            `;
+
+            // 渲染下午轉乘警示區 (互動式介面)
             const transferContainer = document.getElementById('dash-transfer-list');
             if (transferList.length > 0) {
-                transferContainer.innerHTML = transferList.map(txt => {
-                    return `<span class="inline-block bg-red-100 text-red-800 border border-red-200 rounded px-2 py-1 text-xs font-bold mr-2 mb-2">${txt}</span>`;
-                }).join('');
+                let transferHtml = `
+                    <div class="space-y-3">
+                `;
+                transferList.forEach(orphan => {
+                    const orphanKey = `${orphan.temple}_${orphan.name}`;
+                    transferHtml += `
+                        <div class="flex flex-col md:flex-row md:items-center justify-between bg-white p-3 rounded-lg border border-red-200 shadow-sm gap-2 hover:border-red-400 transition-colors">
+                            <div class="text-sm font-bold text-gray-800 flex items-center">
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs mr-2 shadow-sm">${orphan.temple}</span>
+                                ${orphan.name} 
+                                <span class="text-xs text-gray-500 font-normal ml-2 tracking-wide">(早: ${orphan.transSd})</span>
+                            </div>
+                            <div class="w-full md:w-72">
+                                <select class="orphan-assign-select border border-gray-300 rounded-lg px-2 py-1.5 w-full font-bold text-gray-700 text-sm shadow-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 cursor-pointer" data-key="${orphanKey}">
+                                    ${assignOptionsHtml}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                });
+                transferHtml += `
+                        <div class="flex justify-end mt-4 pt-2 border-t border-red-100">
+                            <button onclick="batchAssignOrphans()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2 transform hover:scale-105 active:scale-95">
+                                💾 確認並儲存指派
+                            </button>
+                        </div>
+                    </div>
+                `;
+                transferContainer.innerHTML = transferHtml;
             } else {
-                transferContainer.innerHTML = `<span class="text-sm text-gray-500 font-bold">✅ 目前無人需要下午轉乘接駁</span>`;
+                transferContainer.innerHTML = `
+                    <span class="text-sm text-gray-500 font-bold px-2">✅ 目前無人需要下午轉乘接駁</span>
+                `;
             }
 
-            // --- 排序與產生 HTML 邏輯 ---
-            
-            // 1. 大巴 (依照原本順序)
+            // --- 排序與產生主停車表格邏輯 ---
             const sortedBusKeys = busNames.map(b => `[大巴] ${b.key}`);
-            
-            // 2. 工作組 (字母排序)
             const sortedStaffKeys = Object.keys(staffTransport).sort();
             
-            // 3. 一般公壇 (依照陣列順序，無人者置底)
             let activeTemples = [];
             let emptyTemples = [];
             Object.keys(templeTransport).forEach(k => {
                 const d = templeTransport[k];
                 const isEmpty = (d.carsSd === 0 && d.carsCt === 0 && d.shuttleSd === 0 && d.shuttleCt === 0 && d.busSd === 0 && d.busCt === 0);
-                if (isEmpty) emptyTemples.push(k);
-                else activeTemples.push(k);
+                if (isEmpty) {
+                    emptyTemples.push(k);
+                } else {
+                    activeTemples.push(k);
+                }
             });
             const sortFn = (a, b) => {
                 let idxA = allDomesticTemples.indexOf(a);
@@ -335,7 +482,6 @@
             emptyTemples.sort(sortFn);
             const sortedTempleKeys = [...activeTemples, ...emptyTemples];
 
-            // 產生 HTML 函式
             const buildHTMLFromKeys = (keysArray, dataObj, isBus) => {
                 return keysArray.map(groupKey => {
                     const d = dataObj[groupKey];
@@ -374,7 +520,6 @@
                                 </div>
                             `;
                         }
-
                         return `
                             <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
                                 <td class="p-3 font-bold text-blue-800 text-base">${displayName}</td>
@@ -387,7 +532,6 @@
                             </tr>
                         `;
                     } else {
-                        // 防呆：工作組如果完全沒人就不顯示。公壇沒人則顯示暫無登錄
                         if (isTotallyEmpty && displayName.includes('[工作組]')) return '';
                         
                         let parkingHTML = '';
@@ -450,7 +594,53 @@
             document.getElementById('dash-transport-temple').innerHTML = buildHTMLFromKeys(sortedTempleKeys, templeTransport, false);
         }
 
-        // 執行整批次寫入資料庫邏輯
+        // 💾 批次儲存轉乘孤兒指派 (新功能)
+        async function batchAssignOrphans() {
+            const updates = {};
+            let hasChanges = false;
+            
+            document.querySelectorAll('.orphan-assign-select').forEach(sel => {
+                if (sel.value) {
+                    updates[sel.getAttribute('data-key')] = sel.value;
+                    hasChanges = true;
+                }
+            });
+
+            if (!hasChanges) {
+                alert("⚠️ 請至少為一位道親選擇下午欲搭乘的車輛。");
+                return;
+            }
+
+            const pwd = prompt("🔐 權限驗證\n請輸入大會指派密碼：", "");
+            if (pwd !== "5050") {
+                if (pwd !== null) alert("密碼錯誤，拒絕寫入。");
+                return;
+            }
+            
+            const btn = document.querySelector("#dash-transfer-list button");
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = "⏳ 資料寫入中，請稍候..."; 
+            btn.disabled = true; 
+            btn.classList.add("opacity-70", "cursor-not-allowed");
+
+            try {
+                await fetch(scriptUrl, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: "batchUpdateOrphans", updates: updates }) 
+                });
+                alert("✅ 指派成功！這些道親已為您安排妥當。\n(畫面即將重新整理以顯示最新空位)");
+                window.location.reload(); 
+            } catch (e) { 
+                alert("❌ 寫入失敗，請檢查網路連線。"); 
+                btn.innerHTML = originalHTML; 
+                btn.disabled = false;
+                btn.classList.remove("opacity-70", "cursor-not-allowed");
+            }
+        }
+
+        // 💾 批次儲存停車位
         async function batchUpdateParking() {
             const pwd = prompt("🔐 安全驗證\n請輸入管理員密碼：", "");
             if (pwd !== "5050") {
@@ -459,7 +649,6 @@
             }
 
             const updates = {};
-            
             document.querySelectorAll('.park-am-select').forEach(sel => {
                 const groupKey = sel.getAttribute('data-group');
                 const amValue = sel.value; 
@@ -469,20 +658,15 @@
                 if (!amValue && !pmValue) {
                     updates[groupKey] = '待安排';
                 } else {
-                    const amStr = amValue ? amValue : '未排';
-                    const pmStr = pmValue ? pmValue : '未排';
-                    updates[groupKey] = `早:${amStr} | 午:${pmStr}`;
+                    updates[groupKey] = `早:${amValue ? amValue : '未排'} | 午:${pmValue ? pmValue : '未排'}`;
                 }
             });
 
-            if (Object.keys(updates).length === 0) {
-                alert("目前沒有設定任何車位，無須更新。");
-                return;
-            }
+            if (Object.keys(updates).length === 0) return alert("目前沒有設定任何車位，無須更新。");
             
             const btn = document.getElementById("btn-batch-parking");
             btn.innerHTML = "⏳ 寫入資料庫中..."; 
-            btn.disabled = true;
+            btn.disabled = true; 
             btn.classList.add("opacity-70", "cursor-not-allowed");
 
             try {
@@ -498,7 +682,7 @@
             }
             
             btn.innerHTML = "💾 儲存更改"; 
-            btn.disabled = false;
+            btn.disabled = false; 
             btn.classList.remove("opacity-70", "cursor-not-allowed");
         }
     </script>
@@ -547,14 +731,18 @@
                     <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold text-amber-700 mb-1">中午表演場 (高級午餐盒)</p>
-                            <p class="text-3xl font-black text-amber-600"><span id="dash-total-bento">0</span><span class="text-sm text-amber-500/70 font-medium ml-1">個</span></p>
+                            <p class="text-3xl font-black text-amber-600">
+                                <span id="dash-total-bento">0</span><span class="text-sm text-amber-500/70 font-medium ml-1">個</span>
+                            </p>
                         </div>
                         <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl">🍱</div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-purple-200 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-xs font-bold text-purple-700 mb-1">留下享用晚餐 (歐式自助)</p>
-                            <p class="text-3xl font-black text-purple-600"><span id="dash-total-dinner">0</span><span class="text-sm text-purple-500/70 font-medium ml-1">人</span></p>
+                            <p class="text-3xl font-black text-purple-600">
+                                <span id="dash-total-dinner">0</span><span class="text-sm text-purple-500/70 font-medium ml-1">人</span>
+                            </p>
                         </div>
                         <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-2xl">🍽️</div>
                     </div>
@@ -586,7 +774,7 @@
                 </div>
                 
                 <div class="bg-red-50 border border-red-200 rounded-xl p-4 md:p-5 shadow-sm mb-4">
-                    <h4 class="text-red-800 font-bold mb-2 flex items-center gap-2">⚠️ 下午轉乘接駁清單 (早搭便車，午須接駁)</h4>
+                    <h4 class="text-red-800 font-bold mb-3 flex items-center gap-2">⚠️ 下午轉乘接駁清單 (早搭便車，午須接駁)</h4>
                     <div id="dash-transfer-list"></div>
                 </div>
 
@@ -635,17 +823,29 @@
                             </thead>
                             
                             <tbody class="bg-blue-50/30 border-b-4 border-gray-200">
-                                <tr><td colspan="8" class="px-3 py-2 text-xs font-black text-blue-800 bg-blue-100">🚌 大巴停車專區 (統一設定該車全體乘客車位)</td></tr>
+                                <tr>
+                                    <td colspan="8" class="px-3 py-2 text-xs font-black text-blue-800 bg-blue-100">
+                                        🚌 大巴停車專區 (統一設定該車全體乘客車位)
+                                    </td>
+                                </tr>
                             </tbody>
                             <tbody id="dash-transport-bus" class="bg-blue-50/10"></tbody>
 
                             <tbody class="bg-amber-50/30 border-b-4 border-gray-200">
-                                <tr><td colspan="8" class="px-3 py-2 text-xs font-black text-amber-700 bg-amber-100">🛠️ 大會工作組專區 (優先分流)</td></tr>
+                                <tr>
+                                    <td colspan="8" class="px-3 py-2 text-xs font-black text-amber-700 bg-amber-100">
+                                        🛠️ 大會工作組專區 (優先分流)
+                                    </td>
+                                </tr>
                             </tbody>
                             <tbody id="dash-transport-staff" class="bg-amber-50/10"></tbody>
                             
                             <tbody class="border-b border-gray-200">
-                                <tr><td colspan="8" class="px-3 py-2 text-xs font-black text-gray-500 bg-gray-100">🏠 貴賓壇主講師與 一般道親專區 (已自動扣除工作人員)</td></tr>
+                                <tr>
+                                    <td colspan="8" class="px-3 py-2 text-xs font-black text-gray-500 bg-gray-100">
+                                        🏠 貴賓壇主講師與 一般道親專區 (已自動扣除工作人員)
+                                    </td>
+                                </tr>
                             </tbody>
                             <tbody id="dash-transport-temple"></tbody>
                         </table>
@@ -662,7 +862,6 @@
                     <p class="text-sm text-gray-400">此區塊將提供「巡禮」、「宴席」、「展演」的智慧分區座位名單匯出功能。</p>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -678,6 +877,5 @@
             <span class="text-xl">🪑</span><span class="text-[10px]">大會座位</span>
         </button>
     </nav>
-
 </body>
 </html>
