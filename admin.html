@@ -18,7 +18,6 @@
     <script>
         // 🚨 您的專屬 API 網址
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec';
-						 //https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec
         let globalRecords = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -27,9 +26,8 @@
             statusEl.className = "text-sm font-bold text-amber-700 bg-amber-50 px-4 py-2 rounded-full border border-amber-200";
 
             try {
-                // 官方標準防快取設定，避免被 Google DDoS 阻擋導致 40 秒超時
+                // 💡 修正致命語法錯誤，並對齊 index.html 的高穩定防快取參數
                 const response = await fetch(scriptUrl + '?v=' + Math.random());
-                });
                 const records = await response.json();
                 
                 // 去重邏輯 (保留最新狀態)
@@ -362,7 +360,6 @@
                     if (!d) return '';
                     const displayName = d.displayName;
                     
-                    // 💡 修正 0 人大巴誤判邏輯
                     let isTotallyEmpty = false;
                     if (isBus) {
                         isTotallyEmpty = (d.busSd === 0 && d.busCt === 0);
@@ -376,7 +373,6 @@
                     if (isBus) {
                         let busParkingHTML = '';
                         if (isTotallyEmpty) {
-                            // 💡 大巴無人時，顯示尚未報名
                             busParkingHTML = `
                                 <div class="flex justify-center">
                                     <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
@@ -511,10 +507,10 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "batchUpdateOrphans", updates: updates }) 
                 });
-                alert("✅ 指派成功！這些道親已為您安排妥當。\n(畫面即將重新整理以顯示最新空位)");
+                alert("✅ 指派成功！這些道親已為您安排妥當。\n\n⏳ 系統正在背景寫入資料庫，請稍候 3~5 秒，畫面將自動更新。");
                 setTimeout(() => {
 					window.location.reload();
-				}, 3000); 
+				}, 4000); 
             } catch (e) { 
                 alert("❌ 寫入失敗，請檢查網路連線。"); 
                 btn.innerHTML = originalHTML; 
@@ -558,14 +554,17 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "batchUpdateParking", updates: updates }) 
                 });
-                alert("✅ 整批次停車位更改成功！(大巴停車位已自動寫入該車乘客資料中)");
+                alert("✅ 整批次停車位更改成功！(大巴停車位已自動寫入該車乘客資料中)\n\n⏳ 系統正在背景寫入資料庫，請稍候 3~5 秒，畫面將自動更新。");
+                // 💡 加入 4 秒安全緩衝，防止重整卡死
+                setTimeout(() => {
+                    window.location.reload();
+                }, 4000);
             } catch (e) { 
                 alert("❌ 寫入失敗，請檢查網路連線。"); 
+                btn.innerHTML = "💾 儲存更改"; 
+                btn.disabled = false; 
+                btn.classList.remove("opacity-70", "cursor-not-allowed");
             }
-            
-            btn.innerHTML = "💾 儲存更改"; 
-            btn.disabled = false; 
-            btn.classList.remove("opacity-70", "cursor-not-allowed");
         }
     </script>
 
