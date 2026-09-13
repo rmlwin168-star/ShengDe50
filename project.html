@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖德宮50周年慶 - 專案管理與任務檢核中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; }
+        .mermaid { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .gantt-title { font-weight: 900 !important; font-size: 1.25rem !important; fill: #7F1D1D !important; }
+    </style>
+</head>
+<body class="antialiased text-gray-800 pb-20">
+
+    <header class="bg-red-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="bg-amber-400 text-red-900 font-black px-3 py-1 rounded-lg text-sm">內部專用</span>
+                <h1 class="text-xl md:text-2xl font-bold tracking-wider">聖德宮50周年慶 專案管理中心</h1>
+            </div>
+            <nav class="hidden md:flex gap-6 text-sm font-bold text-red-100">
+                <a href="#announcement" class="hover:text-white">📢 重大公告</a>
+                <a href="#flow" class="hover:text-white">📊 大會流程圖</a>
+                <a href="#tasks" class="hover:text-white">✅ 任務檢核表</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 mt-8 space-y-10">
+
+        <!-- 📢 重大公告區塊 -->
+        <section id="announcement" class="scroll-mt-24">
+            <div class="bg-gradient-to-r from-red-50 to-amber-50 border-l-8 border-red-700 p-6 sm:p-8 rounded-r-2xl shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-red-200 pb-4">
+                    <h2 class="text-2xl font-black text-red-900 flex items-center gap-2">
+                        <span>📢</span> 優先公告：邀請函發放嚴格規範
+                    </h2>
+                    <span class="bg-red-700 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">最高優先級</span>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex-1">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">📅 關鍵死線 (Milestones)</h3>
+                            <ul class="space-y-2 text-sm text-gray-700">
+                                <li class="flex items-center gap-2"><span class="text-red-600 font-black">10月15日：</span> 邀請函與所有配套文件必須確認，並呈點傳師核示[cite: 2]。</li>
+                                <li class="flex items-center gap-2"><span class="text-red-600 font-black">11月01日：</span> 所有實體與電子邀請函全面寄出[cite: 2]。寄出前大會必先確認。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-amber-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3 border-b border-gray-100 pb-2">📦 邀請函包裹必備附件 (缺一不可)</h3>
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 mt-0.5">✅</span> 
+                                <div><strong>實體邀請函：</strong> 包含活動主旨與誠摯邀約[cite: 2]。</div>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 mt-0.5">✅</span> 
+                                <div><strong>大會行程表與表演表：</strong> 必須明確簡介各個表演的精神與重點[cite: 2]。</div>
+                            </li>
+                            <li class="flex items-start gap-2 md:col-span-2">
+                                <span class="text-amber-600 mt-0.5">✅</span> 
+                                <div>
+                                    <strong>交通與停車指引：</strong> 包含整體的交通動線、該單位專屬的停車位路線、實體停車證[cite: 2]。<br>
+                                    <span class="text-xs text-red-700 font-bold bg-red-50 px-2 py-1 rounded inline-block mt-1">※ 電子檔規範：遠方道親、點傳師、貴賓若無法寄送實體，須由大會統一設計電子檔（含交通路線與停車證）發送，以利現場交通總務人員手機辨識[cite: 2]。</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 📊 大會流程甘特圖 -->
+        <section id="flow" class="scroll-mt-24 space-y-6">
+            <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2 border-b-2 border-gray-200 pb-2">
+                <span>⏱️</span> 大會當日流程與動線圖 (2026/12/13)
+            </h2>
+            <div class="mermaid">
+gantt
+    dateFormat  HH:mm
+    axisFormat  %H:%M
+
+    section 大會主軸儀程
+    迎賓舞獅與時光巡禮       :08:30, 10:35
+    大殿獻供與點傳師致詞     :10:35, 11:35
+    感恩蔬食午宴             :11:45, 12:55
+    精粹展演 (莿桐國小禮堂)  :13:30, 16:20
+    賦歸與場地清潔           :16:30, 17:30
+
+    section 國內公壇動線
+    停車與隊呼進場 (B區)     :07:50, 08:50
+    觀賞視訊與獻供           :08:50, 10:35
+    B/C/D區 午宴             :11:45, 12:55
+    整隊前往禮堂就座         :12:55, 13:30
+    領取禮品與上車賦歸       :16:50, 17:10
+
+    section 國外公壇動線
+    巷口下車與隊呼進場       :10:00, 10:20
+    大殿(A區)就座與獻供      :10:35, 11:35
+    A/C區 午宴               :11:45, 12:55
+    上巴士轉移至禮堂         :12:55, 13:30
+    離場(18:30前抵天元佛院)  :16:30, 18:00
+
+    section 工作任務組動線
+    工作人員到場準備         :07:30, 08:30
+    表演組化妝換裝(D區)      :07:30, 11:00
+    任務組提早午餐(D區)      :11:00, 12:10
+    禮品預放座位/車上        :10:35, 12:30
+            </div>
+
+            <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2 border-b-2 border-gray-200 pb-2 mt-12">
+                <span>🗓️</span> 籌備期任務與里程碑
+            </h2>
+            <div class="mermaid">
+gantt
+    dateFormat  YYYY-MM-DD
+
+    section 🛑 核心里程碑
+    邀請函與配套文件【送審定稿】 :milestone, m1, 2026-10-15, 0d
+    邀請函與電子檔【全面寄發】   :milestone, m2, 2026-11-01, 0d
+    大會正式舉辦                 :milestone, m3, 2026-12-13, 0d
+
+    section 交通(廖宏文)
+    申請路權與停車場商借     :2026-09-01, 2026-10-10
+    規劃交通動線與設計停車證 :2026-09-15, 2026-10-15
+
+    section 工程影音(高聖傑)
+    廁所整建工程發包與施工   :2026-09-01, 2026-11-30
+    禮堂音響與大殿視訊租借   :2026-10-01, 2026-11-15
+    影音視訊系統全場總綵排   :2026-12-12, 1d
+
+    section 文宣文書 [待調整]
+    大會行程表與表演重點撰寫 :2026-09-15, 2026-10-10
+    紙本與電子邀請函排版設計 :2026-10-01, 2026-10-15
+    報名系統上線與接龍       :2026-09-10, 2026-09-30
+
+    section 總務財務 [待調整]
+    確認紀念品款式與下單     :2026-10-01, 2026-10-15
+    流動廁所租借與安裝確認   :2026-10-15, 2026-11-15
+    排定桌椅與會場佈置(前日) :2026-12-12, 1d
+
+    section 表演餐飲 [待調整]
+    午宴試菜與60桌預訂確認   :2026-09-15, 2026-10-15
+    各戲劇與音樂節目排練     :2026-09-01, 2026-12-10
+            </div>
+        </section>
+
+        <!-- ✅ 任務檢核表 -->
+        <section id="tasks" class="scroll-mt-24 space-y-6">
+            <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2 border-b-2 border-gray-200 pb-2">
+                <span>📋</span> 各組檢核任務與負責擔當清單
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 交通組 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:border-red-300 transition-colors">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="text-xl font-bold text-red-900 flex items-center gap-2">🚗 交通組</h3>
+                        <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-lg text-sm font-black">負責：廖宏文 講師</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                            <span><strong>路權申請：</strong> 提前兩個月完成 T2, T7, T8 及聖德宮巷道路權申請，並於活動前兩天拉設黃色警示帶[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                            <span><strong>停車場地商借：</strong> 確認 200 輛轎車與 5 輛大巴士之早午停車場地 (T1~T8)[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                            <span><strong>動線與停車證設計：</strong> 配合文書組，設計清晰之專屬停車位路線與實體/電子停車證[cite: 2]。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 工程與影音組 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:border-red-300 transition-colors">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="text-xl font-bold text-red-900 flex items-center gap-2">🛠️ 工程與影音組</h3>
+                        <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-lg text-sm font-black">負責：高聖傑 講師</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                            <span><strong>廁所改建工程：</strong> 推動聖德宮兩側廁所拆除與改建，確保為全平面無障礙設計[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                            <span><strong>同步視訊建置：</strong> 架設區域網路，確保大殿與廣場、小佛堂視訊同步直播[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 text-red-600 rounded">
+                            <span><strong>音響租借與測試：</strong> 租賃迎賓舞獅高功率音響、莿桐國小禮堂音響與燈光 (12/12 綵排使用)[cite: 2]。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 總務與財務組 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:border-gray-300 transition-colors">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">📦 總務與財務組</h3>
+                        <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200">[待調整]</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-700 opacity-80">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>衛浴設施：</strong> 完成流動廁所租借與安裝 (近網室處)，調配國內外道親分流使用[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>場地佈置與復原：</strong> 前一日佈置大殿排椅、小佛堂、鄰居擺桌區；活動後收納整理[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>禮品採購與分發：</strong> 確認紀念品數量；禮品預放於貴賓座位或遊覽車上，國內由公壇統一發放[cite: 2]。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 文書與文宣傳播組 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:border-gray-300 transition-colors">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">📝 文書與文宣傳播組</h3>
+                        <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200">[待調整]</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-700 opacity-80">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>邀請函與附件製作：</strong> 統籌設計邀請函、停車證、流程簡介與電子化圖檔 (遵守 10/15 送審死線)[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>名牌與標示：</strong> 印製壓克力三角名牌，並配合總務組製作精準區域標示[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>數位平台維運：</strong> 管理大會專屬網站、維護各公壇線上報名接龍系統[cite: 2]。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 公關、引導與炊事組 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:border-gray-300 transition-colors">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">🤝 公關、引導與炊事組</h3>
+                        <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200">[待調整]</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-700 opacity-80">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>午宴確認：</strong> 確認 60 桌蔬食菜色 (5500元/桌)，派送大巴司機與任務組午餐盒[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>引導動線：</strong> 統籌各公壇旗幟引導者，執行下車整隊、隊呼進場、午宴就座與下午轉場動線[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>迎賓準備：</strong> 準備茶水、毛巾，並於點傳師與貴賓進場時協助配戴鮮花胸花[cite: 2]。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 節目、表演與大事記組 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 hover:border-gray-300 transition-colors">
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">🎭 節目、表演與大事記組</h3>
+                        <span class="bg-gray-100 text-gray-500 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200">[待調整]</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-700 opacity-80">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>戲劇與音樂排練：</strong> 督導舞台劇、口琴與合唱團之進度與預算實報實銷[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>彩妝培訓：</strong> 舉辦彩妝課程培訓合唱團員，並準備粉底、卸妝品等耗材[cite: 2]。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300">
+                            <span><strong>影片製作與攝影：</strong> 製作 50 周年感恩午宴播放影片，並規劃當天攝影動線[cite: 2]。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 載入 Mermaid.js -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#FEF2F2',
+                primaryBorderColor: '#FCA5A5',
+                primaryTextColor: '#7F1D1D',
+                lineColor: '#EF4444',
+                secondaryColor: '#FFFBEB',
+                tertiaryColor: '#F3F4F6'
+            }
+        });
+    </script>
+</body>
+</html>
