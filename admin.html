@@ -18,6 +18,7 @@
     <script>
         // 🚨 您的專屬 API 網址
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec';
+						 //https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec
         let globalRecords = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -27,10 +28,7 @@
 
             try {
                 // 官方標準防快取設定，避免被 Google DDoS 阻擋導致 40 秒超時
-                const response = await fetch(scriptUrl, {
-                    method: 'GET',
-                    cache: 'no-store',
-                    redirect: 'follow'
+                const response = await fetch(scriptUrl + '?v=' + Math.random());
                 });
                 const records = await response.json();
                 
@@ -514,7 +512,9 @@
                     body: JSON.stringify({ action: "batchUpdateOrphans", updates: updates }) 
                 });
                 alert("✅ 指派成功！這些道親已為您安排妥當。\n(畫面即將重新整理以顯示最新空位)");
-                window.location.reload(); 
+                setTimeout(() => {
+					window.location.reload();
+				}, 3000); 
             } catch (e) { 
                 alert("❌ 寫入失敗，請檢查網路連線。"); 
                 btn.innerHTML = originalHTML; 
