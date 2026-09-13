@@ -1123,6 +1123,7 @@ https://rmlwin168-star.github.io/ShengDe50/
         let lockedTemple = "";
         let lockedAssister = "";
         let lockedPhone = "";
+        let isDataSyncing = true; // 🌟 核心防呆：追蹤資料是否載入完成
 
         document.addEventListener('DOMContentLoaded', async () => {
             initCountdown();
@@ -1147,8 +1148,9 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         async function loadLiveRegistrationData() {
+            isDataSyncing = true; // 開始同步鎖定
             try {
-                const response = await fetch(scriptUrl + '?v=' + Math.random());
+                const response = await fetch(scriptUrl + '?t=' + new Date().getTime());
                 const records = await response.json();
 
                 const latestRecordsMap = new Map();
@@ -1186,10 +1188,13 @@ https://rmlwin168-star.github.io/ShengDe50/
                 }
                 renderTempleDetail();
                 calculateBudgetRequirements();
+                isDataSyncing = false; // 🌟 成功載入，解除鎖定
             } catch (e) {
                 console.error("Fetch Data Error: ", e);
                 renderTempleDetail();
                 calculateBudgetRequirements();
+                isDataSyncing = false; // 🌟 就算連線失敗也要解除鎖定，以免永遠無法操作
+                showToast("⚠️ 資料庫連線異常，請檢查網路或重新整理網頁");
             }
         }
 
@@ -1221,7 +1226,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             if(confirm("確定要註銷(取消)此道親的報名嗎？\n系統將保留歷史紀錄，但不再計算此人名額，且釋出車位。")) {
                 document.getElementById('reg-job').value = '❌ 不克出席 (取消)';
                 checkCancelStatus();
-                // 直接呼叫儲存程序
                 handleRegistrationSubmit(new Event('submit', { cancelable: true }));
             }
         }
@@ -1274,7 +1278,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             let lunchSelect = document.getElementById('reg-lunch').value || "";
             let dinnerSelect = document.getElementById('reg-dinner').value || "";
 
-            // ⚠️ 終極資料庫防呆與嚴格驗證
             if (jobTitle === '❌ 不克出席 (取消)') {
                 transTemple = "無"; transSchool = "無"; lunchSelect = "無"; dinnerSelect = "無";
                 driverTemple = ""; driverSchool = ""; seatsTemple = 0; seatsSchool = 0;
@@ -1307,7 +1310,6 @@ https://rmlwin168-star.github.io/ShengDe50/
 
             showToast("⏳ 處理中，請稍候...");
 
-            // 瞬間樂觀更新 (改為無空白嚴格比對)
             globalRecords = globalRecords.filter(r => !(String(r.temple).replace(/\s/g, '') === String(payload.temple).replace(/\s/g, '') && String(r.name).replace(/\s/g, '') === String(payload.name).replace(/\s/g, '')));
             globalRecords.push(payload);
             
@@ -1323,7 +1325,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                 }
             });
             
-            // 🛑 核心導航修正：無縫返回
             closeRegistrationModal();
             showToast(`🎉 成功！已為 [${attendeeName}] 儲存紀錄！`);
 
@@ -1335,12 +1336,10 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
             calculateBudgetRequirements();
 
-            // 瞬間刷新壇主面板 (A)
             if (!document.getElementById('assister-manage-modal').classList.contains('hidden')) {
                 loginAssister();
             }
 
-            // 背景上傳
             fetch(scriptUrl, { 
                 method: 'POST', mode: 'no-cors', body: JSON.stringify(payload), 
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' }
@@ -1424,9 +1423,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             }
         }
 
-        // ---------------------------------------------------------
-        // 4. MODALS & UI TOGGLES
-        // ---------------------------------------------------------
         function openTopicDetail(topicKey) {
             const badge = document.getElementById('modal-topic-badge');
             const title = document.getElementById('modal-topic-title');
@@ -1476,8 +1472,8 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         function openRegistrationModal() {
-            if (!globalRecords || globalRecords.length === 0) {
-                alert("⏳ 系統正在同步雲端最新資料，請稍等 3~5 秒後再點擊一次！");
+            if (isDataSyncing) {
+                alert("⏳ 系統正在同步雲端最新資料，請稍候幾秒再點擊！\n(若持續無反應，請重新整理網頁)");
                 return;
             }
             setEditMode(false);
@@ -1505,8 +1501,8 @@ https://rmlwin168-star.github.io/ShengDe50/
         }
 
         function openAssisterManageModal() {
-            if (!globalRecords || globalRecords.length === 0) {
-                alert("⏳ 系統正在同步雲端最新資料，請稍等 3~5 秒後再點擊一次！");
+            if (isDataSyncing) {
+                alert("⏳ 系統正在同步雲端最新資料，請稍候幾秒再點擊！\n(若持續無反應，請重新整理網頁)");
                 return;
             }
             document.getElementById('assister-manage-modal').classList.remove('hidden');
@@ -1517,17 +1513,16 @@ https://rmlwin168-star.github.io/ShengDe50/
             document.body.style.overflow = 'auto';
         }
 
-        // --- 核心防呆：全自動電話正規化清洗器 ---
         function cleanPhone(val) {
             if (!val) return "";
-            let s = String(val).replace(/\D/g, ''); // 拔除所有非數字 (去除單引號 '、空格、連字號 -)
+            let s = String(val).replace(/\D/g, ''); 
             if (s.length === 9 && s.startsWith('9')) {
-                s = '0' + s; // 若被 Google Sheets 吞掉開頭 0，自動補回
+                s = '0' + s; 
             }
             return s;
         }
 
-        let currentAssisterRecords = []; // 暫存壇主名單陣列，徹底避免 HTML 單引號衝突
+        let currentAssisterRecords = []; 
 
         function loginAssister() {
             const inputNameEl = document.getElementById('manage-input-name');
@@ -1563,7 +1558,6 @@ https://rmlwin168-star.github.io/ShengDe50/
 
             const listContainer = document.getElementById('manage-attendees-list');
             listContainer.innerHTML = myRecords.map((r, idx) => {
-                // 安全讀取晚餐狀態，避免 undefined 崩潰
                 const dinnerShow = r.stay_dinner ? (String(r.stay_dinner).includes('是') ? '⭕' : '❌') : '➖';
                 return `
                     <div class="p-3 bg-white border border-gray-200 rounded-xl flex justify-between items-center hover:border-amber-400 transition-colors">
@@ -1579,7 +1573,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             }).join('');
         }
 
-        // 藉由索引呼叫，杜絕 JSON 塞在 HTML 標籤內產生的單引號截斷 bug
         function loadRecordToEditByIndex(index) {
             const record = currentAssisterRecords[index];
             if (record) {
@@ -1656,9 +1649,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                 </div>`).join('');
         }
 
-        // ---------------------------------------------------------
-        // 5. MEDIA TOOLKIT & VIDEO PLAYER
-        // ---------------------------------------------------------
         function checkAuth(callback) {
             if (isAuthorized) { callback(); return; }
             const pwd = prompt("此為各壇負責人專用推播功能。\n請輸入發布密碼以解鎖 (預設: 5050)：");
@@ -1741,9 +1731,6 @@ https://rmlwin168-star.github.io/ShengDe50/
             });
         }
 
-        // ---------------------------------------------------------
-        // 6. CHARTS & ANALYTICS
-        // ---------------------------------------------------------
         function initCharts() {
             const ctxDoughnut = document.getElementById('programStructureChart').getContext('2d');
             programChart = new Chart(ctxDoughnut, {
