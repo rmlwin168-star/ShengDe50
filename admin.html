@@ -6,12 +6,7 @@
     <title>聖德宮50周年慶 - 後台管理中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: #F3F4F6; 
-        }
-    </style>
+    <style> body { font-family: 'Noto Sans TC', sans-serif; background-color: #F3F4F6; } </style>
 </head>
 <body class="antialiased flex h-screen overflow-hidden text-gray-800">
 
@@ -152,7 +147,9 @@
         function renderTransportDashboard() {
             let carsMorning = 0, carsAfternoon = 0, shuttleMorning = 0, shuttleAfternoon = 0;
             let staffTransport = {}, templeTransport = {}, busTransport = {}, transferList = [];
-            const staffKeywords = ['表演', '機動', '交通', '總務'];
+            
+            // 💡 終極嚴格名單：只有這些組別需要「大會特別安排車位」
+            const staffKeywords = ['表演', '司儀', '彩妝', '機動', '交通', '總務', '大事記', '大世紀', '影音', '接駁', '引導'];
             
             const busNames = [
                 { key: '大巴１號', displayName: '大巴１號' }, { key: '大巴２號', displayName: '大巴２號' },
@@ -409,43 +406,32 @@
                             </tr>
                         `;
                     } else {
-                        // 判斷該公壇是否有人出去當「大會工作人員」
-                        const hasStaff = globalRecords.some(r => String(r.temple).trim() === groupKey && staffKeywords.some(kw => String(r.job).includes(kw)));
+                        // 💡 終極四階段邏輯判定
+                        const hasAnyRecords = globalRecords.some(r => String(r.temple).trim() === groupKey);
                         
-                        // 修正盲區：如果是工作組本身沒有人，就直接不顯示這列
                         if (isTotallyEmpty && displayName.includes('[工作組]')) return '';
                         
                         let parkingHTML = '';
-                        if (isTotallyEmpty) {
-                            // 💡 四階段邏輯之「全村皆兵」與「真無人」
-                            if (hasStaff && !displayName.includes('[工作組]')) {
-                                parkingHTML = `
-                                    <div class="flex justify-center text-center">
-                                        <span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded text-[11px] font-bold leading-snug">
-                                            皆為大會工作人員<br>(已由工作組統一安排車位)
-                                        </span>
-                                    </div>
-                                `;
-                            } else {
-                                parkingHTML = `
-                                    <div class="flex justify-center">
-                                        <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
-                                            尚未報名
-                                        </span>
-                                    </div>
-                                `;
-                            }
-                        } else if (d.carsSd === 0 && d.carsCt === 0) {
-                            // 💡 四階段邏輯之「無車族/大巴族」
+                        if (!hasAnyRecords) {
+                            // 階段一：真・無人報名 (這個公壇在資料庫中 0 筆)
+                            parkingHTML = `
+                                <div class="flex justify-center">
+                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
+                                        尚未報名
+                                    </span>
+                                </div>
+                            `;
+                        } else if (isTotallyEmpty) {
+                            // 階段二/三：有人報名，但一般自駕車 = 0 (全村皆兵 或 都是大巴族)
                             parkingHTML = `
                                 <div class="flex justify-center text-center">
-                                    <span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded text-[11px] font-bold leading-snug">
-                                        無自駕車<br>(皆搭乘大巴/專車接送)
+                                    <span class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-1 rounded text-[11px] font-bold leading-snug">
+                                        無一般自駕車<br>(車位已由大會工作組 / 大巴統一安排)
                                     </span>
                                 </div>
                             `;
                         } else {
-                            // 💡 四階段邏輯之「正常自駕族」
+                            // 階段四：有一般自駕車，正常顯示下拉選單
                             parkingHTML = `
                                 <div class="space-y-1.5">
                                     <div class="flex items-center gap-1 text-[11px]">
