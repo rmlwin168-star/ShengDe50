@@ -766,9 +766,19 @@ https://rmlwin168-star.github.io/ShengDe50/
             
             <form id="online-reg-form" onsubmit="handleRegistrationSubmit(event)" class="p-5 sm:p-6 pb-16 sm:pb-8 overflow-y-auto space-y-5 text-gray-800">
                 
-                <div id="edit-mode-hint" class="hidden bg-red-50 border border-red-200 p-3 rounded-xl text-xs text-red-800 font-bold flex items-start gap-2 shadow-inner">
+                <div id="edit-mode-hint" class="hidden bg-red-50 border border-red-200 p-3 rounded-xl text-xs text-red-800 font-bold flex items-start gap-2 shadow-inner mb-4">
                     <span class="mt-0.5">⚠️</span> 
                     <span>【安全鎖定】：為避免重複建檔，公壇與姓名已鎖定。若需更換名單，請點擊下方「❌ 註銷此報名」後重新登錄。</span>
+                </div>
+
+                <!-- 💡 新增的嚴格報名警告標語 -->
+                <div class="bg-red-50 border-l-4 border-red-600 p-3 rounded-r-xl mb-5 shadow-sm">
+                    <h4 class="text-red-800 font-bold text-sm flex items-center gap-1.5 mb-1">
+                        <span>⚠️</span> 報名嚴格規範
+                    </h4>
+                    <p class="text-xs text-red-700 font-medium leading-relaxed">
+                        本系統僅開放選單內有列出之公壇（範圍含點傳師、壇主、講師所屬道親與家人）報名。若您不在列表中公壇範圍，請勿填寫，各區負責人將定期巡檢並直接刪除無效名單，謝謝配合！
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -1056,7 +1066,7 @@ https://rmlwin168-star.github.io/ShengDe50/
     <!-- JavaScript -->
     <script>
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec';
-						   
+                           
         const performancesData = [
             { id: 1, title: "鳳蓮公主 (顯化故事劇)", category: "drama", categoryLabel: "🎬 舞台劇三部曲", badgeBg: "bg-red-100 text-red-800", icon: "🎭", summary: "演繹聞名世界的經典顯化故事『鳳蓮公主』。" },
             { id: 2, title: "秦廣王 (顯化故事劇)", category: "drama", categoryLabel: "🎬 舞台劇三部曲", badgeBg: "bg-red-100 text-red-800", icon: "⚖️", summary: "經典顯化劇目『秦廣王』，警醒世人因果輪迴。" },
@@ -1783,7 +1793,6 @@ https://rmlwin168-star.github.io/ShengDe50/
                     let dinnerShow = '➖';
                     if (log.stay_dinner) { dinnerShow = log.stay_dinner.includes('是') ? '⭕' : '❌'; }
 
-                    // 💡 判斷車位顯示邏輯：如果沒有自駕，且車位狀態是預設的「待安排」，則顯示空白
                     let parkingDisplay = log.parking || "待安排";
                     if (parkingDisplay === "待安排") {
                         let isDriver = String(log.transport_sd || '').includes('自駕') || String(log.transport_ct || '').includes('自駕');

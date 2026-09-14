@@ -16,7 +16,6 @@
 <body class="antialiased flex h-screen overflow-hidden text-gray-800">
 
     <script>
-        // 🚨 這是您專屬的 API 網址
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbw-DKhRuntIjremIcCzhn97M45gIH3kaqSTx0FVUp4LWZDwHi8J2szgQK1zZFTTnTUb/exec';
         let globalRecords = [];
 
@@ -26,14 +25,9 @@
             statusEl.className = "text-sm font-bold text-amber-700 bg-amber-50 px-4 py-2 rounded-full border border-amber-200";
 
             try {
-                // 💡 加入時間戳，強制避開快取與 CORS 阻擋
-                const response = await fetch(scriptUrl + '?t=' + new Date().getTime(), {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
+                const response = await fetch(scriptUrl + '?t=' + new Date().getTime());
                 const records = await response.json();
                 
-                // 去重邏輯 (保留最新狀態)
                 const latestMap = new Map();
                 records.forEach(row => {
                     const cleanTemple = String(row.temple || '').trim();
@@ -50,7 +44,7 @@
                 renderTransportDashboard();
                 
             } catch (e) {
-                statusEl.textContent = "❌ 資料載入失敗，請檢查網路或 API 網址";
+                statusEl.textContent = "❌ 資料載入失敗，請檢查網路";
                 statusEl.className = "text-sm font-bold text-red-700 bg-red-50 px-4 py-2 rounded-full border border-red-200";
             }
         });
@@ -111,7 +105,7 @@
             const totalBanquet = totalValid - totalBento;
             const banquetTables = Math.ceil(totalBanquet / 10);
 
-            document.getElementById('dash-total-banquet').innerHTML = `${totalBanquet} <span class="text-sm text-emerald-700/80 font-medium ml-1">人 (${banquetTables} 桌)</span>`;
+            document.getElementById('dash-total-banquet').innerHTML = `${totalBanquet} <span class="text-sm font-medium ml-1">人 (${banquetTables} 桌)</span>`;
             document.getElementById('dash-total-bento').textContent = totalBento;
             document.getElementById('dash-total-dinner').textContent = totalDinner;
 
@@ -214,7 +208,6 @@
                 const pmDriver = String(r.pm_driver || r['下午搭乘司機'] || r['下午司機'] || '').trim();
                 let dbParking = String(r.parking || r['停車位'] || '').trim();
 
-                // 💡 核心防呆：判斷是否為「車主」，用來防堵大巴被車主的車位設定給覆蓋
                 const isHybridDriver = transSd.includes('自駕') || transCt.includes('自駕');
 
                 if (isHybridDriver) {
@@ -238,7 +231,6 @@
                     let bKey = `[大巴] ${transSd}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busSd++;
-                        // 💡 只有「純乘客」的資料庫，才是真正儲存大巴車位的載體
                         if (!isHybridDriver && dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                             const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
                             if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') busTransport[bKey].savedAm = matchAm[1];
@@ -248,14 +240,13 @@
 
                 if (transCt.includes('大巴')) {
                     t.busCt++;
-                    let baseBusKey = transCt.replace('(空檔接駁)', '').trim();
+                    let baseBusKey = transCt.replace('(空檔接駁)', '').replace('(空檔)', '').trim();
                     let bKey = `[大巴] ${baseBusKey}`;
                     
                     if (pmVehicles[transCt]) pmVehicles[transCt].assigned++; 
                     
                     if(busTransport[bKey]) {
                         busTransport[bKey].busCt++;
-                        // 💡 只有「純乘客」的資料庫，才是真正儲存大巴車位的載體
                         if (!isHybridDriver && dbParking && dbParking !== '待安排' && dbParking !== '未排') {
                             const matchPm = dbParking.match(/午:\s*([^ |]+)/);
                             if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') busTransport[bKey].savedPm = matchPm[1];
@@ -418,26 +409,43 @@
                             </tr>
                         `;
                     } else {
+                        // 判斷該公壇是否有人出去當「大會工作人員」
+                        const hasStaff = globalRecords.some(r => String(r.temple).trim() === groupKey && staffKeywords.some(kw => String(r.job).includes(kw)));
+                        
+                        // 修正盲區：如果是工作組本身沒有人，就直接不顯示這列
                         if (isTotallyEmpty && displayName.includes('[工作組]')) return '';
                         
                         let parkingHTML = '';
                         if (isTotallyEmpty) {
-                            parkingHTML = `
-                                <div class="flex justify-center">
-                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
-                                        暫無登錄
-                                    </span>
-                                </div>
-                            `;
+                            // 💡 四階段邏輯之「全村皆兵」與「真無人」
+                            if (hasStaff && !displayName.includes('[工作組]')) {
+                                parkingHTML = `
+                                    <div class="flex justify-center text-center">
+                                        <span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded text-[11px] font-bold leading-snug">
+                                            皆為大會工作人員<br>(已由工作組統一安排車位)
+                                        </span>
+                                    </div>
+                                `;
+                            } else {
+                                parkingHTML = `
+                                    <div class="flex justify-center">
+                                        <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
+                                            尚未報名
+                                        </span>
+                                    </div>
+                                `;
+                            }
                         } else if (d.carsSd === 0 && d.carsCt === 0) {
+                            // 💡 四階段邏輯之「無車族/大巴族」
                             parkingHTML = `
-                                <div class="flex justify-center">
-                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
-                                        目前都在公務車位
+                                <div class="flex justify-center text-center">
+                                    <span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded text-[11px] font-bold leading-snug">
+                                        無自駕車<br>(皆搭乘大巴/專車接送)
                                     </span>
                                 </div>
                             `;
                         } else {
+                            // 💡 四階段邏輯之「正常自駕族」
                             parkingHTML = `
                                 <div class="space-y-1.5">
                                     <div class="flex items-center gap-1 text-[11px]">
@@ -516,7 +524,6 @@
                     body: JSON.stringify({ action: "batchUpdateOrphans", updates: updates }) 
                 });
                 alert("✅ 指派成功！這些道親已為您安排妥當。\n(畫面即將重新整理以顯示最新空位)");
-                // 💡 等待 3 秒確保資料庫已經寫入硬碟再重整
                 setTimeout(() => { window.location.reload(); }, 3000); 
             } catch (e) { 
                 alert("❌ 寫入失敗，請檢查網路連線。"); 
@@ -562,7 +569,6 @@
                     body: JSON.stringify({ action: "batchUpdateParking", updates: updates }) 
                 });
                 alert("✅ 整批次停車位更改成功！(大巴停車位已自動寫入該車乘客資料中)");
-                // 💡 等待 3 秒確保資料庫已經寫入硬碟再重整
                 setTimeout(() => { window.location.reload(); }, 3000); 
             } catch (e) { 
                 alert("❌ 寫入失敗，請檢查網路連線。"); 
