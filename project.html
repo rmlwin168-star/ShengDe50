@@ -62,7 +62,7 @@
                             <li><strong class="text-amber-700">午宴環保：</strong> 午宴剩菜不打包交炊事組處理，有需要者大會結束回聖德宮拿取。</li>
                             <li><strong class="text-amber-700">表演組餐盒：</strong> 11:30 準時將高級午餐盒送達莿桐國小展演廳。</li>
                             <li><strong class="text-amber-700">國外/遠地：</strong> 國外道親不留用自助餐，禮品與便當於下午提早搬至大巴上。</li>
-                            <li class="bg-white p-3 rounded-lg shadow-sm border border-amber-200"><strong class="text-amber-700">歐式自助餐：</strong> 16:40-18:00整理環境後，18:00於聖德宮享用自助餐犒賞 (點選者大會不另發便當)。</li>
+                            <li class="bg-white p-3 rounded-lg shadow-sm border border-amber-200"><strong class="text-amber-700">歐式自助餐：</strong> 16:40-18:00整理環境後，18:00於聖德宮享用自助餐犒賞 (大會不另發便當)。</li>
                         </ul>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
                     <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded ml-2 hidden sm:inline-block">👆 點擊橫條可查看起訖時間與詳細內容</span>
                 </h2>
                 <div class="flex bg-gray-200 rounded-lg p-1.5 shadow-inner w-full md:w-auto">
-                    <button onclick="toggleGantt('day')" id="btn-gantt-day" class="tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md cursor-pointer">大會當日三軌動線</button>
+                    <button onclick="toggleGantt('day')" id="btn-gantt-day" class="tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md border border-gray-200 cursor-pointer">大會當日三軌動線</button>
                     <button onclick="toggleGantt('prep')" id="btn-gantt-prep" class="tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md cursor-pointer">籌備流程任務檢核表</button>
                 </div>
             </div>
@@ -197,12 +197,17 @@ gantt
 
         <!-- ✅ 各組任務檢核表區 -->
         <section id="tasks" class="space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-gray-200 pb-2 gap-2">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-gray-200 pb-2 gap-3">
                 <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2"><span>📋</span> 各組任務檢核與預算看板</h2>
-                <div class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg shadow-inner">※ 大會總表與預算編列功能，將依據幹部登入權限自動開放</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg shadow-inner">※ 大會總表與預算，將依權限自動開放或隱藏</span>
+                    <!-- 💡 總幹事專屬的「新增任務」按鈕 -->
+                    <button id="btn-add-task" onclick="openTaskAdd()" class="hidden bg-red-800 hover:bg-red-900 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-md transition-all flex items-center gap-1 cursor-pointer">➕ 新增任務</button>
+                </div>
             </div>
             
             <div id="tasks-container" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <!-- Javascript 會動態產生任務卡片 -->
                 <div class="p-10 text-center text-gray-400 font-bold bg-white rounded-2xl shadow-sm w-full xl:col-span-2">
                     ⏳ 讀取大會雲端任務清單中...
                 </div>
@@ -230,33 +235,58 @@ gantt
         </div>
     </div>
 
-    <!-- ✏️ Task Edit Modal (任務與預算編輯) -->
+    <!-- ✏️ Task Edit / Add Modal (任務與預算編輯/新增) -->
     <div id="task-edit-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform">
             <div class="bg-amber-600 text-white p-4 font-bold flex justify-between items-center text-lg">
-                <span>✏️ 編輯任務與檢核狀態</span>
+                <span id="modal-edit-title">✏️ 編輯任務與進度</span>
                 <button onclick="closeTaskEditModal()" class="text-xl hover:text-amber-200 transition-colors">✕</button>
             </div>
-            <div class="p-6 space-y-5">
+            <div class="p-6 pb-8 max-h-[85vh] overflow-y-auto space-y-4">
                 <input type="hidden" id="edit-task-id">
-                <div>
+                
+                <!-- 💡 總幹事專屬設定區 (可編輯內容) -->
+                <div id="admin-edit-fields" class="hidden space-y-3 bg-red-50 p-4 rounded-xl border border-red-200 mb-2 shadow-inner">
+                    <div class="text-xs font-black text-red-900 mb-1 border-b border-red-200 pb-1 flex items-center gap-1"><span>👑</span> 總幹事專屬設定區</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">任務大項</label>
+                            <input type="text" id="edit-category" class="w-full border rounded px-2 py-1.5 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-red-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">負責組別</label>
+                            <input type="text" id="edit-group" class="w-full border rounded px-2 py-1.5 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-red-500" placeholder="例如: 交通組">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">負責人</label>
+                        <input type="text" id="edit-owner" class="w-full border rounded px-2 py-1.5 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">詳細附註</label>
+                        <textarea id="edit-detail" class="w-full border rounded px-2 py-1.5 text-sm font-medium h-16 focus:outline-none focus:ring-1 focus:ring-red-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- 🔒 一般組長檢視區 (唯讀) -->
+                <div id="normal-edit-fields">
                     <div class="text-xs font-bold text-gray-500">任務大項與詳細附註</div>
-                    <div id="edit-task-name" class="font-bold text-gray-800 mt-1 bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-inner"></div>
+                    <div id="edit-task-name" class="font-bold text-gray-800 mt-1 bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-inner leading-relaxed"></div>
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-2">任務狀態切換</label>
+                    <label class="block text-xs font-bold text-gray-700 mb-2 border-t pt-2 mt-2">任務進度狀態</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-green-50 border-green-200 cursor-pointer hover:bg-green-100 transition-colors">
+                        <label class="flex items-center gap-2 p-2 border rounded-lg bg-green-50 border-green-200 cursor-pointer hover:bg-green-100 transition-colors">
                             <input type="radio" name="edit-status" value="✅已完成"> <span class="text-sm font-bold text-green-800">✅已完成</span>
                         </label>
-                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-yellow-50 border-yellow-200 cursor-pointer hover:bg-yellow-100 transition-colors">
+                        <label class="flex items-center gap-2 p-2 border rounded-lg bg-yellow-50 border-yellow-200 cursor-pointer hover:bg-yellow-100 transition-colors">
                             <input type="radio" name="edit-status" value="⏳進行中"> <span class="text-sm font-bold text-yellow-800">⏳進行中</span>
                         </label>
-                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-red-50 border-red-200 cursor-pointer hover:bg-red-100 transition-colors">
-                            <input type="radio" name="edit-status" value="🚨逾期/警示"> <span class="text-sm font-bold text-red-800">🚨逾期/警示</span>
+                        <label class="flex items-center gap-2 p-2 border rounded-lg bg-red-50 border-red-200 cursor-pointer hover:bg-red-100 transition-colors">
+                            <input type="radio" name="edit-status" value="🚨逾期/警示"> <span class="text-sm font-bold text-red-800">🚨逾期</span>
                         </label>
-                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
+                        <label class="flex items-center gap-2 p-2 border rounded-lg bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
                             <input type="radio" name="edit-status" value="💬需協調"> <span class="text-sm font-bold text-blue-800">💬需協調</span>
                         </label>
                     </div>
@@ -280,7 +310,7 @@ gantt
                     </div>
                 </div>
 
-                <button onclick="saveTaskEdit()" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-3 rounded-xl transition-colors mt-2 cursor-pointer shadow-lg text-sm">
+                <button onclick="saveTaskEdit()" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-3 rounded-xl transition-colors mt-4 cursor-pointer shadow-lg text-sm">
                     💾 確認並同步儲存至雲端
                 </button>
             </div>
@@ -338,79 +368,44 @@ gantt
         let dbTasks = [];
         let currentUser = null; 
 
-        // 💡 匯入您會議記錄中的所有決議代辦事項 (18大組別全涵蓋)
+        // 💡 匯入預設任務樣板
         const defaultTasksTemplate = [
-            // 總幹事室
             { id: 'M01', category: '總幹事進度控管', detail: '12/30 計畫、人員、預算。協同副總幹事支援各組資源調度，對點傳師負責。', group: '總幹事室', owner: '林瑞明', status: '⏳進行中', budget: '0', manpower: '1', isEnough: '是' },
             { id: 'M02', category: '副總幹事支援調度', detail: '六位副總參與負責群組，定時追蹤協助各組完成計畫並整理預算。', group: '總幹事室', owner: '各副總幹事', status: '⏳進行中', budget: '0', manpower: '6', isEnough: '是' },
-            
-            // 交通組
             { id: 'T01', category: '路權申請與標示', detail: '提前兩個月完成 T2, T7, T8 及聖德宮巷道路權申請，拉設黃色警示帶與拒馬。', group: '交通組', owner: '廖學鏢', status: '⏳進行中', budget: '2000', manpower: '4', isEnough: '是' },
             { id: 'T02', category: '停車場地與指揮', detail: '確認 100 輛轎車與 5 輛大巴早午場地。當天遊覽車、轎車指揮。', group: '交通組', owner: '廖學鏢', status: '⏳進行中', budget: '0', manpower: '10', isEnough: '否' },
             { id: 'T03', category: '動線與停車證設計', detail: '【跨組】配合文書組，設計專屬停車位路線與實體/電子停車證。', group: '交通組', owner: '廖學鏢', status: '✅已完成', budget: '500', manpower: '2', isEnough: '是' },
-            
-            // 總務組
             { id: 'G01', category: '流動廁所租借', detail: '完成流動廁所租借與安裝(近網室處)，調配國內外道親分流使用。', group: '總務組', owner: '吳連利', status: '⏳進行中', budget: '15000', manpower: '2', isEnough: '是' },
             { id: 'G02', category: '禮品搬運至大巴', detail: '【跨組】下午提早將國外道親之禮品與便當搬運至大巴座位上。', group: '總務組', owner: '吳連利', status: '⏳進行中', budget: '0', manpower: '5', isEnough: '是' },
             { id: 'G03', category: '場地佈置與復原', detail: '前一天排椅標示；當天16:40指揮各區人力拆棚、收納椅子、場地整潔。', group: '總務組', owner: '吳連利', status: '⏳進行中', budget: '0', manpower: '15', isEnough: '否' },
-            
-            // 財務與出納組
             { id: 'F01', category: '活動收支結算', detail: '掌理大會活動前與當天收支，出納保管隨喜功德款項。', group: '財務組', owner: '吳金品', status: '⏳進行中', budget: '0', manpower: '2', isEnough: '是' },
             { id: 'F02', category: '小額款項核銷作業', detail: '準備10萬支應小額。5000內由淑媛講師單據核銷，萬以上走正式流程。', group: '財務組', owner: '廖淑媛', status: '⏳進行中', budget: '100000', manpower: '1', isEnough: '是' },
-
-            // 文書組
             { id: 'D01', category: '邀請函內容與設計', detail: '邀請函內容呈點傳師構想。設計製作委外 (10/15 送審定稿)。', group: '文書組', owner: '楊惠如', status: '🚨逾期/警示', budget: '8000', manpower: '3', isEnough: '是' },
             { id: 'D02', category: '簽到簿與名牌製作', detail: '點傳師與來賓簽到簿準備、壓克力三角名牌印製、道務系統報到。', group: '文書組', owner: '楊惠如', status: '✅已完成', budget: '2000', manpower: '2', isEnough: '是' },
-            
-            // 影音組
             { id: 'V01', category: '全場影音設備架設', detail: '天井、大殿、廣場、小佛堂影音連線，OBS線上直播架設 (2場)。', group: '影音組', owner: '塗川旺', status: '💬需協調', budget: '12000', manpower: '4', isEnough: '否' },
             { id: 'V02', category: '禮堂音響租用', detail: '12/12、13 莿桐國小禮堂表演所需音響、燈光設備與舞獅MIC租借。', group: '影音組', owner: '塗川旺', status: '⏳進行中', budget: '45000', manpower: '2', isEnough: '是' },
-            
-            // 節目與表演組
             { id: 'P01', category: '戲劇與音樂排練', detail: '督導舞台劇(沿革/鳳蓮/秦廣王)、口琴與合唱團排練。7月份集中團練。', group: '表演組', owner: '鄭智文', status: '⏳進行中', budget: '0', manpower: '100', isEnough: '是' },
             { id: 'P02', category: '服裝道具採買', detail: '合唱團/小天使紅馬面裙採買，成人佛堂補助150元。戲劇道具實報實銷。', group: '表演組', owner: '鄭智文', status: '⏳進行中', budget: '21400', manpower: '3', isEnough: '是' },
             { id: 'P03', category: '早午流程策劃與司儀', detail: '高聖傑策劃流程簡報，早上聖德宮、下午禮堂司儀操持演練與時間嚴控。', group: '司儀組', owner: '高聖傑', status: '⏳進行中', budget: '0', manpower: '4', isEnough: '是' },
-
-            // 炊事組
             { id: 'K01', category: '60桌蔬食午宴確認', detail: '由阿雄師掌廚(每桌5500元)。安排小佛堂、廣場與鄰居場所桌位。', group: '炊事組', owner: '沈志遠', status: '✅已完成', budget: '330000', manpower: '6', isEnough: '是' },
             { id: 'K02', category: '遊覽車司機便當', detail: '準備豐盛便當送去給遊覽車司機，由許櫻徽講師負責安排。', group: '炊事組', owner: '許櫻徽', status: '⏳進行中', budget: '1000', manpower: '1', isEnough: '是' },
-            
-            // 禮品組
             { id: 'G04', category: '紀念品款式確認下單', detail: '水晶獎盃(彩色發光/麥穗)、運動毛巾、礦泉水確認與採買包裝。', group: '禮品組', owner: '廖淑媛', status: '⏳進行中', budget: '180000', manpower: '5', isEnough: '是' },
-            
-            // 工程組
             { id: 'E01', category: '廁所改建發包施工', detail: '推動聖德宮兩側廁所拆除與改建，縣府補助兩百萬，自籌二十萬。', group: '工程組', owner: '高聖傑', status: '⏳進行中', budget: '2205000', manpower: '0', isEnough: '是' },
             { id: 'E02', category: '大殿整修工程', detail: '牆壁油漆工程、天花板換新、增設通風管路與通風設備。', group: '工程組', owner: '高聖傑', status: '💬需協調', budget: '150000', manpower: '2', isEnough: '否' },
-
-            // 公關與接待組
             { id: 'H01', category: '國內外貴賓邀請', detail: '菲律賓、印尼、大馬等國外道親，與國內各區道親來賓邀請確認。', group: '公關組', owner: '劉秉洲', status: '✅已完成', budget: '0', manpower: '5', isEnough: '是' },
             { id: 'H02', category: '當日茶水毛巾接待', detail: '配合公關組招待貴賓、事先準備茶水毛巾，點傳師進大殿時協助別胸花。', group: '接待組', owner: '詹雅惠', status: '⏳進行中', budget: '2000', manpower: '8', isEnough: '是' },
-
-            // 大事記組
             { id: 'R01', category: '回顧影片製作配音', detail: '照片收集、文字稿撰寫、錄音人員(6位)配音。供巡禮與午宴播放。', group: '大事記組', owner: '吳韋鈜', status: '⏳進行中', budget: '5000', manpower: '8', isEnough: '是' },
             { id: 'R02', category: '全場動態攝影', detail: '規劃當天全場域動態攝影與拍照動線。', group: '大事記組', owner: '陳坤宏', status: '⏳進行中', budget: '0', manpower: '4', isEnough: '是' },
-
-            // 專刊組
             { id: 'B01', category: '50周年沿革專刊編撰', detail: '精裝本預計印製500本(單價375)。6月底前完稿送印。', group: '專刊組', owner: '丁美娟', status: '⏳進行中', budget: '187500', manpower: '3', isEnough: '是' },
-            
-            // 佈置與插花組
             { id: 'D03', category: '會場紅布條與氣球', detail: '聖德宮與莿桐國小紅布條(7200元)、禮堂氣球拱門(4000元)與歡迎海報。', group: '佈置組', owner: '林葡萄', status: '⏳進行中', budget: '11200', manpower: '2', isEnough: '是' },
             { id: 'D04', category: '羅馬柱鮮花與胸花', detail: '門口羅馬柱鮮花三對採買、點傳師與貴賓新鮮胸花準備。', group: '插花組', owner: '林瓊玉', status: '⏳進行中', budget: '15000', manpower: '3', isEnough: '是' },
-
-            // 化妝梳頭組
             { id: 'M03', category: '彩妝課程與妝髮', detail: '舉辦彩妝課程。粉底卸妝品實報實銷(三千)。當日支援小天使妝髮。', group: '化妝梳頭組', owner: '陳淑芳', status: '⏳進行中', budget: '3000', manpower: '4', isEnough: '是' },
-
-            // 引導組 (新成立)
             { id: 'G05', category: '旗幟引導者統籌演練', detail: '統整各公壇旗幟引導者，實地演練下車整隊、隊呼進場與下午轉場動線。', group: '引導組', owner: '楊和紳', status: '💬需協調', budget: '0', manpower: '12', isEnough: '否' },
-
-            // 壇務組
             { id: 'A01', category: '獻供人員安排演練', detail: '安排11位獻供人員，演練前殿與09:00大殿獻供流程。', group: '壇務組', owner: '陳裕元', status: '⏳進行中', budget: '0', manpower: '11', isEnough: '是' },
-            
-            // 機動組
             { id: 'A02', category: '現場突發狀況支援', detail: '統籌現場突發狀況，文書、壇務、炊事等組別任務完成後主動協助。', group: '機動組', owner: '廖志煌', status: '⏳進行中', budget: '0', manpower: '8', isEnough: '是' }
         ];
 
-        // ⏱️ 甘特圖點擊互動：定義所有 ID 的起訖時間與說明
+        // ⏱️ 甘特圖點擊互動
         window.ganttDetailsMap = {
             "a1": { title: "停車參駕與獻供", time: "07:50 - 10:20", content: "國內公壇與貴賓陸續抵達聖德宮，依據交通組引導停妥車輛後，進入大殿參駕並進行獻供儀式。" },
             "a2": { title: "迎賓與前殿巡禮", time: "10:20 - 11:35", content: "【大會集結點】於前殿廣場欣賞祥獅獻瑞迎賓，隨後進行 50 周年靜態時光迴廊巡禮。" },
@@ -476,8 +471,7 @@ gantt
                 
                 dbAuth = res.auth || [];
                 
-                // 💡 修正點：將雲端抓下來的任務與預設樣板進行合併
-                // 確保其他未編輯的預設任務不會因為重新整理而消失！
+                // 💡 智慧合併邏輯：雲端資料與預設樣板合併，解決登入後任務消失問題
                 let mergedTasks = JSON.parse(JSON.stringify(defaultTasksTemplate)); 
                 if (res.tasks && res.tasks.length > 0) {
                     res.tasks.forEach(cloudTask => {
@@ -500,8 +494,8 @@ gantt
         });
 
         function toggleGantt(type) {
-            document.getElementById('btn-gantt-day').className = type === 'day' ? 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md border border-gray-200' : 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md';
-            document.getElementById('btn-gantt-prep').className = type === 'prep' ? 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md border border-gray-200' : 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md';
+            document.getElementById('btn-gantt-day').className = type === 'day' ? 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md border border-gray-200 cursor-pointer' : 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md cursor-pointer';
+            document.getElementById('btn-gantt-prep').className = type === 'prep' ? 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md border border-gray-200 cursor-pointer' : 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md cursor-pointer';
             document.getElementById('gantt-day').classList.toggle('hidden', type !== 'day');
             document.getElementById('gantt-prep').classList.toggle('hidden', type !== 'prep');
         }
@@ -530,6 +524,12 @@ gantt
             document.getElementById('auth-status').classList.remove('hidden');
             document.getElementById('btn-login-trigger').classList.add('hidden');
             document.getElementById('btn-logout-trigger').classList.remove('hidden');
+            
+            // 總幹事專屬按鈕顯示
+            if (currentUser.role === '總幹事') {
+                document.getElementById('btn-add-task').classList.remove('hidden');
+            }
+            
             closeLoginModal();
             renderTasks(); 
         }
@@ -539,6 +539,7 @@ gantt
             document.getElementById('auth-status').classList.add('hidden');
             document.getElementById('btn-login-trigger').classList.remove('hidden');
             document.getElementById('btn-logout-trigger').classList.add('hidden');
+            document.getElementById('btn-add-task').classList.add('hidden');
             renderTasks(); 
         }
 
@@ -642,38 +643,77 @@ gantt
 
         let editingTaskObj = null;
 
-        function openTaskEdit(taskId) {
+        // 💡 總幹事專用的「新增任務」功能
+        window.openTaskAdd = function() {
+            editingTaskObj = {
+                id: 'NEW_' + Date.now(),
+                category: '', detail: '', group: '', owner: '',
+                status: '⏳進行中', budget: '0', manpower: '0', isEnough: '是'
+            };
+            document.getElementById('modal-edit-title').textContent = "➕ 新增臨時任務";
+            setupModalView(true);
+            document.getElementById('task-edit-modal').classList.remove('hidden');
+        };
+
+        window.openTaskEdit = function(taskId) {
             editingTaskObj = dbTasks.find(t => t.id === taskId);
             if (!editingTaskObj) return;
+            document.getElementById('modal-edit-title').textContent = "✏️ 編輯任務與進度";
+            setupModalView(false);
+            document.getElementById('task-edit-modal').classList.remove('hidden');
+        };
 
-            document.getElementById('edit-task-id').value = taskId;
-            document.getElementById('edit-task-name').innerHTML = `<span class="text-red-800">[${editingTaskObj.group}]</span> ${editingTaskObj.category} <br><span class="text-xs text-gray-500 font-normal mt-1 block">${editingTaskObj.detail}</span>`;
+        function setupModalView(isNew) {
+            document.getElementById('edit-task-id').value = editingTaskObj.id;
             
-            document.querySelectorAll('input[name="edit-status"]').forEach(r => {
-                r.checked = (r.value === editingTaskObj.status);
-            });
-
+            // 共同欄位
+            document.querySelectorAll('input[name="edit-status"]').forEach(r => r.checked = (r.value === editingTaskObj.status));
             document.getElementById('edit-manpower').value = editingTaskObj.manpower;
             document.getElementById('edit-enough').value = editingTaskObj.isEnough;
 
+            // 預算顯示權限
+            const isManager = (currentUser && currentUser.role === '總幹事');
             const budgetContainer = document.getElementById('edit-budget-container');
-            if (canEditBudget(editingTaskObj.group)) {
+            if (canEditBudget(editingTaskObj.group) || isManager) {
                 budgetContainer.classList.remove('hidden');
                 document.getElementById('edit-budget').value = editingTaskObj.budget;
             } else {
                 budgetContainer.classList.add('hidden');
             }
 
-            document.getElementById('task-edit-modal').classList.remove('hidden');
+            // 總幹事才能修改大項與細項
+            if (isManager) {
+                document.getElementById('admin-edit-fields').classList.remove('hidden');
+                document.getElementById('normal-edit-fields').classList.add('hidden');
+                
+                document.getElementById('edit-category').value = editingTaskObj.category;
+                document.getElementById('edit-group').value = editingTaskObj.group;
+                document.getElementById('edit-owner').value = editingTaskObj.owner;
+                document.getElementById('edit-detail').value = editingTaskObj.detail;
+            } else {
+                document.getElementById('admin-edit-fields').classList.add('hidden');
+                document.getElementById('normal-edit-fields').classList.remove('hidden');
+                document.getElementById('edit-task-name').innerHTML = `<span class="text-red-800">[${editingTaskObj.group}]</span> ${editingTaskObj.category} <br><span class="text-xs text-gray-500 font-normal mt-1 block">${editingTaskObj.detail}</span>`;
+            }
         }
 
-        function closeTaskEditModal() {
+        window.closeTaskEditModal = function() {
             document.getElementById('task-edit-modal').classList.add('hidden');
             editingTaskObj = null;
-        }
+        };
 
-        async function saveTaskEdit() {
+        window.saveTaskEdit = async function() {
             if(!editingTaskObj) return;
+            
+            // 如果是總幹事，抓取可編輯的內容欄位
+            if (currentUser && currentUser.role === '總幹事') {
+                editingTaskObj.category = document.getElementById('edit-category').value;
+                editingTaskObj.group = document.getElementById('edit-group').value;
+                editingTaskObj.owner = document.getElementById('edit-owner').value;
+                editingTaskObj.detail = document.getElementById('edit-detail').value;
+                
+                if(!editingTaskObj.category || !editingTaskObj.group) return alert("任務大項與負責組別不可為空！");
+            }
             
             const btn = event.target;
             const originalText = btn.innerHTML;
@@ -686,7 +726,7 @@ gantt
             editingTaskObj.manpower = document.getElementById('edit-manpower').value;
             editingTaskObj.isEnough = document.getElementById('edit-enough').value;
 
-            if (canEditBudget(editingTaskObj.group)) {
+            if (canEditBudget(editingTaskObj.group) || (currentUser && currentUser.role === '總幹事')) {
                 editingTaskObj.budget = document.getElementById('edit-budget').value;
             }
 
@@ -697,6 +737,10 @@ gantt
                     body: JSON.stringify({ action: "updateTask", task: editingTaskObj }) 
                 });
                 
+                // 更新本地端資料以便即時顯示
+                let idx = dbTasks.findIndex(t => t.id === editingTaskObj.id);
+                if (idx > -1) dbTasks[idx] = editingTaskObj; else dbTasks.push(editingTaskObj);
+                
                 renderTasks();
                 closeTaskEditModal();
             } catch (e) {
@@ -705,7 +749,7 @@ gantt
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
-        }
+        };
     </script>
 </body>
 </html>
