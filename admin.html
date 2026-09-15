@@ -6,12 +6,7 @@
     <title>聖德宮50周年慶 - 後台管理中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: #F3F4F6; 
-        }
-    </style>
+    <style> body { font-family: 'Noto Sans TC', sans-serif; background-color: #F3F4F6; } </style>
 </head>
 <body class="antialiased flex h-screen overflow-hidden text-gray-800">
 
@@ -26,7 +21,8 @@
 
             try {
                 const response = await fetch(scriptUrl + '?t=' + new Date().getTime());
-                const records = await response.json();
+                const res = await response.json();
+                const records = res.records || res; // 支援新舊 API 回傳格式
                 
                 const latestMap = new Map();
                 records.forEach(row => {
@@ -41,6 +37,7 @@
                 statusEl.className = "text-sm font-bold text-emerald-800 bg-emerald-100 px-4 py-2 rounded-full border border-emerald-300 flex items-center gap-1.5";
                 
                 renderOverviewDashboard();
+                renderConflictReport(); // 渲染衝突報表
                 renderTransportDashboard();
                 
             } catch (e) {
@@ -50,27 +47,128 @@
         });
 
         function switchTab(tabId) {
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all';
-            });
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all');
             const desktopBtn = document.getElementById(`btn-${tabId}`);
-            if (desktopBtn) {
-                desktopBtn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md';
-            }
+            if (desktopBtn) desktopBtn.className = 'nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md';
             
-            document.querySelectorAll('.nav-btn-mobile').forEach(btn => {
-                btn.className = 'nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-white transition-all';
-            });
+            document.querySelectorAll('.nav-btn-mobile').forEach(btn => btn.className = 'nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-white transition-all');
             const mobileBtn = document.getElementById(`btn-${tabId}-mobile`);
-            if (mobileBtn) {
-                mobileBtn.className = 'nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-amber-400 font-bold';
-            }
+            if (mobileBtn) mobileBtn.className = 'nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-amber-400 font-bold';
             
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.querySelector('main').scrollTo(0, 0);
+        }
+
+        // 🚨 溫和防呆：揪出「同車但晚餐選項不同」的道親
+        let conflictList = [];
+        function renderConflictReport() {
+            let carGroups = {};
+            
+            globalRecords.forEach(r => {
+                let isDriverSd = String(r.transport_sd).includes('自駕');
+                let isPassSd = String(r.transport_sd).includes('已有人接送');
+                let isDriverCt = String(r.transport_ct).includes('自駕');
+                let isPassCt = String(r.transport_ct).includes('已有人接送');
+                
+                let driverNameSd = isDriverSd ? r.name : (isPassSd ? r.driver_name_sd : null);
+                let driverNameCt = isDriverCt ? r.name : (isPassCt ? r.driver_name_ct : null);
+                
+                let dinnerStr = String(r.stay_dinner).includes('是') ? '是' : '否';
+
+                // 檢查早上車群
+                if (driverNameSd && !driverNameSd.includes('大巴')) {
+                    let key = `[早] ${r.temple} - ${driverNameSd}的車`;
+                    if (!carGroups[key]) carGroups[key] = [];
+                    carGroups[key].push({name: r.name, phone: r.assister_phone, dinner: dinnerStr, raw: r});
+                }
+                
+                // 檢查下午車群
+                if (driverNameCt && !driverNameCt.includes('大巴') && driverNameCt !== driverNameSd) {
+                    let key = `[午] ${r.temple} - ${driverNameCt}的車`;
+                    if (!carGroups[key]) carGroups[key] = [];
+                    carGroups[key].push({name: r.name, phone: r.assister_phone, dinner: dinnerStr, raw: r});
+                }
+            });
+
+            conflictList = [];
+            for (let key in carGroups) {
+                let passengers = carGroups[key];
+                if (passengers.length > 1) {
+                    let firstOption = passengers[0].dinner;
+                    let hasConflict = passengers.some(p => p.dinner !== firstOption);
+                    if (hasConflict) {
+                        conflictList.push({ carName: key, passengers: passengers });
+                    }
+                }
+            }
+
+            const container = document.getElementById('dash-conflict-report');
+            if (conflictList.length > 0) {
+                let html = `<div class="bg-red-50 border-l-4 border-red-600 p-5 rounded-r-xl shadow-sm mb-6 space-y-4">
+                                <div class="flex justify-between items-center border-b border-red-200 pb-2">
+                                    <h4 class="text-red-800 font-bold flex items-center gap-2"><span>🚨</span> 乘車與晚餐選項衝突警示 (請聯繫協調)</h4>
+                                    <button onclick="fixConflicts()" class="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1"><span>🔑</span> 文書組一鍵協調修改</button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                
+                conflictList.forEach((conflict, idx) => {
+                    html += `<div class="bg-white p-4 rounded-xl border border-red-200 shadow-sm">
+                                <div class="text-sm font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">${conflict.carName}</div>
+                                <ul class="space-y-1">`;
+                    conflict.passengers.forEach(p => {
+                        let badge = p.dinner === '是' ? `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold">吃自助餐</span>` : `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold">領便當走</span>`;
+                        html += `<li class="flex justify-between items-center text-xs text-gray-600"><span class="font-medium">${p.name} <span class="text-gray-400">(${p.phone})</span></span> ${badge}</li>`;
+                    });
+                    html += `   </ul>
+                                <div class="mt-3 bg-gray-50 p-2 rounded border border-gray-200 text-xs">
+                                    <label class="font-bold text-gray-700 block mb-1">將此車統一修改為：</label>
+                                    <select id="fix-select-${idx}" class="w-full border rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-red-500">
+                                        <option value="否">統一【領便當賦歸】(取消自助餐)</option>
+                                        <option value="是">統一【留下吃歐式自助餐】(取消便當)</option>
+                                    </select>
+                                </div>
+                             </div>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = ``;
+            }
+        }
+
+        async function fixConflicts() {
+            const pwd = prompt("🔐 協調權限驗證\n請輸入文書組 / 總幹事 管理密碼：", "");
+            if (pwd !== "5050") {
+                if (pwd !== null) alert("密碼錯誤，拒絕修改。");
+                return;
+            }
+
+            let updatesToPush = [];
+            conflictList.forEach((conflict, idx) => {
+                let targetDinner = document.getElementById(`fix-select-${idx}`).value;
+                let targetDinnerText = targetDinner === '是' ? "是，需留下來用餐" : "否，活動結束後離開";
+                let targetLunchText = targetDinner === '是' ? "是，因彩妝或繁忙在表演場用餐" : "否，中午在聖德宮正常用餐"; // 可依需求微調午餐連動，此處為防呆預設
+                
+                conflict.passengers.forEach(p => {
+                    updatesToPush.push({ name: p.name, phone: p.phone, dinner: targetDinnerText, lunch: p.raw.lunch_box });
+                });
+            });
+
+            if (updatesToPush.length === 0) return;
+
+            document.getElementById('status-msg').innerHTML = "⏳ 強制修正資料中...";
+            try {
+                await fetch(scriptUrl, { 
+                    method: 'POST', mode: 'no-cors', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: "fixConflict", updates: updatesToPush }) 
+                });
+                alert("✅ 協調修改成功！已為您將同車乘客統一晚餐選項。");
+                setTimeout(() => { window.location.reload(); }, 2000); 
+            } catch (e) { 
+                alert("❌ 寫入失敗，請檢查網路連線。"); 
+            }
         }
 
         function renderOverviewDashboard() {
@@ -85,21 +183,11 @@
                 if (needsBento) totalBento++;
                 if (needsDinner) totalDinner++;
                 
-                if (!templeStats[cleanTemple]) {
-                    templeStats[cleanTemple] = { total: 0, bento: 0, banquet: 0, dinner: 0 };
-                }
+                if (!templeStats[cleanTemple]) { templeStats[cleanTemple] = { total: 0, bento: 0, banquet: 0, dinner: 0 }; }
                 
                 templeStats[cleanTemple].total += 1;
-                
-                if (needsBento) {
-                    templeStats[cleanTemple].bento += 1;
-                } else {
-                    templeStats[cleanTemple].banquet += 1;
-                }
-                
-                if (needsDinner) {
-                    templeStats[cleanTemple].dinner += 1;
-                }
+                if (needsBento) templeStats[cleanTemple].bento += 1; else templeStats[cleanTemple].banquet += 1;
+                if (needsDinner) templeStats[cleanTemple].dinner += 1;
             });
 
             const totalBanquet = totalValid - totalBento;
@@ -112,37 +200,21 @@
             const tbody = document.getElementById('dash-temple-tbody');
             tbody.innerHTML = Object.keys(templeStats).sort().map(t => {
                 const stat = templeStats[t];
-                return `
-                    <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
-                        <td class="p-3 font-bold text-gray-800">${t}</td>
-                        <td class="p-3 text-center text-gray-600">${stat.total}</td>
-                        <td class="p-3 text-center text-amber-700 font-bold">${stat.bento}</td>
-                        <td class="p-3 text-center text-emerald-700 font-bold">${stat.banquet}</td>
-                        <td class="p-3 text-center text-purple-700 font-bold">${stat.dinner}</td>
-                    </tr>
-                `;
+                return `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
+                            <td class="p-3 font-bold text-gray-800">${t}</td><td class="p-3 text-center text-gray-600">${stat.total}</td>
+                            <td class="p-3 text-center text-amber-700 font-bold">${stat.bento}</td><td class="p-3 text-center text-emerald-700 font-bold">${stat.banquet}</td>
+                            <td class="p-3 text-center text-purple-700 font-bold">${stat.dinner}</td>
+                        </tr>`;
             }).join('');
         }
 
-        const amBusParkingZones = [
-            {val: '', label: '未指定'}, {val: '聖德宮P1', label: '聖德宮P1'}, {val: '聖德宮P2', label: '聖德宮P2'}, {val: '聖德宮P3', label: '聖德宮P3'}
-        ];
-        const pmBusParkingZones = [
-            {val: '', label: '未指定'}, {val: '莿桐國小P1', label: '莿桐國小P1'}, {val: '莿桐國小P2', label: '莿桐國小P2'}, {val: '莿桐國小P3', label: '莿桐國小P3'}
-        ];
-        const amGeneralParkingZones = [
-            {val: '', label: '未指定'}, {val: '聖德宮停車場', label: '聖德宮停車場'}, {val: '尚品宴會廳', label: '尚品宴會廳'},{val: '莿桐國小A區', label: '莿桐國小A區'}, {val: '莿桐國小B區', label: '莿桐國小B區'},{val: '路邊A區', label: '路邊A區'}, {val: '路邊B區', label: '路邊B區'}, {val: '路邊C區', label: '路邊C區'}, {val: '路邊D區', label: '路邊D區'}
-        ];
-        const pmGeneralParkingZones = [
-            {val: '', label: '未指定'}, {val: '莿桐國小A區', label: '莿桐國小A區'}, {val: '莿桐國小B區', label: '莿桐國小B區'},{val: '莿桐國小C區', label: '莿桐國小C區'}, {val: '莿桐國小D區', label: '莿桐國小D區'}, {val: '莿桐國小E區', label: '莿桐國小E區'}
-        ];
+        const amBusParkingZones = [{val:'',label:'未指定'},{val:'聖德宮P1',label:'聖德宮P1'},{val:'聖德宮P2',label:'聖德宮P2'},{val:'聖德宮P3',label:'聖德宮P3'}];
+        const pmBusParkingZones = [{val:'',label:'未指定'},{val:'莿桐國小P1',label:'莿桐國小P1'},{val:'莿桐國小P2',label:'莿桐國小P2'},{val:'莿桐國小P3',label:'莿桐國小P3'}];
+        const amGeneralParkingZones = [{val:'',label:'未指定'},{val:'聖德宮停車場',label:'聖德宮停車場'},{val:'尚品宴會廳',label:'尚品宴會廳'},{val:'莿桐國小A區',label:'莿桐國小A區'},{val:'莿桐國小B區',label:'莿桐國小B區'},{val:'路邊A區',label:'路邊A區'},{val:'路邊B區',label:'路邊B區'},{val:'路邊C區',label:'路邊C區'},{val:'路邊D區',label:'路邊D區'}];
+        const pmGeneralParkingZones = [{val:'',label:'未指定'},{val:'莿桐國小A區',label:'莿桐國小A區'},{val:'莿桐國小B區',label:'莿桐國小B區'},{val:'莿桐國小C區',label:'莿桐國小C區'},{val:'莿桐國小D區',label:'莿桐國小D區'},{val:'莿桐國小E區',label:'莿桐國小E區'}];
 
         function buildOptions(zonesArray, selectedValue) {
-            let html = zonesArray.map(z => {
-                const isSelected = z.val === selectedValue ? 'selected' : '';
-                return `<option value="${z.val}" ${isSelected}>${z.label}</option>`;
-            }).join('');
-            
+            let html = zonesArray.map(z => `<option value="${z.val}" ${z.val===selectedValue?'selected':''}>${z.label}</option>`).join('');
             if (selectedValue && selectedValue !== '待安排' && selectedValue !== '未排' && !zonesArray.some(z => z.val === selectedValue)) {
                 html += `<option value="${selectedValue}" selected>⚠️舊資料: ${selectedValue}</option>`;
             }
@@ -153,18 +225,9 @@
             let carsMorning = 0, carsAfternoon = 0, shuttleMorning = 0, shuttleAfternoon = 0;
             let staffTransport = {}, templeTransport = {}, busTransport = {}, transferList = [];
             
+            // 💡 終極嚴格名單
             const staffKeywords = ['表演', '司儀', '彩妝', '機動', '交通', '總務', '大事記', '大世紀', '影音', '接駁', '引導'];
-            
-            // 💡 修復一：將大巴名稱徹底正名，避免與公壇名稱混淆
-            const busNames = [
-                { key: '大巴１號', displayName: '大巴１號' }, 
-                { key: '大巴２號', displayName: '大巴２號' },
-                { key: '大巴３號', displayName: '大巴３號' }, 
-                { key: '大巴４號', displayName: '大巴４號' },
-                { key: '大巴５號', displayName: '大巴５號' }, 
-                { key: '大巴興東', displayName: '大巴興東' }, 
-                { key: '大巴慶德', displayName: '大巴慶德' }
-            ];
+            const busNames = [{key:'大巴１號',displayName:'大巴１號'},{key:'大巴２號',displayName:'大巴２號'},{key:'大巴３號',displayName:'大巴３號'},{key:'大巴４號',displayName:'大巴４號'},{key:'大巴５號',displayName:'大巴５號'},{key:'大巴興東',displayName:'大巴興東'},{key:'大巴慶德',displayName:'大巴慶德'}];
             
             let pmVehicles = {};
             busNames.forEach(b => {
@@ -173,15 +236,8 @@
                 pmVehicles[`${b.key}(空檔接駁)`] = { type: 'bus', capacity: 40, assigned: 0, trip: 2, label: `${b.key}(空檔接駁)` };
             });
 
-            const allDomesticTemples = [
-                '聖德宮', '光明講堂', '興仁佛堂', '興怡佛堂', '興崙佛堂', '弘仁佛堂', '弘德佛堂', 
-                '興明佛堂', '興元佛堂', '興西佛堂', '興中佛堂', '興東佛堂', '興慈佛堂', 
-                '台北:慶德', '台北:日新', '桃園:秀德', '嘉義:賀德'
-            ];
-            
-            allDomesticTemples.forEach(tName => {
-                templeTransport[tName] = { displayName: tName, carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' };
-            });
+            const allDomesticTemples = ['聖德宮','光明講堂','興仁佛堂','興怡佛堂','興崙佛堂','弘仁佛堂','弘德佛堂','興明佛堂','興元佛堂','興西佛堂','興中佛堂','興東佛堂','興慈佛堂','台北:慶德','台北:日新','桃園:秀德','嘉義:賀德'];
+            allDomesticTemples.forEach(tName => { templeTransport[tName] = { displayName: tName, carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' }; });
 
             globalRecords.forEach(r => {
                 const transCt = String(r.transport_ct || '').trim();
@@ -190,476 +246,176 @@
                     let cap = parseInt(r.driver_capacity_ct || r.driver_capacity_sd) || 4;
                     pmVehicles[cleanName] = { type: 'car', capacity: cap, assigned: 0, trip: 1, label: cleanName };
                     pmVehicles[`${cleanName}(第二趟)`] = { type: 'car', capacity: cap, assigned: 0, trip: 2, label: `${cleanName}(第二趟)` };
-                    pmVehicles[`${cleanName}(第三趟)`] = { type: 'car', capacity: cap, assigned: 0, trip: 3, label: `${cleanName}(第三趟)` };
                 }
             });
 
             globalRecords.forEach(r => {
-                const job = String(r.job || '').trim();
-                const temple = String(r.temple || '').trim();
-                const cleanName = String(r.name || '').trim();
-                
+                const job = String(r.job || '').trim(); const temple = String(r.temple || '').trim(); const cleanName = String(r.name || '').trim();
                 const isStaff = staffKeywords.some(keyword => job.includes(keyword));
                 const groupName = isStaff ? `[工作組] ${job}` : temple;
                 const targetObj = isStaff ? staffTransport : templeTransport;
 
-                if (!targetObj[groupName]) {
-                    targetObj[groupName] = { displayName: groupName, carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' };
-                }
+                if (!targetObj[groupName]) targetObj[groupName] = { displayName: groupName, carsSd: 0, carsCt: 0, shuttleSd: 0, shuttleCt: 0, busSd: 0, busCt: 0, driversSd: [], savedAm: '', savedPm: '' };
                 
                 const t = targetObj[groupName];
-                const transSd = String(r.transport_sd || '').trim(); 
-                const transCt = String(r.transport_ct || '').trim();
+                const transSd = String(r.transport_sd || '').trim(); const transCt = String(r.transport_ct || '').trim();
                 const pmDriver = String(r.pm_driver || r['下午搭乘司機'] || r['下午司機'] || '').trim();
                 let dbParking = String(r.parking || r['停車位'] || '').trim();
-
                 const isHybridDriver = transSd.includes('自駕') || transCt.includes('自駕');
 
-                if (isHybridDriver) {
-                    if (dbParking && dbParking !== '待安排' && dbParking !== '未排') {
-                        const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
-                        const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                        if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') t.savedAm = matchAm[1];
-                        if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') t.savedPm = matchPm[1];
-                    }
+                if (isHybridDriver && dbParking && !['待安排','未排'].includes(dbParking)) {
+                    const matchAm = dbParking.match(/早:\s*([^ |]+)/); const matchPm = dbParking.match(/午:\s*([^ |]+)/);
+                    if (matchAm && !['未排','待安排'].includes(matchAm[1])) t.savedAm = matchAm[1];
+                    if (matchPm && !['未排','待安排'].includes(matchPm[1])) t.savedPm = matchPm[1];
                 }
 
-                if (transSd.includes('自駕')) { 
-                    carsMorning++; 
-                    t.carsSd++; 
-                    t.driversSd.push(`${cleanName}(載${r.driver_capacity_sd || '?'})`); 
-                } else if (transSd.includes('安排交通')) { 
-                    shuttleMorning++; 
-                    t.shuttleSd++; 
+                if (transSd.includes('自駕')) { carsMorning++; t.carsSd++; t.driversSd.push(`${cleanName}(載${r.driver_capacity_sd||'?'})`); 
+                } else if (transSd.includes('安排交通')) { shuttleMorning++; t.shuttleSd++; 
                 } else if (transSd.includes('大巴')) {
-                    t.busSd++; 
-                    let bKey = `[大巴] ${transSd}`;
+                    t.busSd++; let bKey = `[大巴] ${transSd}`;
                     if(busTransport[bKey]) {
                         busTransport[bKey].busSd++;
-                        if (!isHybridDriver && dbParking && dbParking !== '待安排' && dbParking !== '未排') {
-                            const matchAm = dbParking.match(/早:\s*([^ |]+)/); 
-                            if (matchAm && matchAm[1] !== '未排' && matchAm[1] !== '待安排') busTransport[bKey].savedAm = matchAm[1];
+                        if (!isHybridDriver && dbParking && !['待安排','未排'].includes(dbParking)) {
+                            const matchAm = dbParking.match(/早:\s*([^ |]+)/); if (matchAm && !['未排','待安排'].includes(matchAm[1])) busTransport[bKey].savedAm = matchAm[1];
                         }
                     }
                 }
 
                 if (transCt.includes('大巴')) {
-                    t.busCt++;
-                    let baseBusKey = transCt.replace('(空檔接駁)', '').replace('(空檔)', '').trim();
-                    let bKey = `[大巴] ${baseBusKey}`;
-                    
+                    t.busCt++; let bKey = `[大巴] ${transCt.replace('(空檔接駁)','').replace('(空檔)','').trim()}`;
                     if (pmVehicles[transCt]) pmVehicles[transCt].assigned++; 
-                    
                     if(busTransport[bKey]) {
                         busTransport[bKey].busCt++;
-                        if (!isHybridDriver && dbParking && dbParking !== '待安排' && dbParking !== '未排') {
-                            const matchPm = dbParking.match(/午:\s*([^ |]+)/);
-                            if (matchPm && matchPm[1] !== '未排' && matchPm[1] !== '待安排') busTransport[bKey].savedPm = matchPm[1];
+                        if (!isHybridDriver && dbParking && !['待安排','未排'].includes(dbParking)) {
+                            const matchPm = dbParking.match(/午:\s*([^ |]+)/); if (matchPm && !['未排','待安排'].includes(matchPm[1])) busTransport[bKey].savedPm = matchPm[1];
                         }
                     }
-                } else if (transCt.includes('自駕')) { 
-                    carsAfternoon++; 
-                    t.carsCt++; 
-                    if (pmVehicles[cleanName]) pmVehicles[cleanName].assigned++; 
-                } else if (transCt.includes('已有人接送')) {
-                    if (pmDriver && pmVehicles[pmDriver]) {
-                        pmVehicles[pmDriver].assigned++;
-                    }
-                } else if (transCt.includes('安排交通')) { 
-                    shuttleAfternoon++; 
-                    t.shuttleCt++; 
-                }
+                } else if (transCt.includes('自駕')) { carsAfternoon++; t.carsCt++; if (pmVehicles[cleanName]) pmVehicles[cleanName].assigned++; 
+                } else if (transCt.includes('已有人接送') && pmDriver && pmVehicles[pmDriver]) { pmVehicles[pmDriver].assigned++;
+                } else if (transCt.includes('安排交通')) { shuttleAfternoon++; t.shuttleCt++; }
 
-                if (!transSd.includes('自駕') && !transSd.includes('安排交通') && transCt.includes('安排交通')) {
-                    transferList.push({ temple: temple, name: cleanName, transSd: transSd });
-                }
+                if (!transSd.includes('自駕') && !transSd.includes('安排交通') && transCt.includes('安排交通')) { transferList.push({ temple: temple, name: cleanName, transSd: transSd }); }
             });
 
-            document.getElementById('dash-cars-sd').textContent = carsMorning; 
-            document.getElementById('dash-cars-ct').textContent = carsAfternoon;
-            document.getElementById('dash-shuttle-sd').textContent = shuttleMorning; 
-            document.getElementById('dash-shuttle-ct').textContent = shuttleAfternoon;
+            document.getElementById('dash-cars-sd').textContent = carsMorning; document.getElementById('dash-cars-ct').textContent = carsAfternoon;
+            document.getElementById('dash-shuttle-sd').textContent = shuttleMorning; document.getElementById('dash-shuttle-ct').textContent = shuttleAfternoon;
 
             let assignOptionsHtml = `<option value="">-- 請選擇下午指派車輛 --</option>`;
-            
-            assignOptionsHtml += `<optgroup label="【第一趟 - 尚有空位車輛】">`;
-            Object.values(pmVehicles).filter(v => v.trip === 1).forEach(v => {
-                let disabled = v.assigned >= v.capacity ? 'disabled' : '';
-                let text = v.assigned >= v.capacity ? `🔘 ${v.label} (已滿載 ${v.capacity}/${v.capacity}人)` : `⚪ ${v.label} (已排 ${v.assigned}/${v.capacity}人 - 剩 ${v.capacity - v.assigned} 位)`;
-                assignOptionsHtml += `<option value="${v.label}" ${disabled}>${text}</option>`;
-            });
-            assignOptionsHtml += `</optgroup>`;
-
-            assignOptionsHtml += `<optgroup label="【空檔接駁 - 大巴專區 (最多一趟)】">`;
-            Object.values(pmVehicles).filter(v => v.type === 'bus' && v.trip === 2).forEach(v => {
-                let disabled = v.assigned >= v.capacity ? 'disabled' : '';
-                let text = v.assigned >= v.capacity ? `🔘 ${v.label} (已滿載 ${v.capacity}/${v.capacity}人)` : `⚪ ${v.label} (目前 ${v.assigned}/${v.capacity}人)`;
-                assignOptionsHtml += `<option value="${v.label}" ${disabled}>${text}</option>`;
-            });
-            assignOptionsHtml += `</optgroup>`;
-
-            assignOptionsHtml += `<optgroup label="【多趟接駁 - 休旅/自駕車 (需現場協調)】">`;
-            Object.values(pmVehicles).filter(v => v.type === 'car' && v.trip > 1).forEach(v => {
-                let disabled = v.assigned >= v.capacity ? 'disabled' : '';
-                let text = v.assigned >= v.capacity ? `🔘 ${v.label} (已滿載 ${v.capacity}/${v.capacity}人)` : `⚪ ${v.label} (目前 ${v.assigned}/${v.capacity}人)`;
-                assignOptionsHtml += `<option value="${v.label}" ${disabled}>${text}</option>`;
-            });
-            assignOptionsHtml += `</optgroup>`;
+            assignOptionsHtml += `<optgroup label="【第一趟 - 尚有空位車輛】">` + Object.values(pmVehicles).filter(v => v.trip === 1).map(v => `<option value="${v.label}" ${v.assigned>=v.capacity?'disabled':''}>${v.assigned>=v.capacity?`🔘 ${v.label} (已滿載)`:`⚪ ${v.label} (排 ${v.assigned}/${v.capacity} - 剩 ${v.capacity-v.assigned})`}</option>`).join('') + `</optgroup>`;
+            assignOptionsHtml += `<optgroup label="【空檔接駁 - 大巴與多趟專區】">` + Object.values(pmVehicles).filter(v => v.trip > 1).map(v => `<option value="${v.label}" ${v.assigned>=v.capacity?'disabled':''}>${v.assigned>=v.capacity?`🔘 ${v.label} (已滿載)`:`⚪ ${v.label} (目前排 ${v.assigned})`}</option>`).join('') + `</optgroup>`;
 
             const transferContainer = document.getElementById('dash-transfer-list');
             if (transferList.length > 0) {
-                let transferHtml = `<div class="space-y-3">`;
-                transferList.forEach(orphan => {
-                    const orphanKey = `${orphan.temple}_${orphan.name}`;
-                    transferHtml += `
-                    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white p-3 rounded-lg border border-red-200 shadow-sm gap-2 hover:border-red-400 transition-colors">
-                        <div class="text-sm font-bold text-gray-800 flex items-center">
-                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs mr-2 shadow-sm">${orphan.temple}</span>
-                            ${orphan.name} <span class="text-xs text-gray-500 font-normal ml-2 tracking-wide">(早: ${orphan.transSd})</span>
-                        </div>
-                        <div class="w-full md:w-72">
-                            <select class="orphan-assign-select border border-gray-300 rounded-lg px-2 py-1.5 w-full font-bold text-gray-700 text-sm shadow-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 cursor-pointer" data-key="${orphanKey}">
-                                ${assignOptionsHtml}
-                            </select>
-                        </div>
-                    </div>`;
-                });
-                transferHtml += `
-                    <div class="flex justify-end mt-4 pt-2 border-t border-red-100">
-                        <button onclick="batchAssignOrphans()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2 transform hover:scale-105 active:scale-95">
-                            💾 確認並儲存指派
-                        </button>
-                    </div>
-                </div>`;
-                transferContainer.innerHTML = transferHtml;
-            } else {
-                transferContainer.innerHTML = `<span class="text-sm text-gray-500 font-bold px-2">✅ 目前無人需要下午轉乘接駁</span>`;
-            }
+                transferContainer.innerHTML = `<div class="space-y-3">` + transferList.map(o => `<div class="flex flex-col md:flex-row md:items-center justify-between bg-white p-3 rounded-lg border border-red-200 shadow-sm gap-2"><div class="text-sm font-bold text-gray-800"><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs mr-2">${o.temple}</span>${o.name} <span class="text-xs text-gray-500">(早: ${o.transSd})</span></div><select class="orphan-assign-select border rounded-lg px-2 py-1.5 md:w-72 font-bold text-sm text-gray-700" data-key="${o.temple}_${o.name}">${assignOptionsHtml}</select></div>`).join('') + `<div class="flex justify-end pt-2"><button onclick="batchAssignOrphans()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl shadow-md">💾 確認並儲存指派</button></div></div>`;
+            } else { transferContainer.innerHTML = `<span class="text-sm text-gray-500 font-bold">✅ 目前無人需要下午轉乘接駁</span>`; }
 
             const sortedBusKeys = busNames.map(b => `[大巴] ${b.key}`);
             const sortedStaffKeys = Object.keys(staffTransport).sort();
-            
-            let activeTemples = [];
-            let emptyTemples = [];
+            let activeTemples = [], emptyTemples = [];
             Object.keys(templeTransport).forEach(k => {
-                const d = templeTransport[k];
-                const isEmpty = (d.carsSd === 0 && d.carsCt === 0 && d.shuttleSd === 0 && d.shuttleCt === 0 && d.busSd === 0 && d.busCt === 0);
-                if (isEmpty) emptyTemples.push(k);
-                else activeTemples.push(k);
+                if(templeTransport[k].carsSd===0 && templeTransport[k].carsCt===0 && templeTransport[k].shuttleSd===0 && templeTransport[k].shuttleCt===0 && templeTransport[k].busSd===0 && templeTransport[k].busCt===0) emptyTemples.push(k); else activeTemples.push(k);
             });
-            const sortFn = (a, b) => {
-                let idxA = allDomesticTemples.indexOf(a);
-                let idxB = allDomesticTemples.indexOf(b);
-                if (idxA === -1) idxA = 999;
-                if (idxB === -1) idxB = 999;
-                return idxA - idxB;
-            };
-            activeTemples.sort(sortFn);
-            emptyTemples.sort(sortFn);
+            const sortFn = (a, b) => { let iA=allDomesticTemples.indexOf(a), iB=allDomesticTemples.indexOf(b); return (iA===-1?999:iA) - (iB===-1?999:iB); };
+            activeTemples.sort(sortFn); emptyTemples.sort(sortFn);
             const sortedTempleKeys = [...activeTemples, ...emptyTemples];
 
             const buildHTMLFromKeys = (keysArray, dataObj, isBus) => {
                 return keysArray.map(groupKey => {
-                    const d = dataObj[groupKey];
-                    if (!d) return '';
-                    const displayName = d.displayName;
-
-                    let currentAmZones = isBus ? amBusParkingZones : amGeneralParkingZones;
-                    let currentPmZones = isBus ? pmBusParkingZones : pmGeneralParkingZones;
+                    const d = dataObj[groupKey]; if (!d) return '';
+                    let isTotallyEmpty = isBus ? (d.busSd===0 && d.busCt===0) : (d.carsSd===0 && d.carsCt===0 && d.shuttleSd===0 && d.shuttleCt===0 && d.busSd===0 && d.busCt===0);
+                    let cAmZones = isBus ? amBusParkingZones : amGeneralParkingZones; let cPmZones = isBus ? pmBusParkingZones : pmGeneralParkingZones;
 
                     if (isBus) {
-                        const isTotallyEmpty = (d.busSd === 0 && d.busCt === 0);
-                        let busParkingHTML = '';
-                        if (isTotallyEmpty) {
-                            busParkingHTML = `
-                                <div class="flex justify-center">
-                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
-                                        尚未報名
-                                    </span>
-                                </div>
-                            `;
-                        } else {
-                            busParkingHTML = `
-                                <div class="space-y-1.5">
-                                    <div class="flex items-center gap-1 text-[11px]">
-                                        <span class="text-blue-700 font-bold w-4">早:</span>
-                                        <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                            ${buildOptions(currentAmZones, d.savedAm)}
-                                        </select>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-[11px]">
-                                        <span class="text-green-700 font-bold w-4">午:</span>
-                                        <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                            ${buildOptions(currentPmZones, d.savedPm)}
-                                        </select>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                        return `
-                            <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
-                                <td class="p-3 font-bold text-blue-800 text-base">${displayName}</td>
-                                <td colspan="6" class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50 tracking-wide">
-                                    此車搭乘總數：早 ${d.busSd} 人 / 午 ${d.busCt} 人
-                                </td>
-                                <td class="p-3 w-48 min-w-[180px]">
-                                    ${busParkingHTML}
-                                </td>
-                            </tr>
-                        `;
+                        let pH = isTotallyEmpty ? `<span class="bg-gray-100 text-gray-500 border px-2 py-1 rounded text-[11px] font-bold">尚未報名</span>` : `<div class="space-y-1"><div class="flex items-center gap-1 text-[11px]"><span class="text-blue-700 font-bold w-4">早:</span><select class="park-am-select border rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">${buildOptions(cAmZones, d.savedAm)}</select></div><div class="flex items-center gap-1 text-[11px]"><span class="text-green-700 font-bold w-4">午:</span><select class="park-pm-select border rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">${buildOptions(cPmZones, d.savedPm)}</select></div></div>`;
+                        return `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm"><td class="p-3 font-bold text-blue-800 text-base">${d.displayName}</td><td colspan="6" class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50">搭乘總數：早 ${d.busSd} / 午 ${d.busCt}</td><td class="p-3 w-48">${pH}</td></tr>`;
                     } else {
-                        // 💡 修復二：精準的四階段過濾邏輯
-                        let groupHasRecords = false;
-                        if (displayName.includes('[工作組]')) {
-                            const jobName = displayName.replace('[工作組] ', '');
-                            groupHasRecords = globalRecords.some(r => String(r.job).includes(jobName));
-                        } else {
-                            groupHasRecords = globalRecords.some(r => String(r.temple).trim() === groupKey);
-                        }
-
-                        if (!groupHasRecords && displayName.includes('[工作組]')) return '';
-
-                        const totalSelfDriven = d.carsSd + d.carsCt;
-                        const hasStaff = globalRecords.some(r => String(r.temple).trim() === groupKey && staffKeywords.some(kw => String(r.job).includes(kw)));
+                        let hasRecords = d.displayName.includes('[工作組]') ? globalRecords.some(r => String(r.job).includes(d.displayName.replace('[工作組] ', ''))) : globalRecords.some(r => String(r.temple).trim() === groupKey);
+                        if (!hasRecords && d.displayName.includes('[工作組]')) return '';
                         
-                        let parkingHTML = '';
-                        
-                        if (!groupHasRecords) {
-                            // 階段一：真・尚未報名
-                            parkingHTML = `
-                                <div class="flex justify-center">
-                                    <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded text-[11px] font-bold">
-                                        尚未報名
-                                    </span>
-                                </div>
-                            `;
-                        } else if (totalSelfDriven === 0) {
-                            // 階段二與三：自駕車 = 0
-                            if (hasStaff && !displayName.includes('[工作組]')) {
-                                parkingHTML = `
-                                    <div class="flex justify-center text-center">
-                                        <span class="bg-amber-100 text-amber-700 border border-amber-300 px-2 py-1 rounded text-[11px] font-bold leading-snug">
-                                            皆為大會工作人員<br>(已由工作組統一安排)
-                                        </span>
-                                    </div>
-                                `;
-                            } else {
-                                parkingHTML = `
-                                    <div class="flex justify-center text-center">
-                                        <span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded text-[11px] font-bold leading-snug">
-                                            無一般自駕車<br>(皆搭乘大巴/專車接送)
-                                        </span>
-                                    </div>
-                                `;
-                            }
+                        let pH = '';
+                        if (!hasRecords) pH = `<span class="bg-gray-100 text-gray-500 border px-2 py-1 rounded text-[11px] font-bold">尚未報名</span>`;
+                        else if (d.carsSd+d.carsCt === 0) {
+                            let hasStaff = globalRecords.some(r => String(r.temple).trim() === groupKey && staffKeywords.some(kw => String(r.job).includes(kw)));
+                            pH = (hasStaff && !d.displayName.includes('[工作組]')) ? `<span class="bg-amber-100 text-amber-700 border border-amber-300 px-2 py-1 rounded text-[11px] font-bold">皆為大會工作人員<br>(已統一安排)</span>` : `<span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded text-[11px] font-bold">無一般自駕車<br>(皆搭乘大巴/專車)</span>`;
                         } else {
-                            // 階段四：正常自駕族
-                            parkingHTML = `
-                                <div class="space-y-1.5">
-                                    <div class="flex items-center gap-1 text-[11px]">
-                                        <span class="text-blue-700 font-bold w-4">早:</span>
-                                        <select class="park-am-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                            ${buildOptions(currentAmZones, d.savedAm)}
-                                        </select>
-                                    </div>
-                                    <div class="flex items-center gap-1 text-[11px]">
-                                        <span class="text-green-700 font-bold w-4">午:</span>
-                                        <select class="park-pm-select border border-gray-300 rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">
-                                            ${buildOptions(currentPmZones, d.savedPm)}
-                                        </select>
-                                    </div>
-                                </div>
-                            `;
+                            pH = `<div class="space-y-1"><div class="flex items-center gap-1 text-[11px]"><span class="text-blue-700 font-bold w-4">早:</span><select class="park-am-select border rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">${buildOptions(cAmZones, d.savedAm)}</select></div><div class="flex items-center gap-1 text-[11px]"><span class="text-green-700 font-bold w-4">午:</span><select class="park-pm-select border rounded px-1 py-0.5 w-full font-bold text-gray-700" data-group="${groupKey}">${buildOptions(cPmZones, d.savedPm)}</select></div></div>`;
                         }
-
-                        return `
-                            <tr class="border-b border-gray-100 hover:bg-gray-50 text-sm">
-                                <td class="p-3 font-bold text-gray-800">${displayName}</td>
-                                <td class="p-3 text-center text-blue-600 font-bold bg-blue-50/50">${d.carsSd} 台</td>
-                                <td class="p-3 text-center text-blue-600 font-bold">${d.carsCt} 台</td>
-                                <td class="p-3 text-center text-red-600 font-bold bg-red-50/50">${d.shuttleSd} 人</td>
-                                <td class="p-3 text-center text-red-600 font-bold">${d.shuttleCt} 人</td>
-                                <td class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50">${d.busSd} / ${d.busCt} 人</td>
-                                <td class="p-3 text-[11px] text-gray-500 font-medium leading-tight min-w-[150px]">${d.driversSd.join(', ') || '無'}</td>
-                                <td class="p-3 w-48 min-w-[180px]">
-                                    ${parkingHTML}
-                                </td>
-                            </tr>
-                        `;
+                        return `<tr class="border-b border-gray-100 hover:bg-gray-50 text-sm"><td class="p-3 font-bold text-gray-800">${d.displayName}</td><td class="p-3 text-center text-blue-600 font-bold bg-blue-50/50">${d.carsSd} 台</td><td class="p-3 text-center text-blue-600 font-bold">${d.carsCt} 台</td><td class="p-3 text-center text-red-600 font-bold bg-red-50/50">${d.shuttleSd} 人</td><td class="p-3 text-center text-red-600 font-bold">${d.shuttleCt} 人</td><td class="p-3 text-center text-emerald-700 font-bold bg-emerald-50/50">${d.busSd} / ${d.busCt} 人</td><td class="p-3 text-[11px] text-gray-500 leading-tight">${d.driversSd.join(', ')||'無'}</td><td class="p-3 w-48">${pH}</td></tr>`;
                     }
                 }).join('');
             };
 
             document.getElementById('dash-transport-bus').innerHTML = buildHTMLFromKeys(sortedBusKeys, busTransport, true);
-            const staffHTML = buildHTMLFromKeys(sortedStaffKeys, staffTransport, false);
-            document.getElementById('dash-transport-staff').innerHTML = staffHTML || '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無工作組資料</td></tr>';
+            document.getElementById('dash-transport-staff').innerHTML = buildHTMLFromKeys(sortedStaffKeys, staffTransport, false) || '<tr><td colspan="8" class="p-4 text-center text-gray-400">尚無資料</td></tr>';
             document.getElementById('dash-transport-temple').innerHTML = buildHTMLFromKeys(sortedTempleKeys, templeTransport, false);
         }
 
         async function batchAssignOrphans() {
-            const updates = {};
-            let hasChanges = false;
+            const updates = {}; let hasChanges = false;
+            document.querySelectorAll('.orphan-assign-select').forEach(sel => { if (sel.value) { updates[sel.getAttribute('data-key')] = sel.value; hasChanges = true; } });
+            if (!hasChanges) return alert("⚠️ 請至少為一位道親選擇下午欲搭乘的車輛。");
+            if (prompt("🔐 請輸入大會指派密碼：") !== "5050") return alert("密碼錯誤，拒絕寫入。");
             
-            document.querySelectorAll('.orphan-assign-select').forEach(sel => {
-                if (sel.value) {
-                    updates[sel.getAttribute('data-key')] = sel.value;
-                    hasChanges = true;
-                }
-            });
-
-            if (!hasChanges) {
-                alert("⚠️ 請至少為一位道親選擇下午欲搭乘的車輛。");
-                return;
-            }
-
-            const pwd = prompt("🔐 權限驗證\n請輸入大會指派密碼：", "");
-            if (pwd !== "5050") {
-                if (pwd !== null) alert("密碼錯誤，拒絕寫入。");
-                return;
-            }
-            
-            const btn = document.querySelector("#dash-transfer-list button");
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = "⏳ 資料寫入中，請稍候..."; 
-            btn.disabled = true; 
-            btn.classList.add("opacity-70", "cursor-not-allowed");
-
+            document.getElementById('status-msg').innerHTML = "⏳ 儲存接駁指派中..."; 
             try {
-                await fetch(scriptUrl, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: "batchUpdateOrphans", updates: updates }) 
-                });
-                alert("✅ 指派成功！這些道親已為您安排妥當。\n(畫面即將重新整理以顯示最新空位)");
-                setTimeout(() => { window.location.reload(); }, 3000); 
-            } catch (e) { 
-                alert("❌ 寫入失敗，請檢查網路連線。"); 
-                btn.innerHTML = originalHTML; 
-                btn.disabled = false;
-                btn.classList.remove("opacity-70", "cursor-not-allowed");
-            }
+                await fetch(scriptUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "batchUpdateOrphans", updates: updates }) });
+                alert("✅ 指派成功！即將重新整理..."); setTimeout(() => window.location.reload(), 2000); 
+            } catch (e) { alert("❌ 寫入失敗"); }
         }
 
         async function batchUpdateParking() {
-            const pwd = prompt("🔐 安全驗證\n請輸入管理員密碼：", "");
-            if (pwd !== "5050") {
-                if (pwd !== null) alert("密碼錯誤，拒絕存取。");
-                return;
-            }
-
+            if (prompt("🔐 請輸入管理員密碼：") !== "5050") return alert("密碼錯誤，拒絕存取。");
             const updates = {};
             document.querySelectorAll('.park-am-select').forEach(sel => {
-                const groupKey = sel.getAttribute('data-group');
-                const amValue = sel.value; 
-                const tr = sel.closest('tr');
-                const pmValue = tr.querySelector('.park-pm-select').value;
-                
-                if (!amValue && !pmValue) {
-                    updates[groupKey] = '待安排';
-                } else {
-                    updates[groupKey] = `早:${amValue ? amValue : '未排'} | 午:${pmValue ? pmValue : '未排'}`;
-                }
+                const k = sel.getAttribute('data-group'); const vAm = sel.value; const vPm = sel.closest('tr').querySelector('.park-pm-select').value;
+                if (!vAm && !vPm) updates[k] = '待安排'; else updates[k] = `早:${vAm||'未排'} | 午:${vPm||'未排'}`;
             });
-
-            if (Object.keys(updates).length === 0) return alert("目前沒有設定任何車位，無須更新。");
             
-            const btn = document.getElementById("btn-batch-parking");
-            btn.innerHTML = "⏳ 寫入資料庫中..."; 
-            btn.disabled = true; 
-            btn.classList.add("opacity-70", "cursor-not-allowed");
-
+            document.getElementById("btn-batch-parking").innerHTML = "⏳ 寫入資料庫中..."; 
             try {
-                await fetch(scriptUrl, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: "batchUpdateParking", updates: updates }) 
-                });
-                alert("✅ 整批次停車位更改成功！(大巴停車位已自動寫入該車乘客資料中)");
-                setTimeout(() => { window.location.reload(); }, 3000); 
-            } catch (e) { 
-                alert("❌ 寫入失敗，請檢查網路連線。"); 
-            }
-            
-            btn.innerHTML = "💾 儲存更改"; 
-            btn.disabled = false; 
-            btn.classList.remove("opacity-70", "cursor-not-allowed");
+                await fetch(scriptUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "batchUpdateParking", updates: updates }) });
+                alert("✅ 車位更改成功！"); setTimeout(() => window.location.reload(), 2000); 
+            } catch (e) { alert("❌ 寫入失敗"); document.getElementById("btn-batch-parking").innerHTML = "💾 儲存更改"; }
         }
     </script>
 
+    <!-- Sidebar -->
     <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl z-20 hidden md:flex">
-        <div class="p-6 border-b border-gray-800">
-            <h1 class="text-xl font-bold text-amber-400 tracking-wide">聖德宮 50周年</h1>
-            <p class="text-xs text-gray-400 mt-1">大會後台管理中心</p>
-        </div>
+        <div class="p-6 border-b border-gray-800"><h1 class="text-xl font-bold text-amber-400">聖德宮 50周年</h1><p class="text-xs text-gray-400 mt-1">大會後台管理中心</p></div>
         <nav class="flex-1 px-4 py-6 space-y-2">
-            <button id="btn-overview" onclick="switchTab('overview')" class="nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md">
-                📊 大會總覽與餐飲結算
-            </button>
-            <button id="btn-transport" onclick="switchTab('transport')" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">
-                🚗 交通與停車位配置
-            </button>
-            <button id="btn-seating" onclick="switchTab('seating')" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">
-                🪑 巡禮與展演座位表
-            </button>
+            <button id="btn-overview" onclick="switchTab('overview')" class="nav-btn w-full text-left px-4 py-3 rounded-xl bg-amber-600 text-white font-bold shadow-md">📊 大會總覽與餐飲結算</button>
+            <button id="btn-transport" onclick="switchTab('transport')" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">🚗 交通與停車位配置</button>
+            <button id="btn-seating" onclick="switchTab('seating')" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all">🪑 巡禮與展演座位表</button>
         </nav>
-        <div class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center">
-            限大會籌備委員使用
-        </div>
+        <div class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center">限大會籌備委員使用</div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full relative overflow-y-auto bg-gray-50 pb-20 md:pb-0">
-        <header class="bg-white shadow-sm px-8 py-5 flex justify-end items-center z-10 sticky top-0">
-            <div id="status-msg"></div>
-        </header>
+        <header class="bg-white shadow-sm px-8 py-5 flex justify-end items-center z-10 sticky top-0"><div id="status-msg"></div></header>
 
         <div class="p-4 md:p-8">
             <div id="tab-overview" class="tab-content block space-y-6">
-                <div class="flex items-center gap-2 mb-6 border-l-4 border-amber-600 pl-3">
-                    <h3 class="text-xl font-bold text-gray-800">大會報名與餐飲結算總表</h3>
-                </div>
+                <!-- 🚨 這裡會動態插入衝突報表 (dash-conflict-report) 🚨 -->
+                <div id="dash-conflict-report"></div>
+
+                <div class="flex items-center gap-2 mb-6 border-l-4 border-amber-600 pl-3"><h3 class="text-xl font-bold text-gray-800">大會報名與餐飲結算總表</h3></div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-emerald-700 mb-1">中午參加午宴 (辦桌)</p>
-                            <p class="text-3xl font-black text-emerald-600" id="dash-total-banquet">0</p>
-                        </div>
-                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-2xl">🍲</div>
+                        <div><p class="text-xs font-bold text-emerald-700 mb-1">中午參加午宴 (辦桌)</p><p class="text-3xl font-black text-emerald-600" id="dash-total-banquet">0</p></div><div class="text-2xl">🍲</div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-amber-700 mb-1">中午表演場 (高級午餐盒)</p>
-                            <p class="text-3xl font-black text-amber-600">
-                                <span id="dash-total-bento">0</span><span class="text-sm text-amber-500/70 font-medium ml-1">個</span>
-                            </p>
-                        </div>
-                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl">🍱</div>
+                        <div><p class="text-xs font-bold text-amber-700 mb-1">中午表演場 (高級午餐盒)</p><p class="text-3xl font-black text-amber-600"><span id="dash-total-bento">0</span><span class="text-sm font-medium ml-1">個</span></p></div><div class="text-2xl">🍱</div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-purple-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-purple-700 mb-1">留下享用晚餐 (歐式自助)</p>
-                            <p class="text-3xl font-black text-purple-600">
-                                <span id="dash-total-dinner">0</span><span class="text-sm text-purple-500/70 font-medium ml-1">人</span>
-                            </p>
-                        </div>
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-2xl">🍽️</div>
+                        <div><p class="text-xs font-bold text-purple-700 mb-1">留下享用晚餐 (歐式自助)</p><p class="text-3xl font-black text-purple-600"><span id="dash-total-dinner">0</span><span class="text-sm font-medium ml-1">人</span></p></div><div class="text-2xl">🍽️</div>
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
-                    <div class="bg-gray-100 px-4 md:px-6 py-4 border-b border-gray-200">
-                        <h4 class="font-bold text-gray-700">📋 各區公壇餐飲預備明細清單</h4>
-                    </div>
+                    <div class="bg-gray-100 px-4 md:px-6 py-4 border-b border-gray-200"><h4 class="font-bold text-gray-700">📋 各區公壇餐飲預備明細清單</h4></div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left min-w-[500px]">
                             <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
-                                <tr>
-                                    <th class="p-3 font-bold border-b border-gray-200">公壇名稱</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center">總人數</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center">便當需求數</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center text-emerald-700">參加午宴人數</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center">晚餐留下數</th>
-                                </tr>
+                                <tr><th class="p-3 font-bold border-b border-gray-200">公壇名稱</th><th class="p-3 font-bold border-b border-gray-200 text-center">總人數</th><th class="p-3 font-bold border-b border-gray-200 text-center text-amber-700">便當需求數</th><th class="p-3 font-bold border-b border-gray-200 text-center text-emerald-700">午宴人數</th><th class="p-3 font-bold border-b border-gray-200 text-center text-purple-700">晚餐人數</th></tr>
                             </thead>
                             <tbody id="dash-temple-tbody"></tbody>
                         </table>
@@ -668,112 +424,32 @@
             </div>
 
             <div id="tab-transport" class="tab-content hidden space-y-6">
-                <div class="flex items-center gap-2 mb-6 border-l-4 border-blue-600 pl-3">
-                    <h3 class="text-xl font-bold text-gray-800">交通接駁需求與停車位預估</h3>
-                </div>
-                
-                <div class="bg-red-50 border border-red-200 rounded-xl p-4 md:p-5 shadow-sm mb-4">
-                    <h4 class="text-red-800 font-bold mb-3 flex items-center gap-2">⚠️ 下午轉乘接駁清單 (早搭便車，午須接駁)</h4>
-                    <div id="dash-transfer-list"></div>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-[11px] md:text-xs font-bold text-blue-700 mb-1">早：自駕(台)</p>
-                        <p class="text-2xl font-black text-blue-600"><span id="dash-cars-sd">0</span></p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-[11px] md:text-xs font-bold text-blue-700 mb-1">午：自駕(台)</p>
-                        <p class="text-2xl font-black text-blue-600"><span id="dash-cars-ct">0</span></p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-[11px] md:text-xs font-bold text-red-700 mb-1">早：接駁(人)</p>
-                        <p class="text-2xl font-black text-red-600"><span id="dash-shuttle-sd">0</span></p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-[11px] md:text-xs font-bold text-red-700 mb-1">午：接駁(人)</p>
-                        <p class="text-2xl font-black text-red-600"><span id="dash-shuttle-ct">0</span></p>
-                    </div>
-                </div>
-
+                <!-- 省略重複的 HTML Layout，確保 ID = dash-transport-bus, staff, temple 等存在 -->
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 md:p-5 shadow-sm mb-4"><h4 class="text-red-800 font-bold mb-3 flex items-center gap-2">⚠️ 下午轉乘接駁清單</h4><div id="dash-transfer-list"></div></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"><div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm"><p class="text-[11px] md:text-xs font-bold text-blue-700 mb-1">早：自駕(台)</p><p class="text-2xl font-black text-blue-600" id="dash-cars-sd">0</p></div><div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm"><p class="text-[11px] md:text-xs font-bold text-blue-700 mb-1">午：自駕(台)</p><p class="text-2xl font-black text-blue-600" id="dash-cars-ct">0</p></div><div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm"><p class="text-[11px] md:text-xs font-bold text-red-700 mb-1">早：接駁(人)</p><p class="text-2xl font-black text-red-600" id="dash-shuttle-sd">0</p></div><div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm"><p class="text-[11px] md:text-xs font-bold text-red-700 mb-1">午：接駁(人)</p><p class="text-2xl font-black text-red-600" id="dash-shuttle-ct">0</p></div></div>
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
-                    <div class="bg-gray-100 px-4 md:px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-wrap gap-2">
-                        <div class="flex items-center gap-3">
-                            <h4 class="font-bold text-gray-700">📋 派車與車位設定總表</h4>
-                            <span class="text-[10px] text-gray-500 bg-white px-2 py-1 rounded border border-gray-200 hidden md:block">不含搭乘大巴者</span>
-                        </div>
-                        <button id="btn-batch-parking" onclick="batchUpdateParking()" class="bg-gray-800 hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                            💾 儲存更改
-                        </button>
-                    </div>
+                    <div class="bg-gray-100 px-4 md:px-6 py-4 border-b border-gray-200 flex justify-between items-center"><div class="flex items-center gap-3"><h4 class="font-bold text-gray-700">📋 派車與車位設定總表</h4></div><button id="btn-batch-parking" onclick="batchUpdateParking()" class="bg-gray-800 hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer">💾 儲存更改</button></div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left min-w-[900px]">
-                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
-                                <tr>
-                                    <th class="p-3 font-bold border-b border-gray-200 w-32">組別 / 實體</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center bg-blue-50/50">自駕 (早)</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center">自駕 (午)</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center bg-red-50/50">接駁 (早)</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center">接駁 (午)</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center bg-emerald-50/50">搭大巴(早/午)</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 w-48">司機名錄 (早上)</th>
-                                    <th class="p-3 font-bold border-b border-gray-200 text-center">停車區分配 (早/午)</th>
-                                </tr>
-                            </thead>
-                            
-                            <tbody class="bg-blue-50/30 border-b-4 border-gray-200">
-                                <tr>
-                                    <td colspan="8" class="px-3 py-2 text-xs font-black text-blue-800 bg-blue-100">
-                                        🚌 大巴停車專區 (統一設定該車全體乘客車位)
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tbody id="dash-transport-bus" class="bg-blue-50/10"></tbody>
-
-                            <tbody class="bg-amber-50/30 border-b-4 border-gray-200">
-                                <tr>
-                                    <td colspan="8" class="px-3 py-2 text-xs font-black text-amber-700 bg-amber-100">
-                                        🛠️ 大會工作組專區 (優先分流)
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tbody id="dash-transport-staff" class="bg-amber-50/10"></tbody>
-                            
-                            <tbody class="border-b border-gray-200">
-                                <tr>
-                                    <td colspan="8" class="px-3 py-2 text-xs font-black text-gray-500 bg-gray-100">
-                                        🏠 貴賓壇主講師與 一般道親專區 (已自動扣除工作人員)
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tbody id="dash-transport-temple"></tbody>
+                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase"><tr><th class="p-3">組別 / 實體</th><th class="p-3 text-center bg-blue-50/50">自駕(早)</th><th class="p-3 text-center">自駕(午)</th><th class="p-3 text-center bg-red-50/50">接駁(早)</th><th class="p-3 text-center">接駁(午)</th><th class="p-3 text-center bg-emerald-50/50">搭大巴</th><th class="p-3 w-48">司機名錄</th><th class="p-3 text-center">停車區分配 (早/午)</th></tr></thead>
+                            <tbody class="bg-blue-50/30 border-b-4 border-gray-200"><tr><td colspan="8" class="px-3 py-2 text-xs font-black text-blue-800 bg-blue-100">🚌 大巴停車專區</td></tr></tbody><tbody id="dash-transport-bus"></tbody>
+                            <tbody class="bg-amber-50/30 border-b-4 border-gray-200"><tr><td colspan="8" class="px-3 py-2 text-xs font-black text-amber-700 bg-amber-100">🛠️ 大會工作組專區</td></tr></tbody><tbody id="dash-transport-staff"></tbody>
+                            <tbody class="border-b border-gray-200"><tr><td colspan="8" class="px-3 py-2 text-xs font-black text-gray-500 bg-gray-100">🏠 一般道親專區</td></tr></tbody><tbody id="dash-transport-temple"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
             <div id="tab-seating" class="tab-content hidden space-y-6">
-                <div class="flex items-center gap-2 mb-6 border-l-4 border-gray-400 pl-3">
-                    <h3 class="text-xl font-bold text-gray-800">大會座位表與打掃區域</h3>
-                </div>
-                <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center">
-                    <p class="text-gray-500 font-bold mb-2">🪑 模組建置中...</p>
-                    <p class="text-sm text-gray-400">此區塊將提供「巡禮」、「宴席」、「展演」的智慧分區座位名單匯出功能。</p>
-                </div>
+                <div class="flex items-center gap-2 mb-6 border-l-4 border-gray-400 pl-3"><h3 class="text-xl font-bold text-gray-800">大會座位表與打掃區域</h3></div>
+                <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-200 text-center"><p class="text-gray-500 font-bold">🪑 模組建置中...</p></div>
             </div>
         </div>
     </main>
-
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-gray-900 text-white flex justify-around shadow-[0_-5px_20px_rgba(0,0,0,0.2)] z-50 border-t border-gray-800">
-        <button id="btn-overview-mobile" onclick="switchTab('overview')" class="nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-amber-400 font-bold">
-            <span class="text-xl">📊</span><span class="text-[10px]">總覽餐飲</span>
-        </button>
-        <button id="btn-transport-mobile" onclick="switchTab('transport')" class="nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-white transition-all">
-            <span class="text-xl">🚗</span><span class="text-[10px]">交通派車</span>
-        </button>
-        <button id="btn-seating-mobile" onclick="switchTab('seating')" class="nav-btn-mobile flex-1 py-2 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-white transition-all">
-            <span class="text-xl">🪑</span><span class="text-[10px]">大會座位</span>
-        </button>
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-gray-900 text-white flex justify-around shadow-2xl z-50">
+        <button id="btn-overview-mobile" onclick="switchTab('overview')" class="nav-btn-mobile flex-1 py-2 text-amber-400 font-bold text-xs"><span class="text-xl">📊</span><br>總覽餐飲</button>
+        <button id="btn-transport-mobile" onclick="switchTab('transport')" class="nav-btn-mobile flex-1 py-2 text-gray-400 text-xs"><span class="text-xl">🚗</span><br>交通</button>
+        <button id="btn-seating-mobile" onclick="switchTab('seating')" class="nav-btn-mobile flex-1 py-2 text-gray-400 text-xs"><span class="text-xl">🪑</span><br>座位</button>
     </nav>
 </body>
 </html>
