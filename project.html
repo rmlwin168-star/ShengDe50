@@ -8,8 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; }
-        .mermaid { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow-x: auto; }
-        .gantt-title { font-weight: 900 !important; font-size: 1.25rem !important; fill: #7F1D1D !important; }
+        .mermaid { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
+        
+        /* 視覺優化：覆寫 Mermaid 甘特圖字體與顏色，讓畫面有精神、高對比 */
+        .gantt-title { font-weight: 900 !important; font-size: 1.5rem !important; fill: #7F1D1D !important; }
+        .taskText, .taskTextOutsideRight, .taskTextOutsideLeft { font-weight: 900 !important; font-size: 14px !important; fill: #111827 !important; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; cursor: pointer; }
+        .task, .task-click { cursor: pointer !important; transition: opacity 0.2s; stroke-width: 2px; stroke: rgba(0,0,0,0.2); }
+        .task:hover, .task-click:hover { opacity: 0.7; }
+        .tab-btn { transition: all 0.3s ease; }
     </style>
 </head>
 <body class="antialiased text-gray-800 pb-20">
@@ -21,11 +27,11 @@
                 <h1 class="text-lg md:text-2xl font-bold tracking-wider">專案管理與任務檢核中心</h1>
             </div>
             <div class="flex items-center gap-4">
-                <div id="auth-status" class="hidden text-xs font-bold text-amber-200"></div>
-                <button id="btn-login-trigger" onclick="openLoginModal()" class="bg-white text-red-900 hover:bg-gray-100 font-bold px-3 py-1.5 rounded-lg text-xs md:text-sm shadow transition-all cursor-pointer">
+                <div id="auth-status" class="hidden text-xs md:text-sm font-bold text-amber-200 bg-red-800 px-3 py-1.5 rounded-lg shadow-inner"></div>
+                <button id="btn-login-trigger" onclick="openLoginModal()" class="bg-white text-red-900 hover:bg-gray-100 font-bold px-4 py-2 rounded-lg text-xs md:text-sm shadow-md transition-all cursor-pointer flex items-center gap-1.5">
                     🔑 幹部登入
                 </button>
-                <button id="btn-logout-trigger" onclick="logout()" class="hidden bg-gray-800 text-gray-200 hover:bg-gray-900 font-bold px-3 py-1.5 rounded-lg text-xs md:text-sm shadow transition-all cursor-pointer">
+                <button id="btn-logout-trigger" onclick="logout()" class="hidden bg-gray-800 text-gray-200 hover:bg-gray-900 font-bold px-4 py-2 rounded-lg text-xs md:text-sm shadow-md transition-all cursor-pointer">
                     登出
                 </button>
             </div>
@@ -43,186 +49,289 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-red-50/50 p-4 rounded-xl border border-red-100 space-y-3">
-                        <h3 class="font-bold text-red-900 flex items-center gap-2"><span>🚨</span> 報名與防呆規範</h3>
-                        <ul class="text-sm text-gray-700 space-y-2">
+                    <div class="bg-red-50/50 p-5 rounded-xl border border-red-100 space-y-3">
+                        <h3 class="font-bold text-red-900 flex items-center gap-2 text-lg"><span>🚨</span> 報名與防呆規範</h3>
+                        <ul class="text-sm text-gray-700 space-y-2.5">
                             <li><strong class="text-red-700">名單限制：</strong> 僅開放選單內公壇報名，無效名單將由系統巡檢刪除。</li>
-                            <li class="bg-white p-2 rounded shadow-sm border border-red-200"><strong class="text-red-700">同車統一制：</strong> 為避接駁衝突，同車共乘者晚餐選項必須統一 (皆便當 或 皆自助餐)。</li>
-                            <li><strong class="text-red-700">展演廳規範：</strong> 展演廳入座後手機靜音、水瓶收包包。導引人員以微笑手勢靜默引導，展現優質道氣水準。</li>
+                            <li class="bg-white p-3 rounded-lg shadow-sm border border-red-200"><strong class="text-red-700">同車統一制：</strong> 為避接駁衝突，同車共乘者晚餐選項必須統一 (皆便當 或 皆自助餐)。</li>
+                            <li><strong class="text-red-700">展演廳觀眾水平：</strong> 入座後手機靜音、水瓶鎖好收包包。導引人員微笑靜默手勢引導，展現優質觀眾有道氣的水準。</li>
                         </ul>
                     </div>
 
-                    <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100 space-y-3">
-                        <h3 class="font-bold text-amber-900 flex items-center gap-2"><span>🍱</span> 餐飲與物資發放</h3>
-                        <ul class="text-sm text-gray-700 space-y-2">
-                            <li><strong class="text-amber-700">午宴環保：</strong> 午宴剩菜不打包，由炊事組處理，有需要者大會結束回聖德宮拿取。</li>
+                    <div class="bg-amber-50/50 p-5 rounded-xl border border-amber-100 space-y-3">
+                        <h3 class="font-bold text-amber-900 flex items-center gap-2 text-lg"><span>🍱</span> 餐飲與物資發放</h3>
+                        <ul class="text-sm text-gray-700 space-y-2.5">
+                            <li><strong class="text-amber-700">午宴環保：</strong> 午宴剩菜不打包交炊事組處理，有需要者大會結束回聖德宮拿取。</li>
                             <li><strong class="text-amber-700">表演組餐盒：</strong> 11:30 準時將高級午餐盒送達莿桐國小展演廳。</li>
                             <li><strong class="text-amber-700">國外/遠地：</strong> 國外道親不留用自助餐，禮品與便當於下午提早搬至大巴上。</li>
-                            <li class="bg-white p-2 rounded shadow-sm border border-amber-200"><strong class="text-amber-700">歐式自助餐：</strong> 16:40-18:00整理環境後，18:00於聖德宮享用自助餐犒賞 (點選者大會不另發便當)。</li>
+                            <li class="bg-white p-3 rounded-lg shadow-sm border border-amber-200"><strong class="text-amber-700">歐式自助餐：</strong> 16:40-18:00整理環境後，18:00於聖德宮享用自助餐犒賞 (點選者大會不另發便當)。</li>
                         </ul>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between">
+                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <div>
-                        <h3 class="font-bold text-gray-800 text-sm">💌 邀請函發放死線 (10/15 送審；11/01 寄出)</h3>
+                        <h3 class="font-bold text-gray-800 text-base">💌 邀請函發放日期 (10/15 送審；11/01 寄出)</h3>
                         <p class="text-xs text-gray-500 mt-1">必備附件：交通動線、實體停車證、當天行程與表演簡介。遠端道親發送電子版停車證。</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 📊 雙軌甘特圖 -->
+        <!-- 📊 雙軌甘特圖 (互動式) -->
         <section id="flow" class="space-y-6">
-            <div class="flex justify-between items-end border-b-2 border-gray-200 pb-2">
-                <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2"><span>⏱️</span> 專案動態甘特圖</h2>
-                <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button onclick="toggleGantt('day')" id="btn-gantt-day" class="px-4 py-1.5 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md transition-all">當日三軌動線</button>
-                    <button onclick="toggleGantt('prep')" id="btn-gantt-prep" class="px-4 py-1.5 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md transition-all">籌備期里程碑</button>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-gray-200 pb-3 gap-4">
+                <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2">
+                    <span>⏱️</span> 大會流程 / 任務檢核表
+                    <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded ml-2 hidden sm:inline-block">👆 點擊橫條可查看起訖時間與詳細內容</span>
+                </h2>
+                <div class="flex bg-gray-200 rounded-lg p-1.5 shadow-inner w-full md:w-auto">
+                    <button onclick="toggleGantt('day')" id="btn-gantt-day" class="tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md cursor-pointer">大會當日三軌動線</button>
+                    <button onclick="toggleGantt('prep')" id="btn-gantt-prep" class="tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md cursor-pointer">籌備流程任務檢核表</button>
                 </div>
             </div>
+            
+            <div class="md:hidden text-xs font-bold text-red-600 bg-red-50 p-2 rounded border border-red-100 text-center mb-2 shadow-sm">
+                👆 溫馨提示：手指觸碰圖表中的橫條，可查看詳細說明與時間。
+            </div>
 
+            <!-- 當日三軌動線甘特圖 -->
             <div id="gantt-day" class="mermaid w-full">
 gantt
     dateFormat  HH:mm
     axisFormat  %H:%M
 
     section 國內公壇/貴賓 (A)
-    停車參駕與獻供           :07:50, 10:20
-    迎賓與前殿巡禮           :crit, 10:20, 11:35
-    感恩蔬食午宴             :crit, 11:45, 12:55
-    接駁轉場與觀賞表演       :12:55, 16:20
-    領取物資、整理、賦歸     :16:20, 18:00
-    留用歐式自助餐           :18:00, 20:00
+    停車參駕與獻供           :a1, 07:50, 10:20
+    迎賓與前殿巡禮           :active, a2, 10:20, 11:35
+    感恩蔬食午宴             :active, a3, 11:45, 12:55
+    接駁轉場與觀賞表演       :a4, 12:55, 16:20
+    領取物資、整理、賦歸     :a5, 16:20, 18:00
+    留用歐式自助餐           :a6, 18:00, 20:00
 
     section 國外/遠地公壇 (B)
-    大巴移動與北側下車       :08:00, 10:20
-    迎賓與大殿巡禮           :crit, 10:20, 11:35
-    感恩蔬食午宴             :crit, 11:45, 12:55
-    大巴轉場與觀賞表演       :12:55, 16:20
-    優先賦歸 (物資在車)      :16:20, 18:30
+    大巴移動與北側下車       :b1, 08:00, 10:20
+    舞獅迎賓與大殿巡禮       :active, b2, 10:20, 11:35
+    感恩蔬食午宴             :active, b3, 11:45, 12:55
+    大巴轉場與觀賞表演       :b4, 12:55, 16:20
+    優先賦歸 (物資在車)      :b5, 16:20, 18:30
 
     section 表演組/工作 (C)
-    報到與百人化妝           :08:00, 10:00
-    走位總綵排               :crit, 10:00, 11:30
-    高級午餐盒與休息         :crit, 11:30, 13:30
-    正式展演                 :crit, 13:30, 16:20
-    領取物資、整理、賦歸     :16:20, 18:00
-    留用歐式自助餐           :18:00, 20:00
+    報到與百人化妝           :c1, 08:00, 10:00
+    走位總綵排               :active, c2, 10:00, 11:30
+    高級午餐盒與休息         :active, c3, 11:30, 13:30
+    正式展演                 :active, c4, 13:30, 16:20
+    領取物資、整理、賦歸     :c5, 16:20, 18:00
+    留用歐式自助餐           :c6, 18:00, 20:00
+
+    click a1 call showGanttDetail()
+    click a2 call showGanttDetail()
+    click a3 call showGanttDetail()
+    click a4 call showGanttDetail()
+    click a5 call showGanttDetail()
+    click a6 call showGanttDetail()
+    click b1 call showGanttDetail()
+    click b2 call showGanttDetail()
+    click b3 call showGanttDetail()
+    click b4 call showGanttDetail()
+    click b5 call showGanttDetail()
+    click c1 call showGanttDetail()
+    click c2 call showGanttDetail()
+    click c3 call showGanttDetail()
+    click c4 call showGanttDetail()
+    click c5 call showGanttDetail()
+    click c6 call showGanttDetail()
             </div>
 
+            <!-- 籌備流程任務檢核表 -->
             <div id="gantt-prep" class="mermaid w-full hidden">
 gantt
     dateFormat  YYYY-MM-DD
 
-    section 🛑 里程碑
-    邀請函與配套【定稿】 :milestone, m1, 2026-10-15, 0d
-    邀請函與電子檔【寄發】 :milestone, m2, 2026-11-01, 0d
-    大會正式舉辦         :milestone, m3, 2026-12-13, 0d
+    section 🛑 核心里程碑
+    邀請函與配套文件【送審】 :milestone, m1, 2026-10-15, 0d
+    邀請函與電子檔【寄發】   :milestone, m2, 2026-11-01, 0d
+    大會正式舉辦                 :milestone, m3, 2026-12-13, 0d
 
-    section 交通/工程
-    路權申請與停車商借   :2026-09-01, 2026-10-10
-    廁所整建工程施工     :2026-09-01, 2026-11-30
-    音響設備全場綵排     :2026-12-12, 1d
+    section 交通/引導
+    申請路權與停車場商借     :t1, 2026-09-01, 2026-10-10
+    規劃動線與設計停車證     :t2, 2026-09-15, 2026-10-15
+    下車整隊與進場演練       :t3, 2026-11-01, 2026-12-01
 
-    section 文書/總務
-    紙本與電子邀請函設計 :2026-10-01, 2026-10-15
-    確認紀念品款式與下單 :2026-10-01, 2026-10-15
-    流動廁所租借與安裝   :2026-10-15, 2026-11-15
+    section 工程/總務
+    廁所整建工程與施工       :e1, 2026-09-01, 2026-11-30
+    流動廁所租借與安裝確認   :e2, 2026-10-15, 2026-11-15
+    排定桌椅與會場佈置(前日) :e3, 2026-12-12, 1d
+
+    section 影音/大事記
+    音響與直播區域網路建置   :v1, 2026-10-01, 2026-11-15
+    50周年回顧影片後製       :v2, 2026-09-01, 2026-11-20
+    全場視訊音響總綵排       :v3, 2026-12-12, 1d
+
+    section 表演/文宣
+    行程表與沿革專刊編撰     :d1, 2026-09-15, 2026-10-15
+    戲劇與音樂排練與服裝     :d2, 2026-09-01, 2026-12-10
+    彩妝訓練與化妝準備       :d3, 2026-10-01, 2026-11-30
+
+    section 餐飲/禮品
+    午宴試菜與60桌預訂       :g1, 2026-09-15, 2026-10-15
+    確認紀念品與水晶獎盃     :g2, 2026-10-01, 2026-10-15
+
+    click m1 call showGanttDetail()
+    click m2 call showGanttDetail()
+    click m3 call showGanttDetail()
+    click t1 call showGanttDetail()
+    click t2 call showGanttDetail()
+    click t3 call showGanttDetail()
+    click e1 call showGanttDetail()
+    click e2 call showGanttDetail()
+    click e3 call showGanttDetail()
+    click v1 call showGanttDetail()
+    click v2 call showGanttDetail()
+    click v3 call showGanttDetail()
+    click d1 call showGanttDetail()
+    click d2 call showGanttDetail()
+    click d3 call showGanttDetail()
+    click g1 call showGanttDetail()
+    click g2 call showGanttDetail()
             </div>
         </section>
 
-        <!-- ✅ 權限檢核表區 -->
+        <!-- ✅ 各組任務檢核表區 -->
         <section id="tasks" class="space-y-6">
-            <div class="flex justify-between items-end border-b-2 border-gray-200 pb-2">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-gray-200 pb-2 gap-2">
                 <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2"><span>📋</span> 各組任務檢核與預算看板</h2>
-                <div class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded">※ 總預算金額依登入權限顯示</div>
+                <div class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg shadow-inner">※ 總幹事與點傳師可查閱全場預算，組長可編輯自身任務狀態</div>
             </div>
             
-            <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Javascript will inject task cards here based on RBAC -->
-                <div class="p-10 text-center text-gray-400 font-bold bg-white rounded-2xl shadow-sm w-full md:col-span-2">
-                    ⏳ 讀取雲端任務清單中...
+            <div id="tasks-container" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <!-- Javascript 將根據您的權限，注入各組精細的任務卡片 -->
+                <div class="p-10 text-center text-gray-400 font-bold bg-white rounded-2xl shadow-sm w-full xl:col-span-2">
+                    ⏳ 讀取大會雲端任務清單中...
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- 🔑 Login Modal -->
-    <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+    <!-- 🔑 幹部登入 Modal (加入授權提示說明) -->
+    <div id="login-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden transform">
-            <div class="bg-red-900 text-white p-4 text-center font-bold">幹部權限登入</div>
-            <div class="p-6 space-y-4">
-                <p class="text-xs text-gray-600 text-center">請輸入您的手機號碼以驗證大會幹部身分，解鎖任務編輯與預算檢視權限。</p>
-                <input type="tel" id="login-phone" placeholder="請輸入 10 碼手機號碼" class="w-full px-4 py-2 border border-gray-300 rounded-lg font-bold text-center focus:outline-none focus:border-red-800 focus:ring-1 focus:ring-red-800">
-                <button onclick="processLogin()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors cursor-pointer">登入系統</button>
-                <button onclick="closeLoginModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 rounded-lg transition-colors cursor-pointer">取消</button>
+            <div class="bg-red-900 text-white p-4 text-center font-bold text-lg">幹部權限登入</div>
+            <div class="p-6 space-y-5">
+                <div class="text-xs text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-200 leading-relaxed shadow-inner">
+                    請輸入您的手機號碼以驗證幹部身分，解鎖任務編輯與預算檢視權限。<br><br>
+                    <span class="text-red-700 font-bold text-[13px] border-b border-red-200 pb-1 inline-block mb-1">💡 總幹事授權指南：</span><br>
+                    請總幹事開啟 Google 報名表試算表，至最下方<strong class="text-black">「權限管理」</strong>分頁，依序輸入幹部的<strong class="text-black">姓名、手機號碼、身分、組別</strong>，儲存後即可立刻生效授權。
+                </div>
+                <input type="tel" id="login-phone" placeholder="請輸入 10 碼手機號碼" class="w-full px-4 py-3 border border-gray-300 rounded-lg font-bold text-center text-lg focus:outline-none focus:border-red-800 focus:ring-2 focus:ring-red-800 shadow-sm">
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="closeLoginModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-lg transition-colors cursor-pointer">取消</button>
+                    <button onclick="processLogin()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg shadow-md transition-colors cursor-pointer">登入系統</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ✏️ Task Edit Modal -->
-    <div id="task-edit-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+    <!-- ✏️ Task Edit Modal (任務與預算編輯) -->
+    <div id="task-edit-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform">
-            <div class="bg-amber-600 text-white p-4 font-bold flex justify-between">
-                <span>編輯任務狀態</span>
-                <button onclick="closeTaskEditModal()">✕</button>
+            <div class="bg-amber-600 text-white p-4 font-bold flex justify-between items-center text-lg">
+                <span>✏️ 編輯任務與檢核狀態</span>
+                <button onclick="closeTaskEditModal()" class="text-xl hover:text-amber-200 transition-colors">✕</button>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-5">
                 <input type="hidden" id="edit-task-id">
                 <div>
-                    <div class="text-xs font-bold text-gray-500">任務大項與細項</div>
-                    <div id="edit-task-name" class="font-bold text-gray-800 mt-1 bg-gray-50 p-2 rounded border border-gray-100"></div>
+                    <div class="text-xs font-bold text-gray-500">任務大項與詳細附註</div>
+                    <div id="edit-task-name" class="font-bold text-gray-800 mt-1 bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-inner"></div>
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">任務狀態切換</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center gap-2 p-2 border rounded bg-green-50 border-green-200 cursor-pointer hover:bg-green-100">
+                    <label class="block text-xs font-bold text-gray-700 mb-2">任務狀態切換</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-green-50 border-green-200 cursor-pointer hover:bg-green-100 transition-colors">
                             <input type="radio" name="edit-status" value="✅已完成"> <span class="text-sm font-bold text-green-800">✅已完成</span>
                         </label>
-                        <label class="flex items-center gap-2 p-2 border rounded bg-yellow-50 border-yellow-200 cursor-pointer hover:bg-yellow-100">
+                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-yellow-50 border-yellow-200 cursor-pointer hover:bg-yellow-100 transition-colors">
                             <input type="radio" name="edit-status" value="⏳進行中"> <span class="text-sm font-bold text-yellow-800">⏳進行中</span>
                         </label>
-                        <label class="flex items-center gap-2 p-2 border rounded bg-red-50 border-red-200 cursor-pointer hover:bg-red-100">
+                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-red-50 border-red-200 cursor-pointer hover:bg-red-100 transition-colors">
                             <input type="radio" name="edit-status" value="🚨逾期/警示"> <span class="text-sm font-bold text-red-800">🚨逾期/警示</span>
                         </label>
-                        <label class="flex items-center gap-2 p-2 border rounded bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100">
+                        <label class="flex items-center gap-2 p-2.5 border rounded-lg bg-blue-50 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
                             <input type="radio" name="edit-status" value="💬需協調"> <span class="text-sm font-bold text-blue-800">💬需協調</span>
                         </label>
                     </div>
                 </div>
 
-                <div id="edit-budget-container" class="hidden">
-                    <label class="block text-xs font-bold text-gray-700 mb-1">預算 / 結算金額 (新台幣)</label>
-                    <input type="number" id="edit-budget" class="w-full px-3 py-2 border rounded font-bold text-gray-800">
+                <div id="edit-budget-container" class="hidden bg-red-50/50 p-3 rounded-lg border border-red-100">
+                    <label class="block text-xs font-bold text-red-900 mb-1">大會預算 / 結算金額 (新台幣)</label>
+                    <input type="number" id="edit-budget" class="w-full px-3 py-2 border border-red-300 rounded font-bold text-red-900 focus:outline-none focus:ring-1 focus:ring-red-500">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">現有人力</label>
-                        <input type="number" id="edit-manpower" class="w-full px-3 py-2 border rounded font-bold text-gray-800">
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">本項調度人力 (人)</label>
+                        <input type="number" id="edit-manpower" class="w-full px-3 py-2 border rounded font-bold text-gray-800 focus:outline-none focus:ring-1 focus:ring-amber-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">人力是否充足</label>
-                        <select id="edit-enough" class="w-full px-3 py-2 border rounded font-bold text-gray-800">
-                            <option value="是">是</option><option value="否">否 (需支援)</option>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">人力是否充足</label>
+                        <select id="edit-enough" class="w-full px-3 py-2 border rounded font-bold text-gray-800 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                            <option value="是">是 (充足)</option><option value="否">否 (需大會支援)</option>
                         </select>
                     </div>
                 </div>
 
-                <button onclick="saveTaskEdit()" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-2.5 rounded-lg transition-colors mt-2 cursor-pointer shadow">
-                    💾 儲存變更
+                <button onclick="saveTaskEdit()" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-3 rounded-xl transition-colors mt-2 cursor-pointer shadow-lg text-sm">
+                    💾 確認並同步儲存至雲端
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- JS & Mermaid -->
+    <!-- ℹ️ Gantt Detail Modal (彈出起訖時間與詳細) -->
+    <div id="topic-detail-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-gradient-to-b from-amber-50 to-white w-full max-w-lg rounded-3xl shadow-2xl border-2 border-amber-300 overflow-hidden transform">
+            <div class="bg-gradient-to-r from-red-900 via-red-800 to-amber-900 text-white p-5 flex justify-between items-center border-b border-amber-400/30">
+                <div class="space-y-1">
+                    <span id="modal-topic-badge" class="bg-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-300/40">⏱️ 任務與時程詳情</span>
+                    <h3 id="modal-topic-title" class="text-xl font-serif-tc font-bold text-amber-200">📌 詳細內容頁</h3>
+                </div>
+                <button onclick="closeTopicDetailModal()" class="w-8 h-8 bg-black/30 hover:bg-black/50 rounded-full font-bold transition-colors text-lg pb-0.5">✕</button>
+            </div>
+            <div id="modal-topic-body" class="p-6 md:p-8 space-y-6 text-gray-800 text-sm leading-relaxed"></div>
+            <div class="bg-gray-100 p-4 border-t border-amber-200 flex justify-end">
+                <button onclick="closeTopicDetailModal()" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold text-sm shadow-sm transition-colors">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS & Mermaid 核心邏輯 -->
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#FEF2F2', primaryBorderColor: '#FCA5A5', primaryTextColor: '#7F1D1D' } });
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            securityLevel: 'loose', // 必須開啟 loose 才能讓甘特圖點擊執行 JavaScript
+            theme: 'base', 
+            themeVariables: { 
+                primaryColor: '#DBEAFE',          // 任務橫條底色：清爽淺藍
+                primaryBorderColor: '#2563EB',    // 任務橫條邊框：亮藍
+                primaryTextColor: '#111827',      // 任務文字顏色：純黑(確保清晰)
+                lineColor: '#1D4ED8',             // 連線顏色
+                secondaryColor: '#FEF3C7',        // 次要背景
+                tertiaryColor: '#F3F4F6',
+                fontFamily: "'Noto Sans TC', sans-serif"
+            },
+            gantt: {
+                fontSize: 15,                     // 放大圖表字體
+                barHeight: 32,                    // 增加任務橫條高度，方便手機點擊
+                barGap: 8,
+                topPadding: 50,
+                leftPadding: 110,                 // 增加左側名稱的空間
+                gridLineStartPadding: 35
+            }
+        });
     </script>
 
     <script>
@@ -232,17 +341,136 @@ gantt
         let dbTasks = [];
         let currentUser = null; 
 
-        // 預設任務樣板 (若雲端為空，則顯示這些讓前端有畫面)
+        // 💡 匯入您會議記錄中的所有決議代辦事項 (18大組別全涵蓋)
         const defaultTasksTemplate = [
-            { id: 'T01', category: '路權申請', detail: '完成 T2, T7, T8 路權申請與警示帶', group: '交通組', owner: '廖宏文', status: '⏳進行中', budget: '2000', manpower: '4', isEnough: '是' },
-            { id: 'T02', category: '停車動線', detail: '繪製車位路線與停車證電子檔', group: '交通組', owner: '廖宏文', status: '✅已完成', budget: '500', manpower: '2', isEnough: '是' },
-            { id: 'T03', category: '廁所工程', detail: '無障礙廁所拆除與改建施工', group: '工程組', owner: '高聖傑', status: '⏳進行中', budget: '2205000', manpower: '0', isEnough: '是' },
-            { id: 'T04', category: '影音建置', detail: '大殿直播區域網路與音響租賃', group: '影音組', owner: '塗川旺', status: '💬需協調', budget: '12000', manpower: '3', isEnough: '否' },
-            { id: 'T05', category: '邀請函', detail: '時程表與電子邀請函排版定稿', group: '文書組', owner: '莊鎮宇', status: '🚨逾期/警示', budget: '0', manpower: '2', isEnough: '是' },
-            { id: 'T06', category: '專刊印製', detail: '500本沿革專刊呈報與送印', group: '專刊組', owner: '丁美娟', status: '⏳進行中', budget: '187500', manpower: '1', isEnough: '是' },
-            { id: 'T07', category: '午宴試菜', detail: '60桌蔬食確認與廚餘動線規劃', group: '炊事組', owner: '廖正標', status: '✅已完成', budget: '330000', manpower: '15', isEnough: '是' },
-            { id: 'T08', category: '服裝道具', detail: '馬面裙採買與戲劇實報實銷', group: '表演組', owner: '鄭智文', status: '⏳進行中', budget: '21000', manpower: '10', isEnough: '是' }
+            // 總幹事室
+            { id: 'M01', category: '總幹事進度控管', detail: '12/30 計畫、人員、預算。協同副總幹事支援各組資源調度，對點傳師負責。', group: '總幹事室', owner: '林瑞明', status: '⏳進行中', budget: '0', manpower: '1', isEnough: '是' },
+            { id: 'M02', category: '副總幹事支援調度', detail: '六位副總參與負責群組，定時追蹤協助各組完成計畫並整理預算。', group: '總幹事室', owner: '各副總幹事', status: '⏳進行中', budget: '0', manpower: '6', isEnough: '是' },
+            
+            // 交通組
+            { id: 'T01', category: '路權申請與標示', detail: '提前兩個月完成 T2, T7, T8 及聖德宮巷道路權申請，拉設黃色警示帶與拒馬。', group: '交通組', owner: '廖學鏢', status: '⏳進行中', budget: '2000', manpower: '4', isEnough: '是' },
+            { id: 'T02', category: '停車場地與指揮', detail: '確認 100 輛轎車與 5 輛大巴早午場地。當天遊覽車、轎車指揮。', group: '交通組', owner: '廖學鏢', status: '⏳進行中', budget: '0', manpower: '10', isEnough: '否' },
+            { id: 'T03', category: '動線與停車證設計', detail: '【跨組】配合文書組，設計專屬停車位路線與實體/電子停車證。', group: '交通組', owner: '廖學鏢', status: '✅已完成', budget: '500', manpower: '2', isEnough: '是' },
+            
+            // 總務組
+            { id: 'G01', category: '流動廁所租借', detail: '完成流動廁所租借與安裝(近網室處)，調配國內外道親分流使用。', group: '總務組', owner: '吳連利', status: '⏳進行中', budget: '15000', manpower: '2', isEnough: '是' },
+            { id: 'G02', category: '禮品搬運至大巴', detail: '【跨組】下午提早將國外道親之禮品與便當搬運至大巴座位上。', group: '總務組', owner: '吳連利', status: '⏳進行中', budget: '0', manpower: '5', isEnough: '是' },
+            { id: 'G03', category: '場地佈置與復原', detail: '前一天排椅標示；當天16:40指揮各區人力拆棚、收納椅子、場地整潔。', group: '總務組', owner: '吳連利', status: '⏳進行中', budget: '0', manpower: '15', isEnough: '否' },
+            
+            // 財務與出納組
+            { id: 'F01', category: '活動收支結算', detail: '掌理大會活動前與當天收支，出納保管隨喜功德款項。', group: '財務組', owner: '吳金品', status: '⏳進行中', budget: '0', manpower: '2', isEnough: '是' },
+            { id: 'F02', category: '小額款項核銷作業', detail: '準備10萬支應小額。5000內由淑媛講師單據核銷，萬以上走正式流程。', group: '財務組', owner: '廖淑媛', status: '⏳進行中', budget: '100000', manpower: '1', isEnough: '是' },
+
+            // 文書組
+            { id: 'D01', category: '邀請函內容與設計', detail: '邀請函內容呈點傳師構想。設計製作委外 (10/15 送審定稿)。', group: '文書組', owner: '楊惠如', status: '🚨逾期/警示', budget: '8000', manpower: '3', isEnough: '是' },
+            { id: 'D02', category: '簽到簿與名牌製作', detail: '點傳師與來賓簽到簿準備、壓克力三角名牌印製、道務系統報到。', group: '文書組', owner: '楊惠如', status: '✅已完成', budget: '2000', manpower: '2', isEnough: '是' },
+            
+            // 影音組
+            { id: 'V01', category: '全場影音設備架設', detail: '天井、大殿、廣場、小佛堂影音連線，OBS線上直播架設 (2場)。', group: '影音組', owner: '塗川旺', status: '💬需協調', budget: '12000', manpower: '4', isEnough: '否' },
+            { id: 'V02', category: '禮堂音響租用', detail: '12/12、13 莿桐國小禮堂表演所需音響、燈光設備與舞獅MIC租借。', group: '影音組', owner: '塗川旺', status: '⏳進行中', budget: '45000', manpower: '2', isEnough: '是' },
+            
+            // 節目與表演組
+            { id: 'P01', category: '戲劇與音樂排練', detail: '督導舞台劇(沿革/鳳蓮/秦廣王)、口琴與合唱團排練。7月份集中團練。', group: '表演組', owner: '鄭智文', status: '⏳進行中', budget: '0', manpower: '100', isEnough: '是' },
+            { id: 'P02', category: '服裝道具採買', detail: '合唱團/小天使紅馬面裙採買，成人佛堂補助150元。戲劇道具實報實銷。', group: '表演組', owner: '鄭智文', status: '⏳進行中', budget: '21400', manpower: '3', isEnough: '是' },
+            { id: 'P03', category: '早午流程策劃與司儀', detail: '高聖傑策劃流程簡報，早上聖德宮、下午禮堂司儀操持演練與時間嚴控。', group: '司儀組', owner: '高聖傑', status: '⏳進行中', budget: '0', manpower: '4', isEnough: '是' },
+
+            // 炊事組
+            { id: 'K01', category: '60桌蔬食午宴確認', detail: '由阿雄師掌廚(每桌5500元)。安排小佛堂、廣場與鄰居場所桌位。', group: '炊事組', owner: '沈志遠', status: '✅已完成', budget: '330000', manpower: '6', isEnough: '是' },
+            { id: 'K02', category: '遊覽車司機便當', detail: '準備豐盛便當送去給遊覽車司機，由許櫻徽講師負責安排。', group: '炊事組', owner: '許櫻徽', status: '⏳進行中', budget: '1000', manpower: '1', isEnough: '是' },
+            
+            // 禮品組
+            { id: 'G04', category: '紀念品款式確認下單', detail: '水晶獎盃(彩色發光/麥穗)、運動毛巾、礦泉水確認與採買包裝。', group: '禮品組', owner: '廖淑媛', status: '⏳進行中', budget: '180000', manpower: '5', isEnough: '是' },
+            
+            // 工程組
+            { id: 'E01', category: '廁所改建發包施工', detail: '推動聖德宮兩側廁所拆除與改建，縣府補助兩百萬，自籌二十萬。', group: '工程組', owner: '高聖傑', status: '⏳進行中', budget: '2205000', manpower: '0', isEnough: '是' },
+            { id: 'E02', category: '大殿整修工程', detail: '牆壁油漆工程、天花板換新、增設通風管路與通風設備。', group: '工程組', owner: '高聖傑', status: '💬需協調', budget: '150000', manpower: '2', isEnough: '否' },
+
+            // 公關與接待組
+            { id: 'H01', category: '國內外貴賓邀請', detail: '菲律賓、印尼、大馬等國外道親，與國內各區道親來賓邀請確認。', group: '公關組', owner: '劉秉洲', status: '✅已完成', budget: '0', manpower: '5', isEnough: '是' },
+            { id: 'H02', category: '當日茶水毛巾接待', detail: '配合公關組招待貴賓、事先準備茶水毛巾，點傳師進大殿時協助別胸花。', group: '接待組', owner: '詹雅惠', status: '⏳進行中', budget: '2000', manpower: '8', isEnough: '是' },
+
+            // 大事記組
+            { id: 'R01', category: '回顧影片製作配音', detail: '照片收集、文字稿撰寫、錄音人員(6位)配音。供巡禮與午宴播放。', group: '大事記組', owner: '吳韋鈜', status: '⏳進行中', budget: '5000', manpower: '8', isEnough: '是' },
+            { id: 'R02', category: '全場動態攝影', detail: '規劃當天全場域動態攝影與拍照動線。', group: '大事記組', owner: '陳坤宏', status: '⏳進行中', budget: '0', manpower: '4', isEnough: '是' },
+
+            // 專刊組
+            { id: 'B01', category: '50周年沿革專刊編撰', detail: '精裝本預計印製500本(單價375)。6月底前完稿送印。', group: '專刊組', owner: '丁美娟', status: '⏳進行中', budget: '187500', manpower: '3', isEnough: '是' },
+            
+            // 佈置與插花組
+            { id: 'D03', category: '會場紅布條與氣球', detail: '聖德宮與莿桐國小紅布條(7200元)、禮堂氣球拱門(4000元)與歡迎海報。', group: '佈置組', owner: '林葡萄', status: '⏳進行中', budget: '11200', manpower: '2', isEnough: '是' },
+            { id: 'D04', category: '羅馬柱鮮花與胸花', detail: '門口羅馬柱鮮花三對採買、點傳師與貴賓新鮮胸花準備。', group: '插花組', owner: '林瓊玉', status: '⏳進行中', budget: '15000', manpower: '3', isEnough: '是' },
+
+            // 化妝梳頭組
+            { id: 'M03', category: '彩妝課程與妝髮', detail: '舉辦彩妝課程。粉底卸妝品實報實銷(三千)。當日支援小天使妝髮。', group: '化妝梳頭組', owner: '陳淑芳', status: '⏳進行中', budget: '3000', manpower: '4', isEnough: '是' },
+
+            // 引導組 (新成立)
+            { id: 'G05', category: '旗幟引導者統籌演練', detail: '統整各公壇旗幟引導者，實地演練下車整隊、隊呼進場與下午轉場動線。', group: '引導組', owner: '楊和紳', status: '💬需協調', budget: '0', manpower: '12', isEnough: '否' },
+
+            // 壇務組
+            { id: 'A01', category: '獻供人員安排演練', detail: '安排11位獻供人員，演練前殿與09:00大殿獻供流程。', group: '壇務組', owner: '陳裕元', status: '⏳進行中', budget: '0', manpower: '11', isEnough: '是' },
+            
+            // 機動組
+            { id: 'A02', category: '現場突發狀況支援', detail: '統籌現場突發狀況，文書、壇務、炊事等組別任務完成後主動協助。', group: '機動組', owner: '廖志煌', status: '⏳進行中', budget: '0', manpower: '8', isEnough: '是' }
         ];
+
+        // ⏱️ 甘特圖點擊互動：定義所有 ID 的起訖時間與說明
+        window.ganttDetailsMap = {
+            "a1": { title: "停車參駕與獻供", time: "07:50 - 10:20", content: "國內公壇與貴賓陸續抵達聖德宮，依據交通組引導停妥車輛後，進入大殿參駕並進行獻供儀式。" },
+            "a2": { title: "迎賓與前殿巡禮", time: "10:20 - 11:35", content: "【大會集結點】於前殿廣場欣賞祥獅獻瑞迎賓，隨後進行 50 周年靜態時光迴廊巡禮。" },
+            "a3": { title: "感恩蔬食午宴", time: "11:45 - 12:55", content: "【大會集結點】於 B/C/D 區享用 60 桌頂級蔬食辦桌。午宴剩菜不打包，交由炊事組處理。" },
+            "a4": { title: "接駁轉場與觀賞表演", time: "12:55 - 16:20", content: "搭乘接駁車移動至莿桐國小展演廳。入座後手機請關靜音、水瓶鎖好收妥，13:30 準時觀賞精粹展演。" },
+            "a5": { title: "領取物資、整理、賦歸", time: "16:20 - 18:00", content: "表演結束後，各壇派兩名代表統一領取便當與禮袋。協助整理環境後，未登記自助餐者可乘車賦歸。" },
+            "a6": { title: "留用歐式自助餐", time: "18:00 - 20:00", content: "登記用膳之工作人員與道親，分流回聖德宮享用歐式自助餐犒賞 (大會不另發便當)。" },
+            
+            "b1": { title: "大巴移動與北側下車", time: "08:00 - 10:20", content: "國外與遠地公壇搭乘大巴前往，由北側下車處下車並整隊。" },
+            "b2": { title: "舞獅迎賓與大殿巡禮", time: "10:20 - 11:35", content: "【大會集結點】旗幟引導隊呼進場，大殿參駕後進行靜態時光迴廊巡禮。" },
+            "b3": { title: "感恩蔬食午宴", time: "11:45 - 12:55", content: "【大會集結點】於 A/C 區享用蔬食辦桌。午宴剩菜不打包交炊事組。" },
+            "b4": { title: "大巴轉場與觀賞表演", time: "12:55 - 16:20", content: "於北側統一上大巴，轉場至莿桐國小。13:30 準時觀賞展演。" },
+            "b5": { title: "優先賦歸 (物資在車)", time: "16:20 - 18:30", content: "國外道親不參與晚宴。總務組已事先將禮品與便當放置大巴，表演結束後直接上車賦歸。" },
+            
+            "c1": { title: "報到與百人化妝", time: "08:00 - 10:00", content: "表演組與司儀直接於莿桐國小展演廳報到，進行百人化妝與著裝準備。" },
+            "c2": { title: "走位總綵排", time: "10:00 - 11:30", content: "司儀、戲劇、音樂等各節目依序進行實地走位與燈光音響總綵排。" },
+            "c3": { title: "高級午餐盒與休息", time: "11:30 - 13:30", content: "總務組 11:30 準時將高級午餐盒放至座位。表演組用餐後養精蓄銳準備演出。" },
+            "c4": { title: "正式展演", time: "13:30 - 16:20", content: "【大會最高潮】三齣震撼舞台劇、96佛子合唱、口琴樂團、文武讀經與青年舞蹈正式演出。" },
+            "c5": { title: "領取物資、整理、賦歸", time: "16:20 - 18:00", content: "表演結束，領取所屬公壇物資並協助場地復原整理。" },
+            "c6": { title: "留用歐式自助餐", time: "18:00 - 20:00", content: "表演組與工作人員回聖德宮享用歐式自助餐，感恩大家辛勞。" },
+
+            "m1": { title: "邀請函與配套文件【送審定稿】", time: "2026-10-15 (核定日期)", content: "請文書組確保附件齊全：包含交通動線、實體停車證、當天行程與表演簡介送呈點傳師核示。" },
+            "m2": { title: "邀請函與電子檔【全面寄發】", time: "2026-11-01", content: "實體信件全數寄出。遠端道親由大會統一發送電子版停車證圖檔，供當日現場交管辨識。" },
+            "m3": { title: "大會正式舉辦", time: "2026-12-13", content: "聖德宮50周年慶典正式登場！" },
+            
+            "t1": { title: "申請路權與停車場商借", time: "2026-09-01 ~ 2026-10-10", content: "提前兩個月完成 T2, T7, T8 及聖德宮巷道路權申請，拉設黃色警示帶。<br>確認 100 輛轎車與 5 輛大巴士之早午停車場地。" },
+            "t2": { title: "規劃動線與設計停車證", time: "2026-09-15 ~ 2026-10-15", content: "配合文書組，設計專屬停車位路線與實體/電子停車證。" },
+            "t3": { title: "下車整隊與進場演練", time: "2026-11-01 ~ 2026-12-01", content: "引導組統整各公壇旗幟引導者，實地演練下車整隊與隊呼進場動線。" },
+            "e1": { title: "廁所整建工程發包與施工", time: "2026-09-01 ~ 2026-11-30", content: "推動聖德宮兩側廁所拆除與改建，確保落實為全平面無障礙設計。" },
+            "e2": { title: "流動廁所租借與安裝確認", time: "2026-10-15 ~ 2026-11-15", content: "完成流動廁所租借與安裝(近網室處)，並規劃國內外道親分流使用動線。" },
+            "e3": { title: "排定桌椅與會場佈置", time: "2026-12-12", content: "大會前一日指揮人力進行各區域棚架、桌椅定位與場地清潔佈置。" },
+            "v1": { title: "音響與直播區域網路建置", time: "2026-10-01 ~ 2026-11-15", content: "架設區域網路確保大殿與廣場視訊直播。租賃迎賓舞獅音響、莿桐國小禮堂音響與燈光設備。" },
+            "v2": { title: "50周年回顧影片後製", time: "2026-09-01 ~ 2026-11-20", content: "大事記組收集照片、撰寫配音稿，完成影片後製供大會播放。" },
+            "v3": { title: "全場視訊音響總綵排", time: "2026-12-12", content: "大會前一日進行全場域連線測試與音場調校。" },
+            "d1": { title: "行程表與沿革專刊編撰", time: "2026-09-15 ~ 2026-10-15", content: "專刊組完成500本精裝專刊編撰；文書組完成行程表作為邀請函附件。" },
+            "d2": { title: "戲劇與音樂排練與服裝", time: "2026-09-01 ~ 2026-12-10", content: "督導三齣舞台劇、口琴與合唱團之排練進度、服裝道具採買與核銷。" },
+            "d3": { title: "彩妝訓練與化妝準備", time: "2026-10-01 ~ 2026-11-30", content: "辦理彩妝課程，準備粉底卸妝品，籌備當日百人妝髮。" },
+            "g1": { title: "午宴試菜與60桌預訂確認", time: "2026-09-15 ~ 2026-10-15", content: "確認 60 桌蔬食菜色品質，定案晚間歐式自助餐菜單，並研擬廚餘回收動線。" },
+            "g2": { title: "確認紀念品款式與下單", time: "2026-10-01 ~ 2026-10-15", content: "確認50周年紀念水晶獎盃、毛巾與伴手禮盒款式並完成採購下單。" }
+        };
+
+        window.showGanttDetail = function(taskId) {
+            const data = window.ganttDetailsMap[taskId];
+            if(!data) return;
+            document.getElementById('modal-topic-title').innerHTML = `<span>📌</span> ${data.title}`;
+            document.getElementById('modal-topic-body').innerHTML = `
+                <div class="bg-red-50 border border-red-200 p-4 rounded-xl font-mono text-red-900 font-bold mb-5 shadow-sm text-base">
+                    🗓️ 排定時間：${data.time}
+                </div>
+                <div class="text-base text-gray-800 leading-loose space-y-3 bg-white p-5 rounded-xl border border-gray-200 shadow-sm font-medium">
+                    ${data.content}
+                </div>
+            `;
+            document.getElementById('topic-detail-modal').classList.remove('hidden');
+        };
+
+        function closeTopicDetailModal() { document.getElementById('topic-detail-modal').classList.add('hidden'); }
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -261,13 +489,13 @@ gantt
         });
 
         function toggleGantt(type) {
-            document.getElementById('btn-gantt-day').className = type === 'day' ? 'px-4 py-1.5 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md' : 'px-4 py-1.5 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md transition-all';
-            document.getElementById('btn-gantt-prep').className = type === 'prep' ? 'px-4 py-1.5 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md' : 'px-4 py-1.5 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md transition-all';
+            document.getElementById('btn-gantt-day').className = type === 'day' ? 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md border border-gray-200' : 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md';
+            document.getElementById('btn-gantt-prep').className = type === 'prep' ? 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold bg-white text-red-900 shadow-sm rounded-md border border-gray-200' : 'tab-btn flex-1 md:flex-none px-5 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 rounded-md';
             document.getElementById('gantt-day').classList.toggle('hidden', type !== 'day');
             document.getElementById('gantt-prep').classList.toggle('hidden', type !== 'prep');
         }
 
-        // ---- Auth / RBAC Logic ----
+        // ---- RBAC 權限登入系統 ----
         function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
         function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
         
@@ -275,15 +503,15 @@ gantt
             const phone = document.getElementById('login-phone').value.trim();
             if(!phone) return alert("請輸入手機號碼");
             
-            // Bypass logic for demonstration or fast access
-            if (phone === "5050") {
-                currentUser = { name: "最高管理者", role: "總幹事", group: "大會核心" };
+            // 💡 總幹事專屬後門：直接輸入您的手機即可擁有最高權限 (測試確認後可刪除此 if 段落)
+            if (phone === "5050" || phone === "0973070998") {
+                currentUser = { name: "總幹事", phone: phone, role: "總幹事", group: "大會核心" };
             } else {
                 const found = dbAuth.find(a => String(a.phone).replace(/\D/g, '') === phone);
                 if (found) {
                     currentUser = found;
                 } else {
-                    return alert("查無此權限，請確認是否為登記之組長或幹部。");
+                    return alert("❌ 查無此權限。\n\n請確認您的手機是否已登記在資料庫中。\n(請總幹事至 Google 試算表最下方的「權限管理」分頁新增您的授權)");
                 }
             }
             
@@ -292,7 +520,7 @@ gantt
             document.getElementById('btn-login-trigger').classList.add('hidden');
             document.getElementById('btn-logout-trigger').classList.remove('hidden');
             closeLoginModal();
-            renderTasks(); // Re-render with new permissions
+            renderTasks(); // 依據新權限重新渲染任務看板
         }
 
         function logout() {
@@ -300,10 +528,10 @@ gantt
             document.getElementById('auth-status').classList.add('hidden');
             document.getElementById('btn-login-trigger').classList.remove('hidden');
             document.getElementById('btn-logout-trigger').classList.add('hidden');
-            renderTasks(); // Re-render as guest
+            renderTasks(); // 退回訪客權限
         }
 
-        // Permission Checks based on Matrix
+        // 權限矩陣判定
         function canEditTask(taskGroup) {
             if (!currentUser) return false;
             if (currentUser.role === '總幹事') return true;
@@ -328,12 +556,11 @@ gantt
             return false;
         }
 
-        // ---- Render Tasks ----
+        // ---- 渲染各組任務清單 ----
         function renderTasks() {
             const container = document.getElementById('tasks-container');
-            
-            // Group tasks by group name
             const grouped = {};
+            
             dbTasks.forEach(t => {
                 if(!grouped[t.group]) grouped[t.group] = [];
                 grouped[t.group].push(t);
@@ -346,40 +573,40 @@ gantt
                 
                 let groupBudgetTotal = 0;
                 let groupHtml = `
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:border-amber-300 transition-all">
-                        <div class="bg-gray-50 border-b border-gray-100 px-5 py-3 flex justify-between items-center">
-                            <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2"><span>📂</span> ${group}</h3>
-                            ${isGroupEdit ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">您可編輯</span>` : ''}
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden hover:border-amber-300 transition-all hover:shadow-md">
+                        <div class="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                            <h3 class="font-black text-gray-900 text-lg flex items-center gap-2"><span>📂</span> ${group}</h3>
+                            ${isGroupEdit ? `<span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-1 rounded shadow-sm border border-amber-200">✨ 您可編輯本組</span>` : ''}
                         </div>
                         <ul class="divide-y divide-gray-100">
                 `;
 
                 grouped[group].forEach(task => {
-                    let statusColor = 'bg-gray-100 text-gray-600';
-                    if (task.status.includes('✅')) statusColor = 'bg-green-100 text-green-800 border border-green-200';
-                    if (task.status.includes('⏳')) statusColor = 'bg-white text-yellow-800 border-2 border-yellow-400';
-                    if (task.status.includes('🚨')) statusColor = 'bg-red-800 text-white shadow-sm';
-                    if (task.status.includes('💬')) statusColor = 'bg-slate-600 text-white shadow-sm';
+                    let statusColor = 'bg-gray-100 text-gray-600 border border-gray-200';
+                    if (task.status.includes('✅')) statusColor = 'bg-green-100 text-green-800 border-2 border-green-300 shadow-sm';
+                    if (task.status.includes('⏳')) statusColor = 'bg-yellow-50 text-yellow-800 border-2 border-yellow-400 shadow-sm';
+                    if (task.status.includes('🚨')) statusColor = 'bg-red-800 text-white border-2 border-red-900 shadow-md';
+                    if (task.status.includes('💬')) statusColor = 'bg-slate-600 text-white border-2 border-slate-700 shadow-md';
 
                     const bVal = parseInt(task.budget) || 0;
                     groupBudgetTotal += bVal;
 
                     groupHtml += `
-                        <li class="p-4 sm:p-5 hover:bg-gray-50 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                            <div class="space-y-1.5 flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-gray-500">[${task.owner}]</span>
-                                    <span class="font-bold text-gray-800 text-sm">${task.category}</span>
+                        <li class="p-5 hover:bg-red-50/30 transition-colors flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                            <div class="space-y-2 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-[10px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">[負責：${task.owner}]</span>
+                                    <span class="font-black text-gray-800 text-base">${task.category}</span>
                                 </div>
-                                <p class="text-xs text-gray-600 leading-snug">${task.detail}</p>
-                                <div class="flex items-center gap-3 text-[11px] text-gray-500 pt-1">
-                                    <span>👥 人力: <strong class="${task.isEnough==='否'?'text-red-600':''}">${task.manpower} 人 (${task.isEnough==='否'?'需支援':'充足'})</strong></span>
-                                    ${isGroupBudgetVis ? `<span>💰 預算: <strong>${bVal.toLocaleString()}</strong> 元</span>` : ''}
+                                <p class="text-sm text-gray-600 leading-relaxed font-medium">${task.detail}</p>
+                                <div class="flex items-center gap-4 text-xs font-bold text-gray-500 pt-2 border-t border-gray-100/50 mt-2">
+                                    <span class="bg-blue-50 text-blue-800 px-2 py-1 rounded">👥 調度人力: <strong class="${task.isEnough==='否'?'text-red-600':''} text-sm">${task.manpower}</strong> 人 (${task.isEnough==='否'?'🚨需大會支援':'充足'})</span>
+                                    ${isGroupBudgetVis ? `<span class="bg-red-50 text-red-800 px-2 py-1 rounded border border-red-100">💰 預算: <strong>${bVal.toLocaleString()}</strong> 元</span>` : ''}
                                 </div>
                             </div>
-                            <div class="flex flex-row sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto mt-2 sm:mt-0 border-t sm:border-0 pt-3 sm:pt-0">
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${statusColor} text-center w-24">${task.status}</span>
-                                ${isGroupEdit ? `<button onclick="openTaskEdit('${task.id}')" class="text-[11px] bg-white border border-gray-300 text-gray-600 hover:text-red-800 hover:border-red-300 font-bold px-3 py-1 rounded shadow-sm transition-all ml-auto sm:ml-0 cursor-pointer">✏️ 更新</button>` : ''}
+                            <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0">
+                                <span class="px-3 py-1.5 rounded-lg text-xs font-black ${statusColor} text-center w-28 tracking-wide">${task.status}</span>
+                                ${isGroupEdit ? `<button onclick="openTaskEdit('${task.id}')" class="text-xs bg-white border border-gray-300 text-gray-700 hover:bg-amber-50 hover:text-red-800 hover:border-red-400 font-bold px-4 py-1.5 rounded-lg shadow-sm transition-all ml-auto sm:ml-0 cursor-pointer">✏️ 編輯進度</button>` : ''}
                             </div>
                         </li>
                     `;
@@ -387,12 +614,12 @@ gantt
 
                 groupHtml += `</ul>`;
                 
-                // Show Group Total Budget if visible
+                // 預算小計區塊
                 if (isGroupBudgetVis) {
                     groupHtml += `
-                        <div class="bg-gray-50/50 px-5 py-3 border-t border-gray-100 flex justify-between items-center text-xs">
-                            <span class="text-gray-500 font-bold">本組預算小計</span>
-                            <span class="text-red-800 font-black text-sm">NT$ ${groupBudgetTotal.toLocaleString()}</span>
+                        <div class="bg-red-50/50 px-6 py-4 border-t border-red-100 flex justify-between items-center text-sm shadow-inner">
+                            <span class="text-red-900 font-bold">本組大會預算小計</span>
+                            <span class="text-red-800 font-black text-xl">NT$ ${groupBudgetTotal.toLocaleString()}</span>
                         </div>
                     `;
                 }
@@ -401,10 +628,10 @@ gantt
                 html += groupHtml;
             }
 
-            container.innerHTML = html || '<div class="col-span-2 text-center text-gray-400 py-10">尚無任務資料</div>';
+            container.innerHTML = html || '<div class="col-span-2 text-center text-gray-400 py-10 font-bold">尚無任務資料</div>';
         }
 
-        // ---- Edit Modal Logic ----
+        // ---- 編輯任務狀態 Logic ----
         let editingTaskObj = null;
 
         function openTaskEdit(taskId) {
@@ -412,9 +639,8 @@ gantt
             if (!editingTaskObj) return;
 
             document.getElementById('edit-task-id').value = taskId;
-            document.getElementById('edit-task-name').textContent = `[${editingTaskObj.group}] ${editingTaskObj.category} - ${editingTaskObj.detail}`;
+            document.getElementById('edit-task-name').innerHTML = `<span class="text-red-800">[${editingTaskObj.group}]</span> ${editingTaskObj.category} <br><span class="text-xs text-gray-500 font-normal mt-1 block">${editingTaskObj.detail}</span>`;
             
-            // Select correct radio
             document.querySelectorAll('input[name="edit-status"]').forEach(r => {
                 r.checked = (r.value === editingTaskObj.status);
             });
@@ -422,7 +648,6 @@ gantt
             document.getElementById('edit-manpower').value = editingTaskObj.manpower;
             document.getElementById('edit-enough').value = editingTaskObj.isEnough;
 
-            // Handle Budget Input Permission
             const budgetContainer = document.getElementById('edit-budget-container');
             if (canEditBudget(editingTaskObj.group)) {
                 budgetContainer.classList.remove('hidden');
@@ -458,14 +683,12 @@ gantt
             }
 
             try {
-                // Post to GAS
                 await fetch(scriptUrl, { 
                     method: 'POST', mode: 'no-cors', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ action: "updateTask", task: editingTaskObj }) 
                 });
                 
-                // Update local array & UI
                 renderTasks();
                 closeTaskEditModal();
             } catch (e) {
