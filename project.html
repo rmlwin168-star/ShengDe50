@@ -9,8 +9,6 @@
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; }
         .mermaid { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow-x: auto; }
-        
-        /* 視覺優化：覆寫 Mermaid 甘特圖字體與顏色，讓畫面有精神、高對比 */
         .gantt-title { font-weight: 900 !important; font-size: 1.5rem !important; fill: #7F1D1D !important; }
         .taskText, .taskTextOutsideRight, .taskTextOutsideLeft { font-weight: 900 !important; font-size: 14px !important; fill: #111827 !important; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; cursor: pointer; }
         .task, .task-click { cursor: pointer !important; transition: opacity 0.2s; stroke-width: 2px; stroke: rgba(0,0,0,0.2); }
@@ -201,11 +199,10 @@ gantt
         <section id="tasks" class="space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-gray-200 pb-2 gap-2">
                 <h2 class="text-2xl font-black text-gray-800 flex items-center gap-2"><span>📋</span> 各組任務檢核與預算看板</h2>
-                <div class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg shadow-inner">※ 總幹事與點傳師可查閱全場預算，組長可編輯自身任務狀態</div>
+                <div class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg shadow-inner">※ 大會總表與預算編列功能，將依據幹部登入權限自動開放</div>
             </div>
             
             <div id="tasks-container" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <!-- Javascript 將根據您的權限，注入各組精細的任務卡片 -->
                 <div class="p-10 text-center text-gray-400 font-bold bg-white rounded-2xl shadow-sm w-full xl:col-span-2">
                     ⏳ 讀取大會雲端任務清單中...
                 </div>
@@ -214,7 +211,7 @@ gantt
 
     </main>
 
-    <!-- 🔑 幹部登入 Modal (加入授權提示說明) -->
+    <!-- 🔑 幹部登入 Modal -->
     <div id="login-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 transition-all">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden transform">
             <div class="bg-red-900 text-white p-4 text-center font-bold text-lg">幹部權限登入</div>
@@ -222,7 +219,7 @@ gantt
                 <div class="text-xs text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-200 leading-relaxed shadow-inner">
                     請輸入您的手機號碼以驗證幹部身分，解鎖任務編輯與預算檢視權限。<br><br>
                     <span class="text-red-700 font-bold text-[13px] border-b border-red-200 pb-1 inline-block mb-1">💡 總幹事授權指南：</span><br>
-                    請總幹事開啟 Google 報名表試算表，至最下方<strong class="text-black">「權限管理」</strong>分頁，依序輸入幹部的<strong class="text-black">姓名、手機號碼、身分、組別</strong>，儲存後即可立刻生效授權。
+                    請總幹事開啟 Google 報名表試算表，至最下方<strong class="text-black">「權限管理」</strong>分頁，依序輸入幹部的<strong class="text-black">姓名、手機號碼、身分、組別</strong>，即可完成授權。
                 </div>
                 <input type="tel" id="login-phone" placeholder="請輸入 10 碼手機號碼" class="w-full px-4 py-3 border border-gray-300 rounded-lg font-bold text-center text-lg focus:outline-none focus:border-red-800 focus:ring-2 focus:ring-red-800 shadow-sm">
                 <div class="grid grid-cols-2 gap-3">
@@ -478,7 +475,21 @@ gantt
                 const res = await response.json();
                 
                 dbAuth = res.auth || [];
-                dbTasks = (res.tasks && res.tasks.length > 0) ? res.tasks : defaultTasksTemplate;
+                
+                // 💡 修正點：將雲端抓下來的任務與預設樣板進行合併
+                // 確保其他未編輯的預設任務不會因為重新整理而消失！
+                let mergedTasks = JSON.parse(JSON.stringify(defaultTasksTemplate)); 
+                if (res.tasks && res.tasks.length > 0) {
+                    res.tasks.forEach(cloudTask => {
+                        let idx = mergedTasks.findIndex(t => t.id === cloudTask.id);
+                        if (idx > -1) {
+                            mergedTasks[idx] = cloudTask; 
+                        } else {
+                            mergedTasks.push(cloudTask); 
+                        }
+                    });
+                }
+                dbTasks = mergedTasks;
                 
                 renderTasks();
             } catch (error) {
@@ -503,8 +514,8 @@ gantt
             const phone = document.getElementById('login-phone').value.trim();
             if(!phone) return alert("請輸入手機號碼");
             
-            // 💡 總幹事專屬後門：直接輸入您的手機即可擁有最高權限 (測試確認後可刪除此 if 段落)
-            if (phone === "5050" || phone === "0973070998") {
+            // 💡 總幹事專屬後門
+            if (phone === "0973070998") {
                 currentUser = { name: "總幹事", phone: phone, role: "總幹事", group: "大會核心" };
             } else {
                 const found = dbAuth.find(a => String(a.phone).replace(/\D/g, '') === phone);
@@ -520,7 +531,7 @@ gantt
             document.getElementById('btn-login-trigger').classList.add('hidden');
             document.getElementById('btn-logout-trigger').classList.remove('hidden');
             closeLoginModal();
-            renderTasks(); // 依據新權限重新渲染任務看板
+            renderTasks(); 
         }
 
         function logout() {
@@ -528,10 +539,9 @@ gantt
             document.getElementById('auth-status').classList.add('hidden');
             document.getElementById('btn-login-trigger').classList.remove('hidden');
             document.getElementById('btn-logout-trigger').classList.add('hidden');
-            renderTasks(); // 退回訪客權限
+            renderTasks(); 
         }
 
-        // 權限矩陣判定
         function canEditTask(taskGroup) {
             if (!currentUser) return false;
             if (currentUser.role === '總幹事') return true;
@@ -614,7 +624,6 @@ gantt
 
                 groupHtml += `</ul>`;
                 
-                // 預算小計區塊
                 if (isGroupBudgetVis) {
                     groupHtml += `
                         <div class="bg-red-50/50 px-6 py-4 border-t border-red-100 flex justify-between items-center text-sm shadow-inner">
@@ -631,7 +640,6 @@ gantt
             container.innerHTML = html || '<div class="col-span-2 text-center text-gray-400 py-10 font-bold">尚無任務資料</div>';
         }
 
-        // ---- 編輯任務狀態 Logic ----
         let editingTaskObj = null;
 
         function openTaskEdit(taskId) {
